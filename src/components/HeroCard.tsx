@@ -15,7 +15,6 @@ export function HeroCard({ hero }: { hero: Hero }) {
         level,
         expForCurrent,
         expForNext,
-        progressRatio,
         progressPctStr,
         remainingStr,
         showProgress,

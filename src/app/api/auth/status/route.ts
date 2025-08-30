@@ -24,7 +24,12 @@ export async function GET(req: NextRequest) {
             status: res.status,
             headers: { 'content-type': res.headers.get('content-type') ?? 'application/json' },
         });
-    } catch (e: any) {
-        return NextResponse.json({ error: e?.message ?? 'Failed to proxy' }, { status: 500 });
+    } catch (e: unknown) {
+        let message = 'Failed to proxy';
+        if (e instanceof Error) {
+            message = e.message;
+        }
+        return NextResponse.json({ error: message }, { status: 500 });
     }
+
 }
