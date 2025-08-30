@@ -1,45 +1,47 @@
+// src/app/page.tsx
 'use client';
 
-import Image from "next/image";
-import { useAuth } from "@/hooks/useAuth";
-import { LoginButton } from "@/components/LoginButton";
-import { UserProfile } from "@/components/UserProfile";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
+import { useHero } from '@/hooks/useHero';
+import { HeroCard } from '@/components/HeroCard';
 
 export default function Home() {
-  const { isAuthenticated, user, loading, login } = useAuth();
+  const router = useRouter();
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
+
+  // 認証済みのときだけ Hero を取得
+  const { hero, loading: heroLoading, error, refetch } = useHero(isAuthenticated);
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) router.replace('/login');
+  }, [authLoading, isAuthenticated, router]);
+
+  if (authLoading || !isAuthenticated) {
+    return (
+        <main className="min-h-screen flex items-center justify-center">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+            <span>認証状態を確認中...</span>
+          </div>
+        </main>
+    );
+  }
 
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        
-        <div className="text-center sm:text-left">
-          <h1 className="text-2xl font-bold mb-4">GitHub認証テストアプリ</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-8">
-            GitHubアカウントでログインして認証フローをテストします
-          </p>
-        </div>
+      <main className="p-10 flex flex-col items-center gap-6">
+        <h1 className="text-2xl font-bold">Home</h1>
+        {user && <p className="text-sm text-gray-500">こんにちは、{user.username} さん</p>}
 
-        <div className="flex justify-center items-center min-h-[120px]">
-          {loading ? (
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-              <span>認証状態を確認中...</span>
-            </div>
-          ) : isAuthenticated && user ? (
-            <UserProfile user={user} />
-          ) : (
-            <LoginButton onLogin={login} />
-          )}
-        </div>
+        {heroLoading && <p>Hero取得中...</p>}
+        {error && (
+            <p className="text-red-500">
+              取得に失敗しました: {error}{' '}
+              <button className="underline ml-2" onClick={refetch}>再試行</button>
+            </p>
+        )}
+        {hero && <HeroCard hero={hero} />}
       </main>
-    </div>
   );
 }
