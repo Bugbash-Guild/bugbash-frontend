@@ -2,9 +2,9 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
-import { LoginButton } from '@/components/LoginButton';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import {LoginButton} from "@/app/login/components/LoginButton";
 
 export default function LoginPage() {
     const router = useRouter();
