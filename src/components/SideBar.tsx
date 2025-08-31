@@ -60,17 +60,10 @@ export function SideBar() {
         <Link
           href="/"
           aria-label="Home"
-          className={[
-            "inline-flex items-center justify-center h-12 w-12 rounded-xl",
-            "border border-zinc-200/70 dark:border-zinc-800/70",
-            "bg-white/90 dark:bg-zinc-800/80 backdrop-blur",
-            "shadow-sm hover:shadow-md transition-transform duration-200 hover:scale-110",
-            "text-zinc-900 dark:text-zinc-100",
-            "active:bg-zinc-100 dark:active:bg-zinc-800",
-            pathname === "/" ? "ring-2 ring-indigo-500/60" : "ring-0",
-          ].join(" ")}
+          className="inline-flex items-center justify-center h-12 w-23 gap-1 rounded-xl border border-zinc-200/70 dark:border-zinc-800/70 bg-white/90 dark:bg-zinc-800/80 backdrop-blur shadow-sm hover:shadow-md transition-transform duration-200 hover:scale-110 text-zinc-900 dark:text-zinc-100 active:bg-zinc-100 dark:active:bg-zinc-800"
         >
           <FiHome className="text-2xl" />
+          <p>Home</p>
         </Link>
       </div>
 
