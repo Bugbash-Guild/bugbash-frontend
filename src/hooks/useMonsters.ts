@@ -8,7 +8,7 @@ const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export function useMonsters() {
     const { data, error, isLoading, mutate } =
-        useSWR<{ monsters: Monster[] }>('/api/monsters', fetcher, {
+        useSWR<{ monsters: Monster[] }>('/api/monsters/owned', fetcher, {
             refreshInterval: 0,
             revalidateOnFocus: true,
         });
