@@ -31,8 +31,8 @@ export function HeroParty({ hero, monsters = [] }: Props) {
             // 地面系のモンスター
             const groundTypes = ['🐺', '🐅', '🦁', '🐗', '🐻', '🐸', '🐢', '🦎'];
 
-            const isFlying = flyingTypes.some(type => emoji.includes(type) || emoji === type);
-            const isGround = groundTypes.some(type => emoji.includes(type) || emoji === type);
+            const isFlying = true;
+            const isGround = false;
 
             if (isFlying) {
                 // 空中配置（上部）- 広いスペースに散らばるように
@@ -55,12 +55,8 @@ export function HeroParty({ hero, monsters = [] }: Props) {
         const groundTypes = ['🐺', '🐅', '🦁', '🐗', '🐻', '🐸', '🐢', '🦎'];
 
         return {
-            hasFlying: displayMonsters.some(monster =>
-                flyingTypes.some(type => monster.emoji.includes(type) || monster.emoji === type)
-            ),
-            hasGround: displayMonsters.some(monster =>
-                groundTypes.some(type => monster.emoji.includes(type) || monster.emoji === type)
-            )
+            hasFlying: true,
+            hasGround: false
         };
     }, [displayMonsters]);
 
