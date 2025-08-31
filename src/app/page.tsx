@@ -5,7 +5,9 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
+import { useMonsters } from "@/hooks/useMonsters";
 import { HeroCard } from "@/app/components/HeroCard";
+import { HeroParty } from "@/app/components/HeroParty";
 import { MainWrapper } from "@/components/MainWrapper";
 
 export default function Home() {
@@ -19,6 +21,9 @@ export default function Home() {
     error,
     refetch,
   } = useHero(isAuthenticated);
+
+  // モンスターデータを取得
+  const { monsters } = useMonsters(isAuthenticated);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.replace("/login");
@@ -37,6 +42,8 @@ export default function Home() {
 
   return (
     <MainWrapper>
+
+
       <main className="p-10 flex flex-col items-center gap-6">
         <h1 className="text-2xl font-bold">Home</h1>
         {user && (
@@ -54,6 +61,8 @@ export default function Home() {
             </button>
           </p>
         )}
+          {/* HeroPartyを左側に表示 */}
+      {hero && <HeroParty hero={hero} monsters={monsters} />}
         {hero && <HeroCard hero={hero} />}
       </main>
     </MainWrapper>
