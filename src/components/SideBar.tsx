@@ -3,41 +3,83 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { FiHome, FiMenu, FiX } from "react-icons/fi";
+import { GiDragonHead, GiBackpack } from "react-icons/gi";
 import { MonsterBoxCard } from "@/components/MonsterBoxCard";
 import { ItemBoxCard } from "@/components/ItemBoxCard";
 
+// モバイルリンク用：押下時にグレー背景が必ず出る
+function MobileNavLink({
+  href,
+  icon,
+  label,
+  active,
+  onClick,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  active?: boolean;
+  onClick?: () => void;
+}) {
+  const [pressed, setPressed] = useState(false);
+
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      onPointerDown={() => setPressed(true)}
+      onPointerUp={() => setPressed(false)}
+      onPointerCancel={() => setPressed(false)}
+      onPointerLeave={() => setPressed(false)}
+      aria-current={active ? "page" : undefined}
+      className={[
+        "flex items-center gap-3 px-3 py-4 rounded-xl transition-colors",
+        "text-zinc-900 dark:text-zinc-100",
+        "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+        pressed ? "bg-zinc-200 dark:bg-zinc-700" : "",
+        active ? "bg-zinc-100 dark:bg-zinc-800" : "bg-transparent",
+        "touch-manipulation select-none",
+      ].join(" ")}
+    >
+      <span className="text-2xl">{icon}</span>
+      <span className="text-lg font-medium">{label}</span>
+    </Link>
+  );
+}
+
 export function SideBar() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
-  const SidebarContent = (
+  const DesktopSidebar = (
     <div className="flex h-full flex-col">
-      {/* 上部：ミニマルなHomeボタン（アイコンのみ） */}
+      {/* 上部：Homeボタン（アイコンのみ／アクティブでリング表示） */}
       <div className="p-4">
         <Link
           href="/"
           aria-label="Home"
-          className="
-            inline-flex items-center justify-center
-            h-12 w-23 gap-1 rounded-xl
-            border border-zinc-200/70 dark:border-zinc-800/70
-            bg-white/90 dark:bg-zinc-800/80 backdrop-blur
-            shadow-sm hover:shadow-md
-            transition-transform duration-200 hover:scale-110
-            text-zinc-900 dark:text-zinc-100
-          "
+          className={[
+            "inline-flex items-center justify-center h-12 w-12 rounded-xl",
+            "border border-zinc-200/70 dark:border-zinc-800/70",
+            "bg-white/90 dark:bg-zinc-800/80 backdrop-blur",
+            "shadow-sm hover:shadow-md transition-transform duration-200 hover:scale-110",
+            "text-zinc-900 dark:text-zinc-100",
+            "active:bg-zinc-100 dark:active:bg-zinc-800",
+            pathname === "/" ? "ring-2 ring-indigo-500/60" : "ring-0",
+          ].join(" ")}
         >
           <FiHome className="text-2xl" />
-          <div className="font-bold">Home</div>
         </Link>
       </div>
 
-      {/* 中央：スクロール可能領域（必要ならメニュー追加） */}
+      {/* 中央：スクロール可能領域（必要に応じてメニュー追加） */}
       <nav className="flex-1 overflow-y-auto px-4 pb-4">
         <ul className="space-y-2" />
       </nav>
 
-      {/* 下部：カードは常に下に固定 */}
+      {/* 下部：カード固定 */}
       <div className="mt-auto space-y-3 p-4 pt-0">
         <MonsterBoxCard />
         <ItemBoxCard />
@@ -45,16 +87,50 @@ export function SideBar() {
     </div>
   );
 
+  const MobileMenu = (
+    <nav className="px-3 py-2">
+      <ul className="flex flex-col">
+        <li>
+          <MobileNavLink
+            href="/"
+            icon={<FiHome />}
+            label="Home"
+            active={pathname === "/"}
+            onClick={() => setOpen(false)}
+          />
+        </li>
+        <li>
+          <MobileNavLink
+            href="/monsters"
+            icon={<GiDragonHead />}
+            label="モンスターボックス"
+            active={pathname.startsWith("/monsters")}
+            onClick={() => setOpen(false)}
+          />
+        </li>
+        <li>
+          <MobileNavLink
+            href="/items"
+            icon={<GiBackpack />}
+            label="アイテムBOX"
+            active={pathname.startsWith("/items")}
+            onClick={() => setOpen(false)}
+          />
+        </li>
+      </ul>
+    </nav>
+  );
+
   return (
     <>
-      {/* モバイル：トップバー（ハンバーガー） */}
+      {/* モバイル：トップバー */}
       <div className="fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur px-4 shadow-sm md:hidden">
         <button
           aria-label="open sidebar menu"
           aria-controls="mobile-sidebar"
           aria-expanded={open}
           onClick={() => setOpen(true)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200/70 dark:border-zinc-700/70"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200/70 dark:border-zinc-700/70 touch-manipulation active:bg-zinc-100 dark:active:bg-zinc-800"
         >
           <FiMenu className="text-xl text-zinc-700 dark:text-zinc-200" />
         </button>
@@ -80,18 +156,19 @@ export function SideBar() {
               border-r border-zinc-200 dark:border-zinc-800
               shadow-xl
               animate-in slide-in-from-left duration-200
+              flex flex-col
             "
           >
             <div className="flex h-14 items-center justify-end px-3">
               <button
                 aria-label="close sidebar"
                 onClick={() => setOpen(false)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200/70 dark:border-zinc-700/70"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200/70 dark:border-zinc-700/70 touch-manipulation active:bg-zinc-100 dark:active:bg-zinc-800"
               >
                 <FiX className="text-xl text-zinc-700 dark:text-zinc-200" />
               </button>
             </div>
-            {SidebarContent}
+            {MobileMenu}
           </aside>
         </div>
       )}
@@ -105,7 +182,7 @@ export function SideBar() {
           bg-zinc-50 dark:bg-zinc-900
         "
       >
-        {SidebarContent}
+        {DesktopSidebar}
       </aside>
     </>
   );
