@@ -14,7 +14,7 @@ export default function ItemsPage() {
 
   return (
     <MainWrapper>
-      <main className="p-8 w-full">
+      <main className="p-8 w-[100%]">
         <div className="mb-6 flex items-end justify-between">
           <h1 className="text-2xl font-bold">アイテムBOX</h1>
           <p className="text-sm text-zinc-600 dark:text-zinc-400">

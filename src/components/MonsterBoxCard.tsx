@@ -6,7 +6,7 @@ import { GiDragonHead } from "react-icons/gi";
 
 type Props = { collapsed?: boolean };
 
-export function MonsterBoxCard({ collapsed = false }: Props) {
+export function MonsterBoxCard() {
   return (
     <Link
       href="/monsters"
@@ -29,18 +29,14 @@ export function MonsterBoxCard({ collapsed = false }: Props) {
           <GiDragonHead className="text-2xl" />
         </div>
 
-        {collapsed ? (
-          <span className="text-xs text-zinc-200 select-none">MB</span>
-        ) : (
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-              モンスターボックス
-            </p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              クリックで開く
-            </p>
-          </div>
-        )}
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+            モンスターボックス
+          </p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            クリックで開く
+          </p>
+        </div>
       </div>
     </Link>
   );

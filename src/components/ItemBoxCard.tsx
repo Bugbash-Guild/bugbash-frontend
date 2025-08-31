@@ -6,7 +6,7 @@ import { GiBackpack } from "react-icons/gi";
 
 type Props = { collapsed?: boolean };
 
-export function ItemBoxCard({ collapsed = false }: Props) {
+export function ItemBoxCard() {
   return (
     <Link
       href="/items"
@@ -28,19 +28,14 @@ export function ItemBoxCard({ collapsed = false }: Props) {
         >
           <GiBackpack className="text-2xl" />
         </div>
-
-        {collapsed ? (
-          <span className="text-xs text-zinc-200 select-none">IB</span>
-        ) : (
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-              アイテムBOX
-            </p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              クリックで開く
-            </p>
-          </div>
-        )}
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+            アイテムBOX
+          </p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            クリックで開く
+          </p>
+        </div>
       </div>
     </Link>
   );
