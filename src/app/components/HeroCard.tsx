@@ -108,18 +108,14 @@ export function HeroCard({ hero }: { hero: Hero }) {
                             />
                         </div>
                         <div className="mt-2 flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400 tabular-nums">
-              <span>
-                Need {Number.isFinite(expForCurrent) ? expForCurrent.toFixed(0) : '—'} →{' '}
-                  {Number.isFinite(expForNext) ? expForNext.toFixed(0) : '—'}
-              </span>
+                            <div className="text-sm text-zinc-500 dark:text-zinc-400 tabular-nums">
+                                Next level in{' '}
+                                <span className="font-semibold text-zinc-700 dark:text-zinc-200">
+                                    {remainingStr}
+                                </span>{' '}
+                                XP
+                            </div>
                             <span>{progressPctStr}%</span>
-                        </div>
-                        <div className="text-sm text-zinc-500 dark:text-zinc-400 tabular-nums">
-                            Next level in{' '}
-                            <span className="font-semibold text-zinc-700 dark:text-zinc-200">
-                {remainingStr}
-              </span>{' '}
-                            XP
                         </div>
                     </div>
                 ) : (
