@@ -23,7 +23,7 @@ export default function Home() {
   } = useHero(isAuthenticated);
 
   // モンスターデータを取得
-  const { monsters } = useMonsters(isAuthenticated);
+  const { monsters } = useMonsters();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.replace("/login");
