@@ -1,73 +1,67 @@
 // src/app/components/HeroParty.tsx
 'use client';
 
-import type { Hero } from '@/types/hero';
-import type { Monster } from '@/types/monster';
+import type { FC } from 'react';
 import { useMemo } from 'react';
+
+import type { Hero } from '~/types/hero';
+import type { Monster } from '~/types/monster';
+
+// 定数
+const MONSTER_SLICE_START = 1; // スライス開始位置
+const MONSTER_SLICE_END = 3; // スライス終了位置（1〜2の2体）
 
 type Props = {
     hero: Hero;
     monsters?: Monster[];
 };
 
-export function HeroParty({ hero, monsters = [] }: Props) {
+export const HeroParty: FC<Props> = ({ hero, monsters = [] }) => {
     const displayMonsters = useMemo(() => {
-        console.log('Monsters:', monsters);
-        return monsters.slice(0, 3); // 最大3体まで表示
+        return monsters.slice(MONSTER_SLICE_START, MONSTER_SLICE_END);
     }, [monsters]);
-
-    const getMonsterPosition = (index: number) => {
-        const positions = [
-            'absolute left-12',      // 左上
-            'absolute right-12',     // 右上
-            'absolute bottom-12 left-12' // 左中央
-        ];
-        return positions[index] || positions[0];
-    };
-
 
     return (
         <div
-            className="
-                fixed top-1/4 left-2/10 z-50
-                w-[500px] max-w-[95vw]
-                h-[500px]
-                p-8
-            "
+            className="fixed top-16 left-64 right-96 z-40 h-[500px]"
             role="region"
             aria-label="Hero party playground"
         >
-
             {/* 勇者 - 最下部配置 */}
-            <div className="absolute top-12 left-1/2 transform -translate-x-1/2 z-10">
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
                 <div className="relative w-[300px] h-[300px]">
                     <img
                         src="/hero_toka.png"
                         alt="勇者"
                         width={200}
                         height={200}
-                        className="w-200 h-100 rounded-lg object-cover transition-transform duration-200"
+                        draggable={false}
+                        className="w-200 h-100 rounded-lg object-cover hover:scale-110 transition-transform duration-200 cursor-pointer select-none"
                     />
                 </div>
             </div>
 
-            {/* モンスター仲間たち - 周囲に自然配置 */}
-            {displayMonsters.map((monster, index) => (
-                <div
-                    key={monster.id}
-                    className={getMonsterPosition(index)}
-                >
-                    <div className="relative group">
-                        <div className="text-7xl hover:scale-110 transition-transform duration-200 cursor-pointer">
-                            {monster.emoji}
-                        </div>
-                        {/* モンスター名表示（ホバー時） */}
-                        <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-3 py-2 rounded text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                            {monster.name}
+            {/* モンスター仲間たち - 勇者の左右に配置 */}
+            {displayMonsters.map((monster, index) => {
+                const isLeft = index === 0;
+                const positionClass = isLeft
+                    ? 'absolute top-1/2 -translate-y-1/2 left-1/4'
+                    : 'absolute top-1/2 -translate-y-1/2 right-1/4';
+
+                return (
+                    <div key={monster.id} className={positionClass}>
+                        <div className="relative group">
+                            <div className="text-7xl hover:scale-110 transition-transform duration-200 cursor-pointer select-none">
+                                {monster.emoji}
+                            </div>
+                            {/* モンスター名表示（ホバー時） */}
+                            <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-3 py-2 rounded text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                                {monster.name}
+                            </div>
                         </div>
                     </div>
-                </div>
-            ))}
+                );
+            })}
 
             {/* 仲間がいない場合の表示 */}
             {displayMonsters.length === 0 && (
@@ -78,7 +72,6 @@ export function HeroParty({ hero, monsters = [] }: Props) {
                     </p>
                 </div>
             )}
-
         </div>
     );
-}
+};
