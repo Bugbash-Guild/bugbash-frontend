@@ -3,8 +3,8 @@
 
 import type { FC } from 'react';
 import { useMemo } from 'react';
+import Image from 'next/image';
 
-import type { Hero } from '~/types/hero';
 import type { Monster } from '~/types/monster';
 
 // 定数
@@ -12,11 +12,10 @@ const MONSTER_SLICE_START = 1; // スライス開始位置
 const MONSTER_SLICE_END = 3; // スライス終了位置（1〜2の2体）
 
 type Props = {
-    hero: Hero;
     monsters?: Monster[];
 };
 
-export const HeroParty: FC<Props> = ({ hero, monsters = [] }) => {
+export const HeroParty: FC<Props> = ({ monsters = [] }) => {
     const displayMonsters = useMemo(() => {
         return monsters.slice(MONSTER_SLICE_START, MONSTER_SLICE_END);
     }, [monsters]);
@@ -30,7 +29,7 @@ export const HeroParty: FC<Props> = ({ hero, monsters = [] }) => {
             {/* 勇者 - 最下部配置 */}
             <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
                 <div className="relative w-[300px] h-[300px]">
-                    <img
+                    <Image
                         src="/hero_toka.png"
                         alt="勇者"
                         width={200}

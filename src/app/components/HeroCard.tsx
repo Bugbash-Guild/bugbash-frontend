@@ -13,8 +13,6 @@ export function HeroCard({ hero }: { hero: Hero }) {
 
     const {
         level,
-        expForCurrent,
-        expForNext,
         progressPctStr,
         remainingStr,
         showProgress,

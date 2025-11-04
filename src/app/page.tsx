@@ -62,7 +62,7 @@ export default function Home() {
           </p>
         )}
           {/* HeroPartyを左側に表示 */}
-      {hero && <HeroParty hero={hero} monsters={monsters} />}
+      <HeroParty monsters={monsters} />
         {hero && <HeroCard hero={hero} />}
       </main>
     </MainWrapper>
