@@ -23,7 +23,7 @@ export default function Home() {
   } = useHero(isAuthenticated);
 
   // モンスターデータを取得
-  const { monsters } = useMonsters(isAuthenticated);
+  const { monsters } = useMonsters();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.replace("/login");
@@ -62,7 +62,7 @@ export default function Home() {
           </p>
         )}
           {/* HeroPartyを左側に表示 */}
-      <HeroParty monsters={monsters} />
+      {hero && <HeroParty hero={hero} monsters={monsters} />}
         {hero && <HeroCard hero={hero} />}
       </main>
     </MainWrapper>

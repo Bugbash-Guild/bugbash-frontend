@@ -5,17 +5,20 @@ import type { FC } from 'react';
 import { useMemo } from 'react';
 import Image from 'next/image';
 
-import type { Monster } from '~/types/monster';
+import type { Hero } from '@/types/hero';
+import type { Monster } from '@/types/monster';
 
 // 定数
 const MONSTER_SLICE_START = 1; // スライス開始位置
 const MONSTER_SLICE_END = 3; // スライス終了位置（1〜2の2体）
 
 type Props = {
+    hero: Hero;
     monsters?: Monster[];
 };
 
-export const HeroParty: FC<Props> = ({ monsters = [] }) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const HeroParty: FC<Props> = ({ hero, monsters = [] }) => {
     const displayMonsters = useMemo(() => {
         return monsters.slice(MONSTER_SLICE_START, MONSTER_SLICE_END);
     }, [monsters]);
