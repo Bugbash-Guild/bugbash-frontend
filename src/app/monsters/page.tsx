@@ -116,7 +116,7 @@ export default function MonstersPage() {
         )}
 
         {/* 4-column dex grid */}
-        <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+        <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(5, 1fr)" }}>
           {dex.map((m) => {
             const c = RARITY_COLOR[m.rarity];
             const isComp = m.id === companion;
