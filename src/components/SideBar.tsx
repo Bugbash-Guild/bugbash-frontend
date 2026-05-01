@@ -10,7 +10,6 @@ const NAV_ITEMS = [
   { glyph: "⌂", label: "~/home", href: "/" },
   { glyph: "◆", label: "~/monsters", href: "/monsters" },
   { glyph: "▣", label: "~/items", href: "/items" },
-  { glyph: "⚙", label: "~/settings", href: "/settings" },
 ] as const;
 
 export function SideBar() {
