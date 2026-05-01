@@ -1,28 +1,43 @@
-// src/app/page.tsx
 "use client";
 
 import { useEffect } from "react";
+
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
-import { HeroCard } from "@/app/components/HeroCard";
-import { HeroParty } from "@/app/components/HeroParty";
 import { MainWrapper } from "@/components/MainWrapper";
+
+const RARITY_COLOR: Record<string, string> = {
+  N: "#7a9c8c",
+  R: "#79c0ff",
+  SR: "#d2a8ff",
+  SSR: "#e3b341",
+};
+
+const MOCK_ACTIVITIES = [
+  { id: 1, xp: 100, monster: { name: "ドラゴン", emoji: "🐉", rarity: "SSR" }, repo: "Bugbash-Guild/bugbash-frontend", prNumber: 142, title: "feat: redesign monster collection page", occurredAt: "2分前", isLevelUp: true },
+  { id: 2, xp: 100, monster: { name: "狼", emoji: "🐺", rarity: "R" }, repo: "Bugbash-Guild/bugbash-backend", prNumber: 89, title: "fix: race condition in XP gain", occurredAt: "3時間前" },
+  { id: 3, xp: 100, monster: { name: "スライム", emoji: "🟢", rarity: "N" }, repo: "Bugbash-Guild/bugbash-backend", prNumber: 88, title: "feat: rarity weighting (N:40 R:30 SR:22 SSR:8)", occurredAt: "昨日", isLevelUp: true },
+  { id: 4, xp: 100, monster: { name: "ゾンビ", emoji: "🧟", rarity: "R" }, repo: "Bugbash-Guild/bugbash-frontend", prNumber: 141, title: "chore: bump dependencies", occurredAt: "2日前" },
+];
+
+const HERO_ASCII = [
+  "    ╔═══╗    ",
+  "    ║ ◆ ║    ",
+  "    ╚═══╝    ",
+  "   /|   |\\   ",
+  "  / | ⚔ | \\  ",
+  " /  |   |  \\ ",
+  "    |   |    ",
+  "   /     \\   ",
+  "  /       \\  ",
+];
 
 export default function Home() {
   const router = useRouter();
   const { isAuthenticated, user, loading: authLoading } = useAuth();
-
-  // 認証済みのときだけ Hero を取得
-  const {
-    hero,
-    loading: heroLoading,
-    error,
-    refetch,
-  } = useHero(isAuthenticated);
-
-  // モンスターデータを取得
+  const { hero, loading: heroLoading } = useHero(isAuthenticated);
   const { monsters } = useMonsters();
 
   useEffect(() => {
@@ -31,40 +46,195 @@ export default function Home() {
 
   if (authLoading || !isAuthenticated) {
     return (
-      <main className="min-h-screen flex items-center justify-center">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-          <span>認証状態を確認中...</span>
+      <div className="min-h-screen flex items-center justify-center bg-bg">
+        <div className="flex items-center gap-2 text-text-dim text-[13px]">
+          <span className="w-4 h-4 border border-accent border-t-transparent rounded-full animate-spin" />
+          authenticating…
         </div>
-      </main>
+      </div>
     );
   }
 
+  const username = user?.username ?? "hero";
+  const pct = hero ? (hero.progressRatio * 100).toFixed(1) : "0.0";
+  const filledSegments = hero ? Math.round(hero.progressRatio * 60) : 0;
+
   return (
     <MainWrapper>
+      <div className="px-9 py-6 min-h-screen">
+        {/* prompt header */}
+        <div className="text-[13px] text-text-dim mb-4">
+          <span className="text-accent">{username}@bugbash</span>
+          <span className="text-text-faint">:</span>
+          <span className="text-accent-2">~/home</span>
+          <span className="text-text-faint">$ </span>
+          <span>./hero --render --interactive</span>
+          <span className="inline-block w-2 h-[14px] ml-0.5 bg-accent align-middle animate-pulse" />
+        </div>
 
+        {heroLoading || !hero ? (
+          <div className="text-text-faint text-[13px]">loading hero…</div>
+        ) : (
+          <>
+            {/* HERO PANEL */}
+            <div className="bg-bg-elev border border-line rounded-lg p-6 grid gap-7 mb-3.5 relative overflow-hidden"
+              style={{ gridTemplateColumns: "auto 1fr" }}>
+              {/* ambient glow */}
+              <div className="absolute -top-28 -right-24 w-80 h-80 pointer-events-none"
+                style={{ background: "radial-gradient(circle, rgba(126,231,135,0.1), transparent 60%)" }} />
 
-      <main className="p-10 flex flex-col items-center gap-6">
-        <h1 className="text-2xl font-bold">Home</h1>
-        {user && (
-          <p className="text-sm text-gray-500">
-            こんにちは、{user.username} さん
-          </p>
+              {/* LEFT: hero card */}
+              <div className="w-[240px] min-h-[340px] rounded-[10px] border border-line-strong relative overflow-hidden flex flex-col"
+                style={{
+                  background: "linear-gradient(180deg, var(--bg-elev-2) 0%, var(--bg) 100%)",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.4), inset 0 0 30px rgba(126,231,135,0.07)",
+                }}>
+                {/* level pill */}
+                <div className="absolute top-2.5 left-2.5 z-10 text-[9px] text-accent px-2 py-0.5 rounded-[2px] font-bold tracking-[0.12em]"
+                  style={{ background: "rgba(11,15,13,0.8)", border: "1px solid rgba(126,231,135,0.33)" }}>
+                  Lv.{hero.level}
+                </div>
+                {/* HERO badge */}
+                <div className="absolute top-2.5 right-2.5 z-10 text-[9px] text-gold px-2 py-0.5 rounded-[2px] font-bold tracking-[0.12em]"
+                  style={{ background: "rgba(11,15,13,0.8)", border: "1px solid rgba(227,179,65,0.33)" }}>
+                  HERO
+                </div>
+
+                {/* hero art */}
+                <div className="flex-1 flex items-center justify-center px-4 pt-10 pb-4 relative">
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-40 h-40 rounded-full"
+                      style={{ background: "radial-gradient(circle, rgba(126,231,135,0.13) 0%, transparent 70%)" }} />
+                  </div>
+                  <pre className="text-[13px] leading-[1.15] text-accent select-none relative z-10 whitespace-pre">
+                    {HERO_ASCII.join("\n")}
+                  </pre>
+                </div>
+
+                {/* name plate */}
+                <div className="px-3.5 py-2.5 border-t border-line"
+                  style={{ background: "rgba(11,15,13,0.67)" }}>
+                  <div className="text-[16px] font-semibold text-text">{username}</div>
+                  <div className="text-[12px] text-text-faint mt-1 tracking-[0.05em]">click to equip →</div>
+                </div>
+              </div>
+
+              {/* RIGHT: HERO STATUS */}
+              <div className="flex flex-col justify-between min-w-0 relative z-10">
+                <div>
+                  <div className="text-[11px] text-text-faint tracking-[0.16em] font-semibold">HERO STATUS</div>
+                  <div className="flex items-baseline gap-3.5 mt-1.5">
+                    <div className="text-[80px] font-bold leading-none tracking-[-0.04em] text-text">
+                      Lv<span className="text-accent">.{hero.level}</span>
+                    </div>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[11px] font-semibold text-accent border border-accent/[0.27]"
+                      style={{ background: "rgba(126,231,135,0.094)" }}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent"
+                        style={{ boxShadow: "0 0 6px #7ee787" }} />
+                      ACTIVE
+                    </div>
+                  </div>
+                  <div className="text-[13px] text-text-dim mt-2">
+                    {hero.totalExperience.toLocaleString()} XP earned
+                    <span className="text-text-faint mx-2">·</span>
+                    128 PRs merged
+                    <span className="text-text-faint mx-2">·</span>
+                    7d streak
+                  </div>
+
+                  {/* ATK / DEF / LUCK */}
+                  <div className="flex gap-2.5 mt-4">
+                    {[
+                      { k: "ATK", v: 42, c: "var(--gold)" },
+                      { k: "DEF", v: 46, c: "var(--accent-2)" },
+                      { k: "LUCK", v: 36, c: "var(--purple)" },
+                    ].map((s) => (
+                      <div key={s.k} className="flex-1 px-3 py-2 bg-bg-elev-2 border border-line rounded">
+                        <div className="text-[9px] text-text-faint tracking-[0.14em]">{s.k}</div>
+                        <div className="text-[22px] font-semibold leading-[1.1] mt-0.5" style={{ color: s.c }}>{s.v}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* XP progress */}
+                <div className="mt-6">
+                  <div className="flex justify-between text-[14px] text-text-dim mb-2">
+                    <span>
+                      <span className="text-text font-semibold">{hero.currentLevelExperience}</span>
+                      {" / "}{hero.experienceForNextLevel} XP
+                    </span>
+                    <span className="text-accent">{pct}%</span>
+                  </div>
+                  {/* 60-segment bar */}
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 60 }).map((_, i) => (
+                      <span key={i} className="flex-1 h-2.5 rounded-[1px]"
+                        style={{
+                          background: i < filledSegments ? "var(--accent)" : "var(--bg-elev-2)",
+                          boxShadow: i < filledSegments ? "0 0 5px rgba(126,231,135,0.67)" : "none",
+                        }} />
+                    ))}
+                  </div>
+                  <div className="text-[13px] text-text-faint mt-2">
+                    <span className="text-text-dim">{hero.experienceToNextLevel} XP</span> to Lv.{hero.level + 1}
+                    <span className="text-line mx-2">·</span>
+                    ≈ {Math.ceil(hero.experienceToNextLevel / 100)} more PRs
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* BOTTOM ROW */}
+            <div className="grid gap-3.5" style={{ gridTemplateColumns: "1fr 2fr" }}>
+              {/* 2×2 stat boxes */}
+              <div className="grid grid-cols-2 gap-2.5">
+                {[
+                  { label: "PRs merged",      value: "128",                        delta: "+2 today",                          color: "var(--accent)" },
+                  { label: "monsters caught",  value: String(monsters.length || 0), delta: `${monsters.length || 0}/20 dex`,    color: "var(--purple)" },
+                  { label: "SSR rate",         value: "4.2%",                       delta: "lifetime",                           color: "var(--gold)" },
+                  { label: "streak",           value: "7d",                         delta: "best: 14d",                          color: "var(--accent-2)" },
+                ].map((s) => (
+                  <div key={s.label} className="bg-bg-elev border border-line rounded-[6px] px-3.5 py-3">
+                    <div className="text-[11px] text-text-faint tracking-[0.1em] mb-2">{s.label.toUpperCase()}</div>
+                    <div className="text-[32px] font-bold leading-none" style={{ color: s.color }}>{s.value}</div>
+                    <div className="text-[11px] text-text-dim mt-1.5">{s.delta}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* activity log */}
+              <div className="bg-bg-elev border border-line rounded-[6px] overflow-hidden">
+                <div className="px-3.5 py-2.5 border-b border-line flex items-center justify-between">
+                  <span className="text-[10px] text-text-faint tracking-[0.12em]">git log --activity</span>
+                  <span className="text-[10px] text-accent">● 3 unread</span>
+                </div>
+                {MOCK_ACTIVITIES.map((a, i) => (
+                  <div key={a.id} className={`px-3.5 py-3 flex gap-3 ${i < MOCK_ACTIVITIES.length - 1 ? "border-b border-line" : ""}`}>
+                    <div className="w-8 h-8 rounded-[4px] shrink-0 bg-bg-elev-2 border border-line flex items-center justify-center text-base">
+                      {a.monster.emoji}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[12px] text-text truncate">
+                        <span className="text-gold">+{a.xp} XP</span>
+                        <span className="text-text-faint"> · </span>
+                        caught <span className="text-text font-medium">{a.monster.name}</span>
+                        <span className="ml-1.5 text-[9px] font-bold" style={{ color: RARITY_COLOR[a.monster.rarity] }}>{a.monster.rarity}</span>
+                        {a.isLevelUp && <span className="ml-1.5 text-[9px] font-bold text-gold">LV.UP</span>}
+                      </div>
+                      <div className="text-[11px] text-text-dim truncate mt-1">
+                        <span className="text-accent-2">{a.repo.split("/")[1]}#{a.prNumber}</span>
+                        <span className="text-text-faint"> · </span>
+                        <span>{a.title}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
         )}
-
-        {heroLoading && <p>Hero取得中...</p>}
-        {error && (
-          <p className="text-red-500">
-            取得に失敗しました: {error}{" "}
-            <button className="underline ml-2" onClick={refetch}>
-              再試行
-            </button>
-          </p>
-        )}
-          {/* HeroPartyを左側に表示 */}
-      {hero && <HeroParty hero={hero} monsters={monsters} />}
-        {hero && <HeroCard hero={hero} />}
-      </main>
+      </div>
     </MainWrapper>
   );
 }
