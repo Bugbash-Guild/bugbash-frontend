@@ -48,7 +48,7 @@ A standalone centered terminal-window card. No sidebar.
 - **Hooks**: `useAuth().login()` on click.
 
 ### 2. Home (`/`)
-The dashboard. Sidebar + main column.
+The dashboard — **hero-centric** layout. Sidebar + main column. The hero is the centerpiece: a large interactive "holo card" on the left, level + stats on the right, equipment + activity beneath.
 
 **Sidebar (240px)** — see "Sidebar" section below for the full spec; appears on every authed screen.
 
@@ -56,40 +56,71 @@ The dashboard. Sidebar + main column.
 
 1. **Command-prompt header** — single line at the top: `<username>@bugbash:~/home$ hero --stats` followed by a blinking block caret. Use color tokens: username = green (`--accent`), `~/home` = blue (`--accent-2`), `:` and `$` = `--text-faint`, command = `--text`.
 
-2. **Hero status block** (`bg-elev` card, `1px line` border, `6px` radius, `24px 28px` padding):
-   - Top row, two columns:
-     - Left: `HERO.HEAD` micro-label, then the level: `Lv` (green) `.50` (white) at `72px / 700`, line-height 1, JetBrains Mono. Beneath: `hero_id: 169417583 · github: @username` at 13px in dim/blue tones. Beside the level, a green chip `● online`.
-     - Right: `TOTAL_XP` micro-label, then `12,873` at `32px / 600` in gold (`#e3b341`).
-   - Bottom: progress section. Header line: `building Lv.51 … 272/1028` on the left, `26.5%` (green) on the right. Below that, a 40-cell ASCII-style progress bar — flex row of 40 children, each `flex:1; height:14px; border-radius:1px; gap:2px`. Filled cells use `--accent` with a `0 0 6px --accent` glow; empty cells use `--bg-elev-2`. Bottom caption: `> ETA: 756 XP to next level · ≈ 8 PRs`.
+2. **Hero hero row** — `grid-template-columns: 360px 1fr; gap: 24px`:
 
-3. **Stat grid** — 4 cards in `repeat(4,1fr) gap:12px`. Each card: `bg-elev`, `1px line` border, `6px` radius, `14px 16px` padding. Inside: micro-label uppercase 11px in `--text-faint`, value at `22px / 600` in a chosen accent color, supporting text 11px in `--text-dim`.
-   - PRs merged · `128` (green) · `+2 today`
-   - Monsters caught · `<owned>` (purple `#d2a8ff`) · `<dex>/<total> dex`
-   - SSR rate · `4.2%` (gold) · `lifetime`
-   - Streak · `7d` (blue `#79c0ff`) · `best: 14d`
+   - **Left: Hero holo card** (`360px` wide, `~480px` tall) — a large vertical "trading card" of the hero. Background is a soft radial holo gradient (purple → blue → green at 6% opacity over `--bg-elev-2`); `1px --line` border; `8px` radius. Top: rarity chip (`SSR`), absolute top-left, 8px inset. Center: hero render at `~280px`, drawn via the chosen `HeroStyle` (see "Hero render system" below). Bottom: a name plate (`bg-elev` strip, top-bordered, `12px 16px`): username (`14px / 600`) + `Lv.50 · SSR` micro-caption. The whole card is **clickable** → opens the Equipment modal. On hover: `transform: translateY(-2px)` + intensified holo glow.
+
+   - **Right: Stat panel** (`bg-elev` card, `1px line` border, `6px` radius, `24px 28px` padding):
+     - Top row: `ACTIVE` chip (green, with `●` blinking dot) on the left, `Lv` micro-label on the right.
+     - **Display level**: `Lv` (green, 32px) `.50` (white, 96px) at `700`, JetBrains Mono, line-height 1. Beneath: `hero_id: 169417583 · github: @username` 12px in `--text-dim`.
+     - **Stat trio** — `repeat(3, 1fr) gap:12px`. Each: micro-label (10px uppercase) + value (24px, accent color) + sublabel (11px dim).
+       - `ATK` · `342` (green) · `total damage`
+       - `DEF` · `218` (blue) · `mitigation`
+       - `LUCK` · `87` (gold) · `SSR drop +`
+     - **XP bar** at the bottom: header line `building Lv.51 … 272/1028` (left) + `26.5%` (green, right). 40-cell ASCII-style bar (flex row, each cell `flex:1; height:14px; border-radius:1px; gap:2px`). Filled = `--accent` + `0 0 6px --accent` glow; empty = `--bg-elev-2`. Caption beneath: `> ETA: 756 XP · ≈ 8 PRs`.
+
+3. **Equipment row** (`bg-elev` card, full-width, `20px 24px` padding) — header `EQUIPMENT [6/6]` micro-label + `manage →` link. Body: `repeat(6, 1fr) gap:12px` of square slots, each `aspect-ratio: 1`, `bg-elev-2`, `1px line` border, `4px` radius. Each slot shows: slot label top-left (`HEAD / BODY / WEAPON / SHIELD / ACC1 / ACC2`, 9px `--text-faint`), centered emoji (`32px`), item name beneath (`10px / 600`), rarity chip top-right. Empty slot: dashed border, `−` glyph, `(empty)` label. Clicking any slot opens the Equipment modal scoped to that slot's compatible items.
 
 4. **Bottom split row** — `grid-template-columns: 1fr 1fr; gap: 16px`:
    - **Active party card** — header `ACTIVE_PARTY [4]` micro-label + `edit →` link. Body: 4-column grid of square monster slots, each `aspect-ratio: 1`, `bg-elev-2`, `1px line` border. Inside: large emoji (`36px`), 10px name beneath, rarity chip absolutely positioned top-right (4px inset).
    - **Activity log card** — header `git log --activity` + `● 3 unread` (green). Body is a list of 5 rows, each `padding: 10px 16px`, separated by `1px line` dividers. Each row: 28×28px monster icon thumbnail (left), then a single-line message `+100 XP · caught <name> <rarity-chip> [LV UP if true]` followed by a second-line repo + PR + title in dim/blue, then 10px `--text-faint` timestamp.
 
-### 3. Monster Dex (`/monsters`)
-Sidebar + main column.
+#### Hero render system
 
-- **Prompt header**: `<username>@bugbash:~/monsters$ ls --rarity`.
-- **Title row**: title "Monster Dex" at `28px / 600`. Subtitle: `discovered <n> / <total> · owned <n> instances`. On the right, filter chip group: `all | SSR | SR | R | N` — each a small `6px 12px` button, 11px mono, active state has green tint and border.
-- **For each rarity (SSR → SR → R → N)**: a section header row showing the rarity chip + a `<n>/<total> discovered` caption + a 1px dividing line filling the row. Then an **8-column grid** of monster cells, `gap: 8px`.
-- **Monster cell**: `aspect-ratio: 1`, `bg-elev`, `1px line` border, `4px` radius, `10px` padding. Discovered state shows the emoji at 32px + 10px name. Undiscovered: dashed border, `45%` opacity, `?` glyph instead of emoji, `???` instead of name. Top-left absolute: `#<id>` in 9px `--text-faint`. Top-right (when owned > 1): `×N` count in the rarity color. SSR cells get an inset gold glow ring.
+The hero illustration inside the holo card is **pluggable** — `reference/hero-system.jsx` exposes 4 styles. Pick the one we ship (current default: `silhouette-svg`):
+
+| Key | Description |
+|---|---|
+| `ascii` | ASCII-art figure, monospace, layered with equipment glyphs. Most CLI-native. |
+| `dot-pixel` | 16-bit-style dot-pixel sprite drawn with CSS box-shadows or SVG `<rect>` grid. RPG-game feel. |
+| `emoji-stack` | Single emoji body with equipment emojis floating around hand/head/body anchors. Quick to extend. |
+| `silhouette-svg` | Inline-SVG silhouette (head/body/limbs paths) with equipment slots highlighted in accent green. Cleanest at large size. **Default**. |
+
+Equipment hooked into each style: head/body/weapon/shield/acc anchors are computed from `BB_DATA.hero.equipment` and rendered as overlays.
+
+#### Equipment modal
+
+Clicking the hero card or any equipment slot opens a modal (`equip-modal.jsx`):
+- Backdrop: full-screen `rgba(11,15,13,0.7)` + `backdrop-filter: blur(6px)`.
+- Panel: centered, `~640px` wide, `bg-elev` + `1px --line` + `8px` radius. Header: `equip --slot=<slot>` mono prompt + close button (top-right `×`).
+- Left column (`200px`): **slot tabs** stacked vertically — each row shows current item icon + slot label; active row has green left border. Clicking switches scope.
+- Right column: **inventory list** — items filtered to that slot's `kind`. Each row: emoji + name + rarity chip + ATK/DEF deltas (green if upgrade, red if downgrade) + `equip` button. Currently equipped item gets a `● equipped` chip.
+- Equipping mutates local state only (prototype). In production: call `useEquipment().equip(slot, itemId)`.
+- Esc / backdrop click closes.
+
+### 3. Monster Dex (`/monsters`)
+Sidebar + main column. **TCG-style large card grid** (the "big card" variation — see `AMonsterCards` in `dirA-variants.jsx`).
+
+- **Prompt header**: `<username>@bugbash:~/monsters$ ls --rarity --view=cards`.
+- **Title row**: title "Monster Dex" at `28px / 600`. Subtitle: `discovered <n> / <total> · owned <n> instances`. On the right, filter chip group: `all | SSR | SR | R | N`.
+- **Card grid** — `repeat(auto-fill, minmax(220px, 1fr)); gap: 16px`. Each card is a vertical TCG-style card (`~220 × 320px`):
+  - Top: rarity chip pinned absolute top-right, `#<id>` micro-tag top-left.
+  - Center: a large emoji art frame (`bg-elev-2` background, full-width, `~140px` tall, emoji at `64px`). SSR cards get an inset gold glow + holo gradient overlay; SR get a purple glow.
+  - Bottom plate: name (`14px / 600`), `Lv.<requiredLevel>` micro-caption, then a small stat row (ATK/DEF if present) and `×<owned>` count chip.
+  - Undiscovered cards: dashed border, `45%` opacity, `?` art, `???` name, no stats. Sorted to the end of their rarity group.
+  - Hover: `translateY(-3px)` + intensified glow.
+- **Section grouping**: cards are grouped by rarity (SSR → SR → R → N), each section preceded by a header row (rarity chip + count + 1px divider).
+- **Click** a discovered card → opens a monster detail modal (defer to follow-up; placeholder OK in v1).
 
 ### 4. Items (`/items`)
-Sidebar + main column.
+Sidebar + main column. **Minecraft-style hotbar + grid inventory** (see `AItemsHotbar` in `dirA-variants.jsx`).
 
 - **Prompt header**: `inv --list`.
 - **Title**: "Inventory" at 28px. Subtitle: `<n> stacks · <total> items total`.
-- **Items table** — single card (`bg-elev`, border, 6px radius). Header row (`10px 16px`, 10px micro-labels): `[icon] · NAME · KIND · EFFECT · QTY`. Each item row: `12px 16px`, dividers between rows, columns `40px 1fr 100px 120px 60px`.
-  - icon: 20px emoji
-  - name: 13px white
-  - kind/effect: 11px `--text-dim`
-  - qty: right-aligned, `--accent`, 600
+- **Hotbar** — single full-width row of **9 cells**, `bg-elev` card with thicker `2px line` border, `8px` radius, `12px` padding. Each cell: `aspect-ratio: 1`, `bg-elev-2`, `1px line` border, `4px` radius. Inside: emoji (`28px`), quantity in bottom-right corner (`11px / 700` with subtle text-shadow), slot index `1–9` in top-left corner (9px `--text-faint`). Active hotbar cell (selected): green border + green inset glow. Empty cell: dashed border, no content.
+- **Inventory grid** — `repeat(9, 1fr); gap: 6px`, 3–4 rows. Same cell styling as hotbar but smaller (`aspect-ratio: 1`, no slot index). Empty cells stay rendered (dashed border) so the grid feels like a real Minecraft inventory.
+- **Tooltip on hover**: name + kind + effect text in a small floating panel (`bg-elev`, `1px --line`, `8px` padding).
+- **Click** an item → equip if equipable, else open detail.
 
 ## Sidebar (`240px`, persistent)
 
@@ -160,18 +191,23 @@ Mostly avoid. Use subtle inner glows on active/SSR (`box-shadow: inset 0 0 12px 
 The existing codebase has:
 - `src/components/SideBar.tsx` — needs **a full rewrite** to match the Console RPG sidebar above
 - `src/components/UserProfile.tsx` — currently shows a green-bg user card; replace with the sidebar footer block (gradient avatar tile + username + Lv + mini XP bar)
-- `src/app/components/HeroCard.tsx` — replace inner with the **Hero status block** spec
+- `src/app/components/HeroCard.tsx` — replace with the **Hero holo card + Stat panel** two-column composition
 - `src/app/components/HeroParty.tsx` — replace with the **Active party card** spec (4 square slots with rarity chip top-right)
 - `src/components/MonsterBoxCard.tsx`, `ItemBoxCard.tsx` — these are currently sidebar-link-cards; under this redesign sidebar links are simple anchor rows, so these components likely go away (or get repurposed for the inline grid cells in the dex/items pages — see `MonsterCell` / `ItemRow` below).
 
 New components to create:
 - `<PromptHeader path="~/monsters" command="ls --rarity" />` — the green/blue prompt line at the top of each main page.
 - `<RarityChip rarity="SSR" />` — uses the rarity color tokens.
-- `<StatTile label value sub color />` — for the 4-up dashboard grid.
+- `<StatTile label value sub color />` — for stat trios and dashboard grids.
 - `<ProgressBarASCII ratio={0.265} cells={40} />` — flex row of `cells` divs colored by ratio.
+- `<HeroHoloCard hero size onClick />` — the large clickable hero card (left side of Home).
+- `<HeroRender style hero size />` — pluggable hero illustration (ASCII / dot-pixel / emoji-stack / silhouette-svg). See `reference/hero-system.jsx`.
+- `<EquipmentRow equipment onSlotClick />` — 6-slot horizontal grid of equipment tiles.
+- `<EquipmentSlot slot item onClick />` — single equipment tile (shared by EquipmentRow and the modal).
+- `<EquipmentModal openSlot onClose onEquip />` — modal for swapping equipment. See `reference/equip-modal.jsx`.
 - `<ActivityRow activity={...} />` — for the activity log.
-- `<MonsterCell monster={...} />` — square cell for the dex grid.
-- `<ItemRow item={...} />` — table row for inventory.
+- `<MonsterCard monster />` — TCG-style large card (Monster Dex page). See `AMonsterCards` in `reference/dirA-variants.jsx`.
+- `<ItemHotbarCell item index />` + `<ItemGridCell item />` — Minecraft-style inventory cells. See `AItemsHotbar`.
 
 ## Interactions & Behavior
 
@@ -209,12 +245,15 @@ Master species list should live alongside the types — see `reference/mock-data
 
 ```
 design_handoff_console_rpg/
-├── README.md                  ← this file
-├── preview.html               ← open in browser to see Direction A in isolation
-├── screenshots/               ← reference screenshots of each screen
+├── README.md                   ← this file
+├── preview.html                ← open in browser to see Direction A in isolation
+├── screenshots/                ← reference screenshots of each screen
 └── reference/
-    ├── dirA.jsx               ← React reference implementation (inline styles)
-    └── mock-data.js           ← mock data + derived selectors matching the API shape
+    ├── dirA.jsx                ← Sidebar + Login + Hero-centric Home (AHomeScreen2) + ADirection shell
+    ├── dirA-variants.jsx       ← AMonsterCards (TCG dex grid) + AItemsHotbar (Minecraft-style inventory)
+    ├── hero-system.jsx         ← 4 hero render styles (ascii / dot-pixel / emoji-stack / silhouette-svg)
+    ├── equip-modal.jsx         ← Equipment modal + ClickableHero wrapper
+    └── mock-data.js            ← mock data + derived selectors matching the API shape
 ```
 
 Open `preview.html` in a browser to interact with the four screens. Tabs at the top switch between Home / Monsters / Items / Login.
@@ -224,12 +263,14 @@ Open `preview.html` in a browser to interact with the four screens. Tabs at the 
 1. Drop in the design tokens as Tailwind theme extensions (or CSS vars in `globals.css`).
 2. Wire up JetBrains Mono in `layout.tsx` (replace Geist).
 3. Rewrite `SideBar.tsx` to match the new sidebar spec.
-4. Build the small reusable primitives: `PromptHeader`, `RarityChip`, `StatTile`, `ProgressBarASCII`.
-5. Rebuild `/` (HeroCard + HeroParty + ActivityFeed inline).
-6. Rebuild `/monsters` (rarity-grouped dex with filter chips).
-7. Rebuild `/items` (table layout).
-8. Rebuild `/login` (centered terminal-window card).
-9. Add `/activity` page using the existing `GET /api/v1/hero/activities` endpoint.
+4. Build the small reusable primitives: `PromptHeader`, `RarityChip`, `StatTile`, `ProgressBarASCII`, `Slot` (square equipment/party tile).
+5. Build the **hero render system** — pick one style from `hero-system.jsx` and port it to a `<HeroRender style={...} hero={...} size={...} />` component. Default to `silhouette-svg`.
+6. Build the **Equipment modal** (`<EquipmentModal slot={...} onClose />`) backed by `useEquipment()`.
+7. Rebuild `/` — hero holo card (left) + stat panel (right) + equipment row + party + activity feed.
+8. Rebuild `/monsters` (rarity-grouped dex with filter chips — see `AMonsterCards` in `dirA-variants.jsx` for the TCG-style card layout).
+9. Rebuild `/items` (Minecraft-style hotbar + grid — see `AItemsHotbar`).
+10. Rebuild `/login` (centered terminal-window card).
+11. Add `/activity` page using the existing `GET /api/v1/hero/activities` endpoint.
 
 ## Notes for the implementer
 

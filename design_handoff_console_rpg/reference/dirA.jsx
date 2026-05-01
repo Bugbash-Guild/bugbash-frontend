@@ -128,378 +128,6 @@ function ASidebar({active}) {
   );
 }
 
-function AHomeScreen() {
-  const h = BB_DATA.hero;
-  const progressPct = (h.progressRatio * 100).toFixed(1);
-  return (
-    <div style={{padding:'28px 36px', fontFamily:A_FONT, color:A_TOKENS.text}}>
-      {/* command prompt header */}
-      <div style={{marginBottom:24, fontSize:13, color:A_TOKENS.textDim}}>
-        <span style={{color:A_TOKENS.accent}}>{BB_DATA.user.username}@bugbash</span>
-        <span style={{color:A_TOKENS.textFaint}}>:</span>
-        <span style={{color:A_TOKENS.blue}}>~/home</span>
-        <span style={{color:A_TOKENS.textFaint}}>$ </span>
-        <span>hero --stats</span>
-        <span style={{
-          display:'inline-block', width:8, height:14, marginLeft:2,
-          background:A_TOKENS.accent, verticalAlign:'middle',
-          animation:'a-blink 1s steps(2) infinite',
-        }}></span>
-      </div>
-
-      {/* hero status block — like a `git status` output */}
-      <div style={{
-        background:A_TOKENS.bgElev,
-        border:`1px solid ${A_TOKENS.line}`,
-        borderRadius:6,
-        padding:'24px 28px',
-        marginBottom:24,
-      }}>
-        <div style={{display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:20}}>
-          <div>
-            <div style={{fontSize:11, color:A_TOKENS.textFaint, letterSpacing:'0.12em', marginBottom:6}}>HERO.HEAD</div>
-            <div style={{display:'flex', alignItems:'baseline', gap:14}}>
-              <div style={{fontSize:72, fontWeight:700, lineHeight:1, color:A_TOKENS.accent, fontFamily:A_FONT}}>
-                Lv<span style={{color:A_TOKENS.text}}>.{h.level}</span>
-              </div>
-              <ATag>● online</ATag>
-            </div>
-            <div style={{fontSize:13, color:A_TOKENS.textDim, marginTop:8}}>
-              hero_id: <span style={{color:A_TOKENS.text}}>{BB_DATA.user.githubId}</span>
-              <span style={{color:A_TOKENS.textFaint, margin:'0 8px'}}>·</span>
-              github: <span style={{color:A_TOKENS.blue}}>@{BB_DATA.user.username}</span>
-            </div>
-          </div>
-          <div style={{textAlign:'right'}}>
-            <div style={{fontSize:11, color:A_TOKENS.textFaint, letterSpacing:'0.12em', marginBottom:6}}>TOTAL_XP</div>
-            <div style={{fontSize:32, fontWeight:600, color:A_TOKENS.gold, fontFamily:A_FONT}}>
-              {h.totalExperience.toLocaleString()}
-            </div>
-          </div>
-        </div>
-
-        {/* xp bar — mimicking a build progress bar */}
-        <div style={{marginTop:8}}>
-          <div style={{display:'flex', justifyContent:'space-between', fontSize:12, color:A_TOKENS.textDim, marginBottom:8}}>
-            <span>building Lv.{h.level+1} … <span style={{color:A_TOKENS.text}}>{h.currentLevelExperience}/{h.experienceForNextLevel}</span></span>
-            <span style={{color:A_TOKENS.accent}}>{progressPct}%</span>
-          </div>
-          {/* ascii-like bar */}
-          <div style={{
-            display:'flex', gap:2,
-            fontSize:14, lineHeight:1, fontFamily:A_FONT,
-          }}>
-            {Array.from({length:40}).map((_,i) => {
-              const filled = i < (h.progressRatio * 40);
-              return (
-                <span key={i} style={{
-                  flex:1, height:14,
-                  background: filled ? A_TOKENS.accent : A_TOKENS.bgElev2,
-                  boxShadow: filled ? `0 0 6px ${A_TOKENS.accent}` : 'none',
-                  borderRadius:1,
-                }}></span>
-              );
-            })}
-          </div>
-          <div style={{fontSize:12, color:A_TOKENS.textDim, marginTop:10}}>
-            <span style={{color:A_TOKENS.textFaint}}>{'>'} </span>
-            ETA: <span style={{color:A_TOKENS.text}}>{h.experienceToNextLevel}</span> XP to next level
-            <span style={{color:A_TOKENS.textFaint, margin:'0 8px'}}>·</span>
-            ≈ <span style={{color:A_TOKENS.text}}>{Math.ceil(h.experienceToNextLevel/100)}</span> PRs
-          </div>
-        </div>
-      </div>
-
-      {/* stats grid */}
-      <div style={{display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:24}}>
-        {[
-          { label:'PRs merged',       value:'128', delta:'+2 today',  color:A_TOKENS.accent },
-          { label:'monsters caught',  value:`${BB_DERIVED.ownedTotal}`, delta:`${BB_DERIVED.discoveredCount}/${BB_DERIVED.totalCount} dex`, color:A_TOKENS.purple },
-          { label:'SSR rate',         value:'4.2%', delta:'lifetime', color:A_TOKENS.gold },
-          { label:'streak',           value:'7d',  delta:'best: 14d', color:A_TOKENS.blue },
-        ].map((s,i) => (
-          <div key={i} style={{
-            background:A_TOKENS.bgElev,
-            border:`1px solid ${A_TOKENS.line}`,
-            borderRadius:6, padding:'14px 16px',
-          }}>
-            <div style={{fontSize:11, color:A_TOKENS.textFaint, letterSpacing:'0.1em', marginBottom:6}}>{s.label.toUpperCase()}</div>
-            <div style={{fontSize:22, fontWeight:600, color:s.color, fontFamily:A_FONT}}>{s.value}</div>
-            <div style={{fontSize:11, color:A_TOKENS.textDim, marginTop:4}}>{s.delta}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* split: party + activity feed */}
-      <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
-        {/* party */}
-        <div style={{
-          background:A_TOKENS.bgElev,
-          border:`1px solid ${A_TOKENS.line}`,
-          borderRadius:6, overflow:'hidden',
-        }}>
-          <div style={{
-            padding:'10px 16px',
-            borderBottom:`1px solid ${A_TOKENS.line}`,
-            display:'flex', alignItems:'center', justifyContent:'space-between',
-          }}>
-            <div style={{fontSize:11, color:A_TOKENS.textFaint, letterSpacing:'0.12em'}}>ACTIVE_PARTY [4]</div>
-            <span style={{fontSize:11, color:A_TOKENS.textDim}}>edit →</span>
-          </div>
-          <div style={{padding:20, display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10}}>
-            {[
-              {emoji:'🐉', name:'ドラゴン',   r:'SSR'},
-              {emoji:'🦅', name:'フェニックス', r:'SSR'},
-              {emoji:'🦄', name:'ユニコーン', r:'SR'},
-              {emoji:'🧜', name:'マーメイド', r:'SR'},
-            ].map((m,i) => (
-              <div key={i} style={{
-                aspectRatio:'1',
-                background: A_TOKENS.bgElev2,
-                border:`1px solid ${A_TOKENS.line}`,
-                borderRadius:4,
-                display:'flex', flexDirection:'column',
-                alignItems:'center', justifyContent:'center',
-                padding:8, position:'relative',
-              }}>
-                <div style={{fontSize:36, lineHeight:1, marginBottom:6}}>{m.emoji}</div>
-                <div style={{fontSize:10, color:A_TOKENS.textDim, textAlign:'center'}}>{m.name}</div>
-                <div style={{position:'absolute', top:4, right:4}}>
-                  <ARarityChip r={m.r}/>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* activity log — looks like a git log */}
-        <div style={{
-          background:A_TOKENS.bgElev,
-          border:`1px solid ${A_TOKENS.line}`,
-          borderRadius:6, overflow:'hidden',
-        }}>
-          <div style={{
-            padding:'10px 16px',
-            borderBottom:`1px solid ${A_TOKENS.line}`,
-            display:'flex', alignItems:'center', justifyContent:'space-between',
-          }}>
-            <div style={{fontSize:11, color:A_TOKENS.textFaint, letterSpacing:'0.12em'}}>git log --activity</div>
-            <span style={{fontSize:11, color:A_TOKENS.accent}}>● 3 unread</span>
-          </div>
-          <div style={{padding:'4px 0'}}>
-            {BB_DATA.activities.slice(0,5).map((a,i) => (
-              <div key={a.id} style={{
-                padding:'10px 16px',
-                borderBottom: i<4 ? `1px solid ${A_TOKENS.line}` : 'none',
-                display:'flex', gap:12,
-              }}>
-                <div style={{
-                  width:28, height:28, borderRadius:4, flexShrink:0,
-                  background:A_TOKENS.bgElev2,
-                  border:`1px solid ${A_TOKENS.line}`,
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                  fontSize:16,
-                }}>{a.monster.emoji}</div>
-                <div style={{flex:1, minWidth:0}}>
-                  <div style={{fontSize:12, color:A_TOKENS.text, marginBottom:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
-                    <span style={{color:A_TOKENS.gold}}>+{a.xp} XP</span>
-                    <span style={{color:A_TOKENS.textFaint}}> · </span>
-                    <span>caught </span>
-                    <span style={{color:'#fff'}}>{a.monster.name}</span>
-                    <span style={{marginLeft:6}}><ARarityChip r={a.monster.rarity}/></span>
-                    {a.isLevelUp && <span style={{marginLeft:6}}><ATag color={A_TOKENS.gold} bg="rgba(227,179,65,0.1)" border="rgba(227,179,65,0.4)">LV UP</ATag></span>}
-                  </div>
-                  <div style={{fontSize:11, color:A_TOKENS.textDim, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
-                    <span style={{color:A_TOKENS.blue}}>{a.repo.split('/')[1]}#{a.prNumber}</span>
-                    <span style={{color:A_TOKENS.textFaint}}> · </span>
-                    <span>{a.title}</span>
-                  </div>
-                  <div style={{fontSize:10, color:A_TOKENS.textFaint, marginTop:2}}>{a.occurredAt}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <style>{`
-        @keyframes a-blink {
-          50% { opacity: 0; }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-function AMonstersScreen() {
-  const dex = BB_DERIVED.dex;
-  const byRarity = ['SSR','SR','R','N'].map(r => ({
-    rarity:r,
-    items: dex.filter(d => d.rarity === r),
-  }));
-
-  return (
-    <div style={{padding:'28px 36px', fontFamily:A_FONT, color:A_TOKENS.text}}>
-      <div style={{marginBottom:20, fontSize:13, color:A_TOKENS.textDim}}>
-        <span style={{color:A_TOKENS.accent}}>{BB_DATA.user.username}@bugbash</span>
-        <span style={{color:A_TOKENS.textFaint}}>:</span>
-        <span style={{color:A_TOKENS.blue}}>~/monsters</span>
-        <span style={{color:A_TOKENS.textFaint}}>$ </span>
-        <span>ls --rarity</span>
-      </div>
-
-      <div style={{display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:20}}>
-        <div>
-          <div style={{fontSize:28, fontWeight:600, color:A_TOKENS.text}}>Monster Dex</div>
-          <div style={{fontSize:12, color:A_TOKENS.textDim, marginTop:4}}>
-            discovered <span style={{color:A_TOKENS.accent}}>{BB_DERIVED.discoveredCount}</span>
-            <span style={{color:A_TOKENS.textFaint}}> / </span>
-            <span>{BB_DERIVED.totalCount}</span>
-            <span style={{color:A_TOKENS.textFaint, margin:'0 10px'}}>·</span>
-            owned <span style={{color:A_TOKENS.accent}}>{BB_DERIVED.ownedTotal}</span> instances
-          </div>
-        </div>
-        {/* filter chips */}
-        <div style={{display:'flex', gap:6}}>
-          {['all','SSR','SR','R','N'].map((f,i) => (
-            <button key={f} style={{
-              padding:'6px 12px', borderRadius:4,
-              fontSize:11, fontFamily:A_FONT, fontWeight:600,
-              background: i===0 ? 'rgba(126,231,135,0.1)' : 'transparent',
-              color: i===0 ? A_TOKENS.accent : A_TOKENS.textDim,
-              border:`1px solid ${i===0 ? 'rgba(126,231,135,0.4)' : A_TOKENS.line}`,
-              cursor:'pointer', letterSpacing:'0.05em',
-            }}>{f}</button>
-          ))}
-        </div>
-      </div>
-
-      {byRarity.map(group => (
-        <div key={group.rarity} style={{marginBottom:24}}>
-          <div style={{
-            display:'flex', alignItems:'center', gap:10, marginBottom:10,
-          }}>
-            <ARarityChip r={group.rarity}/>
-            <span style={{fontSize:12, color:A_TOKENS.textDim}}>
-              {group.items.filter(i=>i.discovered).length} / {group.items.length} discovered
-            </span>
-            <div style={{flex:1, height:1, background:A_TOKENS.line, marginLeft:6}}></div>
-          </div>
-          <div style={{
-            display:'grid',
-            gridTemplateColumns:'repeat(8, 1fr)',
-            gap:8,
-          }}>
-            {group.items.map(m => {
-              const cmap = {N:'#7a9c8c', R:'#79c0ff', SR:'#d2a8ff', SSR:'#e3b341'}[m.rarity];
-              return (
-                <div key={m.id} style={{
-                  aspectRatio:'1',
-                  background: m.discovered ? A_TOKENS.bgElev : 'transparent',
-                  border: `1px solid ${m.discovered ? A_TOKENS.line : A_TOKENS.line}`,
-                  borderRadius:4,
-                  position:'relative',
-                  display:'flex', flexDirection:'column',
-                  alignItems:'center', justifyContent:'center',
-                  padding:10,
-                  opacity: m.discovered ? 1 : 0.45,
-                  borderStyle: m.discovered ? 'solid' : 'dashed',
-                }}>
-                  {m.discovered && m.rarity === 'SSR' && (
-                    <div style={{
-                      position:'absolute', inset:-1,
-                      borderRadius:4, pointerEvents:'none',
-                      boxShadow:`inset 0 0 12px rgba(227,179,65,0.25)`,
-                    }}></div>
-                  )}
-                  <div style={{
-                    fontSize:32, lineHeight:1, marginBottom:6,
-                    filter: m.discovered ? 'none' : 'brightness(0) invert(0.3)',
-                  }}>
-                    {m.discovered ? m.emoji : '?'}
-                  </div>
-                  <div style={{
-                    fontSize:10, color: m.discovered ? A_TOKENS.text : A_TOKENS.textFaint,
-                    textAlign:'center', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', width:'100%',
-                  }}>
-                    {m.discovered ? m.name : '???'}
-                  </div>
-                  <div style={{
-                    position:'absolute', top:4, left:4,
-                    fontSize:9, color:A_TOKENS.textFaint, fontFamily:A_FONT,
-                  }}>#{m.id}</div>
-                  {m.owned > 1 && (
-                    <div style={{
-                      position:'absolute', top:4, right:4,
-                      fontSize:9, color:cmap, fontFamily:A_FONT, fontWeight:600,
-                    }}>×{m.owned}</div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function AItemsScreen() {
-  return (
-    <div style={{padding:'28px 36px', fontFamily:A_FONT, color:A_TOKENS.text}}>
-      <div style={{marginBottom:20, fontSize:13, color:A_TOKENS.textDim}}>
-        <span style={{color:A_TOKENS.accent}}>{BB_DATA.user.username}@bugbash</span>
-        <span style={{color:A_TOKENS.textFaint}}>:</span>
-        <span style={{color:A_TOKENS.blue}}>~/items</span>
-        <span style={{color:A_TOKENS.textFaint}}>$ </span>
-        <span>inv --list</span>
-      </div>
-
-      <div style={{fontSize:28, fontWeight:600, marginBottom:4}}>Inventory</div>
-      <div style={{fontSize:12, color:A_TOKENS.textDim, marginBottom:24}}>
-        {BB_DATA.items.length} stacks · {BB_DATA.items.reduce((a,b)=>a+b.qty,0)} items total
-      </div>
-
-      <div style={{
-        background: A_TOKENS.bgElev,
-        border: `1px solid ${A_TOKENS.line}`,
-        borderRadius: 6,
-        overflow:'hidden',
-      }}>
-        {/* table header */}
-        <div style={{
-          display:'grid',
-          gridTemplateColumns:'40px 1fr 100px 120px 60px',
-          padding:'10px 16px',
-          borderBottom:`1px solid ${A_TOKENS.line}`,
-          fontSize:10, color:A_TOKENS.textFaint, letterSpacing:'0.12em',
-        }}>
-          <span></span>
-          <span>NAME</span>
-          <span>KIND</span>
-          <span>EFFECT</span>
-          <span style={{textAlign:'right'}}>QTY</span>
-        </div>
-        {BB_DATA.items.map((it,i) => (
-          <div key={it.id} style={{
-            display:'grid',
-            gridTemplateColumns:'40px 1fr 100px 120px 60px',
-            padding:'12px 16px',
-            borderBottom: i<BB_DATA.items.length-1 ? `1px solid ${A_TOKENS.line}` : 'none',
-            alignItems:'center',
-            fontSize:13,
-          }}>
-            <div style={{fontSize:20}}>{it.emoji}</div>
-            <div style={{color:A_TOKENS.text}}>{it.name}</div>
-            <div style={{color:A_TOKENS.textDim, fontSize:11}}>{it.kind}</div>
-            <div style={{color:A_TOKENS.textDim, fontSize:11}}>{it.desc}</div>
-            <div style={{textAlign:'right', color:A_TOKENS.accent, fontFamily:A_FONT, fontWeight:600}}>×{it.qty}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function ALoginScreen() {
   return (
@@ -574,6 +202,290 @@ function ALoginScreen() {
   );
 }
 
+// ═════════════════════════════════════════════════════════════
+// AHomeScreen2 — Hero-centric layout (hero is the centerpiece)
+// ═════════════════════════════════════════════════════════════
+function AHomeScreen2() {
+  const T = A_TOKENS, F = A_FONT;
+  const h = BB_DATA.hero;
+  const pct = (h.progressRatio * 100).toFixed(1);
+  const [loadout, setLoadout] = React.useState(window.DEFAULT_LOADOUT || {});
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const stats = window.totalStats ? window.totalStats(loadout) : {atk:0,def:0,luck:0};
+  const ClickableHeroComp = window.ClickableHero;
+  const EquipModalComp = window.EquipModal;
+  const RC = {N:'#7a9c8c', R:'#79c0ff', SR:'#d2a8ff', SSR:'#e3b341'};
+
+  const statBoxes = [
+    { label:'PRs merged',      value:'128',                                delta:'+2 today',                                                                color:T.accent },
+    { label:'monsters caught', value:`${BB_DERIVED.ownedTotal}`,            delta:`${BB_DERIVED.discoveredCount}/${BB_DERIVED.totalCount} dex`,              color:T.purple },
+    { label:'SSR rate',        value:'4.2%',                                delta:'lifetime',                                                                color:T.gold },
+    { label:'streak',          value:'7d',                                  delta:'best: 14d',                                                               color:T.blue  },
+  ];
+
+  return (
+    <div style={{padding:'24px 36px 32px', fontFamily:F, color:T.text, position:'relative', minHeight:'100%'}}>
+      {EquipModalComp && (
+        <EquipModalComp
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          loadout={loadout}
+          setLoadout={setLoadout}
+          heroStyle="ascii"
+        />
+      )}
+
+      {/* prompt header */}
+      <div style={{marginBottom:14, fontSize:13, color:T.textDim}}>
+        <span style={{color:T.accent}}>{BB_DATA.user.username}@bugbash</span>
+        <span style={{color:T.textFaint}}>:</span>
+        <span style={{color:T.blue}}>~/home</span>
+        <span style={{color:T.textFaint}}>$ </span>
+        <span>./hero --render --interactive</span>
+        <span style={{
+          display:'inline-block', width:8, height:14, marginLeft:2,
+          background:T.accent, verticalAlign:'middle',
+          animation:'a-blink 1s steps(2) infinite',
+        }}/>
+      </div>
+
+      {/* HERO HERO PANEL — hero on the left like a big card, Lv status + XP on the right */}
+      <div style={{
+        background:T.bgElev,
+        border:`1px solid ${T.line}`,
+        borderRadius:8, padding:'24px 28px',
+        display:'grid', gridTemplateColumns:'auto 1fr', gap:28,
+        marginBottom:14, position:'relative', overflow:'hidden',
+      }}>
+        {/* ambient glow */}
+        <div style={{
+          position:'absolute', top:-120, right:-100, width:340, height:340,
+          background:`radial-gradient(circle, ${T.accent}1a, transparent 60%)`,
+          pointerEvents:'none',
+        }}/>
+
+        {/* LEFT: hero "big card" */}
+        <div
+          onClick={() => setModalOpen(true)}
+          style={{
+            width:240, minHeight:340,
+            background:`linear-gradient(180deg, ${T.bgElev2} 0%, ${T.bg} 100%)`,
+            border:`1px solid ${T.lineStrong}`,
+            borderRadius:10,
+            position:'relative', overflow:'hidden',
+            cursor:'pointer',
+            boxShadow:`0 8px 24px rgba(0,0,0,0.4), inset 0 0 30px ${T.accent}11`,
+            transition:'transform 0.15s, box-shadow 0.15s',
+            display:'flex', flexDirection:'column',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = `0 14px 32px rgba(0,0,0,0.5), 0 0 0 1px ${T.accent}66, inset 0 0 30px ${T.accent}22`;
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform = 'none';
+            e.currentTarget.style.boxShadow = `0 8px 24px rgba(0,0,0,0.4), inset 0 0 30px ${T.accent}11`;
+          }}
+        >
+          {/* level pill top-left */}
+          <div style={{
+            position:'absolute', top:10, left:10, zIndex:2,
+            fontFamily:F, fontSize:9, color:T.accent,
+            padding:'3px 8px', background:T.bg+'cc', border:`1px solid ${T.accent}55`, borderRadius:2,
+            letterSpacing:'0.12em', fontWeight:700,
+          }}>Lv.{h.level}</div>
+          {/* rarity-ish badge top-right */}
+          <div style={{
+            position:'absolute', top:10, right:10, zIndex:2,
+            fontFamily:F, fontSize:9, color:T.gold,
+            padding:'3px 8px', background:T.bg+'cc', border:`1px solid ${T.gold}55`, borderRadius:2,
+            letterSpacing:'0.12em', fontWeight:700,
+          }}>HERO</div>
+
+          {/* hero render */}
+          <div style={{
+            flex:1, display:'flex', alignItems:'center', justifyContent:'center',
+            padding:'40px 16px 18px',
+            position:'relative',
+          }}>
+            {/* radial highlight behind hero */}
+            <div style={{
+              position:'absolute', top:'40%', left:'50%',
+              width:200, height:200, transform:'translate(-50%, -50%)',
+              background:`radial-gradient(circle, ${T.accent}22 0%, transparent 70%)`,
+              pointerEvents:'none',
+            }}/>
+            {ClickableHeroComp ? (
+              <div style={{transform:'scale(1.15)', position:'relative', zIndex:1}}>
+                <ClickableHeroComp
+                  heroStyle="ascii"
+                  loadout={loadout}
+                  onClick={() => setModalOpen(true)}
+                />
+              </div>
+            ) : (
+              <div style={{color:T.textFaint, fontSize:11}}>loading hero…</div>
+            )}
+          </div>
+
+          {/* footer name plate */}
+          <div style={{
+            padding:'10px 14px',
+            borderTop:`1px solid ${T.line}`,
+            background:T.bg+'aa',
+          }}>
+            <div style={{fontSize:13, fontWeight:600, color:T.text}}>{BB_DATA.user.username}</div>
+            <div style={{fontSize:10, color:T.textFaint, fontFamily:F, marginTop:2, letterSpacing:'0.05em'}}>
+              click to equip →
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT: status + XP */}
+        <div style={{display:'flex', flexDirection:'column', justifyContent:'space-between', minWidth:0, position:'relative', zIndex:1}}>
+          <div>
+            <div style={{fontSize:11, color:T.textFaint, letterSpacing:'0.16em', fontWeight:600}}>HERO STATUS</div>
+            <div style={{display:'flex', alignItems:'baseline', gap:14, marginTop:6}}>
+              <div style={{
+                fontSize:80, fontWeight:700, lineHeight:1, color:T.text,
+                letterSpacing:'-0.04em', fontFamily:F,
+              }}>
+                Lv<span style={{color:T.accent}}>.{h.level}</span>
+              </div>
+              <div style={{
+                display:'inline-flex', alignItems:'center', gap:6,
+                padding:'4px 10px', borderRadius:3,
+                background:T.accent+'18', color:T.accent,
+                fontSize:11, fontWeight:600, fontFamily:F,
+                border:`1px solid ${T.accent}44`,
+              }}>
+                <span style={{width:6, height:6, borderRadius:3, background:T.accent, boxShadow:`0 0 6px ${T.accent}`}}/>
+                ACTIVE
+              </div>
+            </div>
+            <div style={{fontSize:13, color:T.textDim, marginTop:8}}>
+              {h.totalExperience.toLocaleString()} XP earned
+              <span style={{color:T.textFaint, margin:'0 8px'}}>·</span>
+              128 PRs merged
+              <span style={{color:T.textFaint, margin:'0 8px'}}>·</span>
+              7d streak
+            </div>
+
+            {/* stats inline */}
+            <div style={{display:'flex', gap:10, marginTop:16}}>
+              {[
+                {k:'ATK', v:stats.atk, c:T.gold},
+                {k:'DEF', v:stats.def, c:T.blue},
+                {k:'LUCK', v:stats.luck, c:T.purple},
+              ].map(s => (
+                <div key={s.k} style={{
+                  flex:1,
+                  padding:'8px 12px',
+                  background:T.bgElev2, border:`1px solid ${T.line}`, borderRadius:4,
+                  fontFamily:F,
+                }}>
+                  <div style={{fontSize:9, color:T.textFaint, letterSpacing:'0.14em'}}>{s.k}</div>
+                  <div style={{fontSize:22, fontWeight:600, color:s.c, lineHeight:1.1, marginTop:2}}>{s.v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* xp progress */}
+          <div style={{marginTop:24}}>
+            <div style={{display:'flex', justifyContent:'space-between', fontSize:12, color:T.textDim, marginBottom:8}}>
+              <span><span style={{color:T.text, fontWeight:600}}>{h.currentLevelExperience}</span> / {h.experienceForNextLevel} XP</span>
+              <span style={{color:T.accent, fontFamily:F}}>{pct}%</span>
+            </div>
+            <div style={{display:'flex', gap:2}}>
+              {Array.from({length:60}).map((_,i) => {
+                const filled = i < (h.progressRatio * 60);
+                return (
+                  <span key={i} style={{
+                    flex:1, height:10,
+                    background: filled ? T.accent : T.bgElev2,
+                    boxShadow: filled ? `0 0 5px ${T.accent}aa` : 'none',
+                    borderRadius:1,
+                  }}/>
+                );
+              })}
+            </div>
+            <div style={{fontSize:12, color:T.textFaint, marginTop:8, fontFamily:F}}>
+              <span style={{color:T.textDim}}>{h.experienceToNextLevel} XP</span> to Lv.{h.level+1}
+              <span style={{color:T.line, margin:'0 8px'}}>·</span>
+              ≈ {Math.ceil(h.experienceToNextLevel/100)} more PRs
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* BOTTOM ROW — stat boxes + activity */}
+      <div style={{display:'grid', gridTemplateColumns:'1fr 1.4fr', gap:14}}>
+        {/* stats grid 2x2 */}
+        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10}}>
+          {statBoxes.map((s,i) => (
+            <div key={i} style={{
+              background:T.bgElev,
+              border:`1px solid ${T.line}`,
+              borderRadius:6, padding:'12px 14px',
+            }}>
+              <div style={{fontSize:10, color:T.textFaint, letterSpacing:'0.1em', marginBottom:5}}>{s.label.toUpperCase()}</div>
+              <div style={{fontSize:20, fontWeight:600, color:s.color, fontFamily:F}}>{s.value}</div>
+              <div style={{fontSize:10, color:T.textDim, marginTop:3}}>{s.delta}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* activity log */}
+        <div style={{
+          background:T.bgElev,
+          border:`1px solid ${T.line}`,
+          borderRadius:6, overflow:'hidden',
+        }}>
+          <div style={{
+            padding:'9px 14px',
+            borderBottom:`1px solid ${T.line}`,
+            display:'flex', alignItems:'center', justifyContent:'space-between',
+          }}>
+            <div style={{fontSize:10, color:T.textFaint, letterSpacing:'0.12em'}}>git log --activity</div>
+            <span style={{fontSize:10, color:T.accent}}>● 3 unread</span>
+          </div>
+          <div>
+            {BB_DATA.activities.slice(0,4).map((a,i) => (
+              <div key={a.id} style={{
+                padding:'8px 14px',
+                borderBottom: i<3 ? `1px solid ${T.line}` : 'none',
+                display:'flex', gap:10,
+              }}>
+                <div style={{
+                  width:24, height:24, borderRadius:3, flexShrink:0,
+                  background:T.bgElev2, border:`1px solid ${T.line}`,
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  fontSize:14,
+                }}>{a.monster.emoji}</div>
+                <div style={{flex:1, minWidth:0}}>
+                  <div style={{fontSize:11, color:T.text, marginBottom:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                    <span style={{color:T.gold}}>+{a.xp} XP</span>
+                    <span style={{color:T.textFaint}}> · </span>
+                    caught <span style={{color:'#fff'}}>{a.monster.name}</span>
+                    <span style={{marginLeft:5, color:RC[a.monster.rarity], fontSize:9, fontWeight:700}}>{a.monster.rarity}</span>
+                    {a.isLevelUp && <span style={{marginLeft:6, color:T.gold, fontSize:9, fontWeight:700}}>LV.UP</span>}
+                  </div>
+                  <div style={{fontSize:10, color:T.textDim, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                    <span style={{color:T.blue}}>{a.repo.split('/')[1]}#{a.prNumber}</span>
+                    <span style={{color:T.textFaint}}> · </span>
+                    <span>{a.title}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ADirection({screen}) {
   return (
     <div style={{
@@ -585,9 +497,9 @@ function ADirection({screen}) {
     }}>
       {screen !== 'login' && <ASidebar active={screen}/>}
       <main style={{flex:1, overflow:'auto'}}>
-        {screen === 'home'     && <AHomeScreen/>}
-        {screen === 'monsters' && <AMonstersScreen/>}
-        {screen === 'items'    && <AItemsScreen/>}
+        {screen === 'home'     && <AHomeScreen2/>}
+        {screen === 'monsters' && <AMonsterCards/>}
+        {screen === 'items'    && <AItemsHotbar/>}
         {screen === 'login'    && <ALoginScreen/>}
       </main>
     </div>
