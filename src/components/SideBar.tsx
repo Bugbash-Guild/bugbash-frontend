@@ -61,7 +61,7 @@ export function SideBar() {
                     : "text-text-dim hover:bg-bg-elev-2 border-l-2 border-transparent",
                 ].join(" ")}
               >
-                <span className="w-[14px] mr-2 shrink-0">{glyph}</span>
+                <span className="w-[16px] mr-2 shrink-0 text-center inline-block">{glyph}</span>
                 {label}
               </Link>
             );
