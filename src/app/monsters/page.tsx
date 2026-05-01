@@ -89,6 +89,10 @@ export default function MonstersPage() {
         {/* loading / error */}
         {loading && <div className="text-text-faint text-[13px] mb-4">loading dex…</div>}
         {error && <div className="text-pink text-[13px] mb-4">error: {error}</div>}
+        {/* DEBUG: remove after confirming */}
+        <pre className="text-[10px] text-text-faint bg-bg-elev-2 p-2 mb-4 rounded overflow-auto max-h-32">
+          monsters.length={monsters.length} | sample={JSON.stringify(monsters[0])}
+        </pre>
 
         {/* FAVORITE banner */}
         {companionMon && (
