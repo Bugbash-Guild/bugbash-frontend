@@ -19,7 +19,7 @@ export function SideBar() {
   const { hero } = useHero(isAuthenticated);
 
   return (
-    <aside className="fixed left-0 top-9 h-[calc(100vh-36px)] w-60 flex flex-col bg-bg-elev border-r border-line">
+    <aside className="w-60 shrink-0 flex flex-col bg-bg-elev border-r border-line overflow-y-auto">
       {/* ① ウィンドウクローム */}
       <div className="flex items-center px-4 py-[14px] border-b border-line">
         <div className="flex items-center gap-1.5">
