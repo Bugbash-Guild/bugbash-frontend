@@ -58,14 +58,9 @@ export function SideBar() {
                 className={[
                   "flex items-center mx-2 px-[10px] py-2 rounded text-[13px] transition-colors",
                   isActive
-                    ? "text-accent border-l-2 border-accent"
+                    ? "text-accent border-l-2 border-accent bg-accent/8"
                     : "text-text-dim hover:bg-bg-elev-2 border-l-2 border-transparent",
                 ].join(" ")}
-                style={
-                  isActive
-                    ? { background: "rgba(126,231,135,0.08)" }
-                    : undefined
-                }
               >
                 <span className="w-[14px] mr-2 shrink-0">{glyph}</span>
                 {label}
