@@ -42,10 +42,11 @@ export default function MonstersPage() {
   const { monsters, loading, error } = useMonsters();
   const [companion, setCompanion] = useState<string>("19");
 
-  // merge owned data with full dex
+  // merge owned data with full dex (normalize id to zero-padded "01" format)
   const ownedCounts: Record<string, number> = {};
   monsters.forEach((m) => {
-    ownedCounts[m.id] = (ownedCounts[m.id] ?? 0) + 1;
+    const nid = String(m.id).padStart(2, "0");
+    ownedCounts[nid] = (ownedCounts[nid] ?? 0) + 1;
   });
 
   const dex = FULL_DEX.map((m) => ({
