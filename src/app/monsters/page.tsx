@@ -116,7 +116,7 @@ export default function MonstersPage() {
         )}
 
         {/* 4-column dex grid */}
-        <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(5, 1fr)" }}>
+        <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(7, 1fr)" }}>
           {dex.map((m) => {
             const c = RARITY_COLOR[m.rarity];
             const isComp = m.id === companion;
@@ -180,11 +180,10 @@ export default function MonstersPage() {
 
                 {/* stats */}
                 <div className="text-[10px] text-text-faint leading-[1.5]">
-                  <div>Lv.{m.requiredLevel}+ required</div>
-                  <div>
-                    status:{" "}
+                  <div className="whitespace-nowrap">Lv.{m.requiredLevel}+</div>
+                  <div className="whitespace-nowrap">
                     <span style={{ color: m.discovered ? "var(--accent)" : "var(--pink)" }}>
-                      {m.discovered ? `caught × ${m.owned}` : "not_found"}
+                      {m.discovered ? `×${m.owned}` : "not_found"}
                     </span>
                   </div>
                 </div>
