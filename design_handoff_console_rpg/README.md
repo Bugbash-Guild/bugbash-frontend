@@ -8,6 +8,8 @@ The visual core: deep green-on-near-black (`#7ee787` on `#0b0f0d`), JetBrains Mo
 
 ## Screens at a glance
 
+> **Note:** The white border around each screenshot is a macOS screenshot artifact — it is not part of the design. The actual app background goes edge-to-edge with `--bg: #0b0f0d`.
+
 | Login | Home |
 |---|---|
 | ![Login](screenshots/4-login.png) | ![Home](screenshots/1-home.png) |
