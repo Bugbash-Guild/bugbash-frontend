@@ -14,7 +14,7 @@ export function MainWrapper({ children }: { children: React.ReactNode }) {
         }}
       >
         <SideBar />
-        <main className="flex-1 bg-bg overflow-y-auto">{children}</main>
+        <main className="flex-1 bg-bg overflow-y-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>{children}</main>
       </div>
     </div>
   );
