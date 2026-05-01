@@ -42,18 +42,22 @@ export default function MonstersPage() {
   const { monsters, loading, error } = useMonsters();
   const [companion, setCompanion] = useState<string>("19");
 
-  // merge owned data with full dex (normalize id to zero-padded "01" format)
-  const ownedCounts: Record<string, number> = {};
+  // merge owned data with full dex — match by name (backend uses UUIDs, not numeric IDs)
+  const ownedByName: Record<string, { count: number; emoji: string }> = {};
   monsters.forEach((m) => {
-    const nid = String(m.id).padStart(2, "0");
-    ownedCounts[nid] = (ownedCounts[nid] ?? 0) + 1;
+    if (!ownedByName[m.name]) ownedByName[m.name] = { count: 0, emoji: m.emoji };
+    ownedByName[m.name].count += 1;
   });
 
-  const dex = FULL_DEX.map((m) => ({
-    ...m,
-    owned: ownedCounts[m.id] ?? 0,
-    discovered: (ownedCounts[m.id] ?? 0) > 0,
-  })).sort(
+  const dex = FULL_DEX.map((m) => {
+    const owned = ownedByName[m.name];
+    return {
+      ...m,
+      emoji: owned ? owned.emoji : m.emoji,
+      owned: owned?.count ?? 0,
+      discovered: !!owned,
+    };
+  }).sort(
     (a, b) => RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity] || a.id.localeCompare(b.id)
   );
 
@@ -89,10 +93,6 @@ export default function MonstersPage() {
         {/* loading / error */}
         {loading && <div className="text-text-faint text-[13px] mb-4">loading dex…</div>}
         {error && <div className="text-pink text-[13px] mb-4">error: {error}</div>}
-        {/* DEBUG: remove after confirming */}
-        <pre className="text-[10px] text-text-faint bg-bg-elev-2 p-2 mb-4 rounded overflow-auto max-h-32">
-          monsters.length={monsters.length} | sample={JSON.stringify(monsters[0])}
-        </pre>
 
         {/* FAVORITE banner */}
         {companionMon && (
