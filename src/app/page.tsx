@@ -186,7 +186,7 @@ export default function Home() {
             </div>
 
             {/* BOTTOM ROW */}
-            <div className="grid gap-3.5" style={{ gridTemplateColumns: "1fr 1.4fr" }}>
+            <div className="grid gap-3.5" style={{ gridTemplateColumns: "1fr 2fr" }}>
               {/* 2×2 stat boxes */}
               <div className="grid grid-cols-2 gap-2.5">
                 {[
@@ -210,19 +210,19 @@ export default function Home() {
                   <span className="text-[10px] text-accent">● 3 unread</span>
                 </div>
                 {MOCK_ACTIVITIES.map((a, i) => (
-                  <div key={a.id} className={`px-3.5 py-2 flex gap-2.5 ${i < MOCK_ACTIVITIES.length - 1 ? "border-b border-line" : ""}`}>
-                    <div className="w-6 h-6 rounded-[3px] shrink-0 bg-bg-elev-2 border border-line flex items-center justify-center text-sm">
+                  <div key={a.id} className={`px-3.5 py-3 flex gap-3 ${i < MOCK_ACTIVITIES.length - 1 ? "border-b border-line" : ""}`}>
+                    <div className="w-8 h-8 rounded-[4px] shrink-0 bg-bg-elev-2 border border-line flex items-center justify-center text-base">
                       {a.monster.emoji}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[11px] text-text truncate">
+                      <div className="text-[12px] text-text truncate">
                         <span className="text-gold">+{a.xp} XP</span>
                         <span className="text-text-faint"> · </span>
                         caught <span className="text-text font-medium">{a.monster.name}</span>
                         <span className="ml-1.5 text-[9px] font-bold" style={{ color: RARITY_COLOR[a.monster.rarity] }}>{a.monster.rarity}</span>
                         {a.isLevelUp && <span className="ml-1.5 text-[9px] font-bold text-gold">LV.UP</span>}
                       </div>
-                      <div className="text-[10px] text-text-dim truncate mt-0.5">
+                      <div className="text-[11px] text-text-dim truncate mt-1">
                         <span className="text-accent-2">{a.repo.split("/")[1]}#{a.prNumber}</span>
                         <span className="text-text-faint"> · </span>
                         <span>{a.title}</span>
