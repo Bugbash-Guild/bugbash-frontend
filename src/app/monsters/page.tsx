@@ -13,26 +13,26 @@ const RARITY_COLOR: Record<string, string> = {
 };
 
 const FULL_DEX = [
-  { id: "01", name: "スライム",       emoji: "🟢", rarity: "N",   requiredLevel: 1  },
-  { id: "02", name: "ゴブリン",       emoji: "👹", rarity: "N",   requiredLevel: 1  },
-  { id: "03", name: "コウモリ",       emoji: "🦇", rarity: "N",   requiredLevel: 1  },
-  { id: "04", name: "スケルトン",     emoji: "💀", rarity: "R",   requiredLevel: 5  },
-  { id: "05", name: "オーク",         emoji: "🧌", rarity: "R",   requiredLevel: 5  },
-  { id: "06", name: "マーマン",       emoji: "🐟", rarity: "R",   requiredLevel: 8  },
-  { id: "07", name: "狼",             emoji: "🐺", rarity: "R",   requiredLevel: 10 },
-  { id: "08", name: "魔女",           emoji: "🧙", rarity: "R",   requiredLevel: 12 },
-  { id: "09", name: "ゾンビ",         emoji: "🧟", rarity: "R",   requiredLevel: 15 },
-  { id: "10", name: "ゴーレム",       emoji: "🗿", rarity: "SR",  requiredLevel: 18 },
-  { id: "11", name: "マーメイド",     emoji: "🧜", rarity: "SR",  requiredLevel: 20 },
-  { id: "12", name: "ケルベロス",     emoji: "🐕", rarity: "SR",  requiredLevel: 22 },
-  { id: "13", name: "サイクロプス",   emoji: "👁",  rarity: "SR",  requiredLevel: 25 },
-  { id: "14", name: "ユニコーン",     emoji: "🦄", rarity: "SR",  requiredLevel: 28 },
-  { id: "15", name: "ヴァンパイア",   emoji: "🧛", rarity: "SR",  requiredLevel: 30 },
-  { id: "16", name: "クラーケン",     emoji: "🐙", rarity: "SR",  requiredLevel: 32 },
-  { id: "17", name: "グリフィン",     emoji: "🦁", rarity: "SSR", requiredLevel: 35 },
-  { id: "18", name: "フェニックス",   emoji: "🦅", rarity: "SSR", requiredLevel: 40 },
-  { id: "19", name: "ドラゴン",       emoji: "🐉", rarity: "SSR", requiredLevel: 45 },
-  { id: "20", name: "リヴァイアサン", emoji: "🐊", rarity: "SSR", requiredLevel: 50 },
+  { id: "01", name: "オーク",       emoji: "🐗", rarity: "N",   requiredLevel: 1  },
+  { id: "02", name: "ゴブリン",     emoji: "👹", rarity: "N",   requiredLevel: 1  },
+  { id: "03", name: "スライム",     emoji: "🟢", rarity: "N",   requiredLevel: 1  },
+  { id: "04", name: "ウルフ",       emoji: "🐺", rarity: "R",   requiredLevel: 5  },
+  { id: "05", name: "エルフ",       emoji: "🧝", rarity: "R",   requiredLevel: 5  },
+  { id: "06", name: "スケルトン",   emoji: "💀", rarity: "R",   requiredLevel: 8  },
+  { id: "07", name: "ゾンビ",       emoji: "🧟", rarity: "R",   requiredLevel: 10 },
+  { id: "08", name: "トロール",     emoji: "👿", rarity: "R",   requiredLevel: 12 },
+  { id: "09", name: "ベアー",       emoji: "🐻", rarity: "R",   requiredLevel: 15 },
+  { id: "10", name: "ウィザード",   emoji: "🧙", rarity: "SR",  requiredLevel: 18 },
+  { id: "11", name: "オーガ",       emoji: "👹", rarity: "SR",  requiredLevel: 20 },
+  { id: "12", name: "グリフォン",   emoji: "🦅", rarity: "SR",  requiredLevel: 22 },
+  { id: "13", name: "タイガー",     emoji: "🐅", rarity: "SR",  requiredLevel: 25 },
+  { id: "14", name: "ダークエルフ", emoji: "🧝‍♀️", rarity: "SR",  requiredLevel: 28 },
+  { id: "15", name: "ディアウルフ", emoji: "🐺", rarity: "SR",  requiredLevel: 30 },
+  { id: "16", name: "ワイバーン",   emoji: "🦇", rarity: "SR",  requiredLevel: 32 },
+  { id: "17", name: "デーモン",     emoji: "😈", rarity: "SSR", requiredLevel: 35 },
+  { id: "18", name: "ドラゴン",     emoji: "🐉", rarity: "SSR", requiredLevel: 40 },
+  { id: "19", name: "バンパイア",   emoji: "🧛", rarity: "SSR", requiredLevel: 45 },
+  { id: "20", name: "フェニックス", emoji: "🔥", rarity: "SSR", requiredLevel: 50 },
 ] as const;
 
 const RARITY_ORDER: Record<string, number> = { SSR: 0, SR: 1, R: 2, N: 3 };
@@ -40,7 +40,7 @@ const RARITY_ORDER: Record<string, number> = { SSR: 0, SR: 1, R: 2, N: 3 };
 export default function MonstersPage() {
   const { isAuthenticated } = useAuth();
   const { monsters, loading, error } = useMonsters();
-  const [companion, setCompanion] = useState<string>("19");
+  const [companion, setCompanion] = useState<string>("18");
 
   // merge owned data with full dex — match by name (backend uses UUIDs, not numeric IDs)
   const ownedByName: Record<string, { count: number; emoji: string }> = {};
@@ -93,10 +93,6 @@ export default function MonstersPage() {
         {/* loading / error */}
         {loading && <div className="text-text-faint text-[13px] mb-4">loading dex…</div>}
         {error && <div className="text-pink text-[13px] mb-4">error: {error}</div>}
-        {/* DEBUG */}
-        <pre className="text-[10px] text-text-faint bg-bg-elev-2 p-2 mb-4 rounded overflow-auto max-h-40">
-          {[...new Set(monsters.map(m => `${m.name} | ${m.rarity} | ${m.emoji}`))].sort().join("\n")}
-        </pre>
 
         {/* FAVORITE banner */}
         {companionMon && (
