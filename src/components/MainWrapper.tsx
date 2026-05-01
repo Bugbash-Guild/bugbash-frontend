@@ -5,9 +5,9 @@ import { SideBar } from "@/components/SideBar";
 
 export function MainWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
+    <div className="min-h-screen bg-bg min-w-[860px]">
       <SideBar />
-      <main className="flex-1 pt-14 md:pt-0 md:ml-72">{children}</main>
+      <main className="ml-60">{children}</main>
     </div>
   );
 }

@@ -1,182 +1,110 @@
 // src/components/SideBar.tsx
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FiHome, FiMenu, FiX } from "react-icons/fi";
-import { GiDragonHead, GiBackpack } from "react-icons/gi";
-import { MonsterBoxCard } from "@/components/MonsterBoxCard";
-import { ItemBoxCard } from "@/components/ItemBoxCard";
+import { useAuth } from "@/hooks/useAuth";
+import { useHero } from "@/hooks/useHero";
 
-// モバイルリンク用：押下時にグレー背景が必ず出る
-function MobileNavLink({
-  href,
-  icon,
-  label,
-  active,
-  onClick,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-  onClick?: () => void;
-}) {
-  const [pressed, setPressed] = useState(false);
-
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      onPointerDown={() => setPressed(true)}
-      onPointerUp={() => setPressed(false)}
-      onPointerCancel={() => setPressed(false)}
-      onPointerLeave={() => setPressed(false)}
-      aria-current={active ? "page" : undefined}
-      className={[
-        "flex items-center gap-3 px-3 py-4 rounded-xl transition-colors",
-        "text-zinc-900 dark:text-zinc-100",
-        "hover:bg-zinc-100 dark:hover:bg-zinc-800",
-        pressed ? "bg-zinc-200 dark:bg-zinc-700" : "",
-        active ? "bg-zinc-100 dark:bg-zinc-800" : "bg-transparent",
-        "touch-manipulation select-none",
-      ].join(" ")}
-    >
-      <span className="text-2xl">{icon}</span>
-      <span className="text-lg font-medium">{label}</span>
-    </Link>
-  );
-}
+const NAV_ITEMS = [
+  { glyph: "⌂", label: "~/home", href: "/" },
+  { glyph: "◆", label: "~/monsters", href: "/monsters" },
+  { glyph: "▣", label: "~/items", href: "/items" },
+  { glyph: "≡", label: "~/activity", href: "/activity" },
+  { glyph: "⚙", label: "~/settings", href: "/settings" },
+] as const;
 
 export function SideBar() {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
-
-  const DesktopSidebar = (
-    <div className="flex h-full flex-col">
-      {/* 上部：Homeボタン（アイコンのみ／アクティブでリング表示） */}
-      <div className="p-4">
-        <Link
-          href="/"
-          aria-label="Home"
-          className="inline-flex items-center justify-center h-12 w-23 gap-1 rounded-xl border border-zinc-200/70 dark:border-zinc-800/70 bg-white/90 dark:bg-zinc-800/80 backdrop-blur shadow-sm hover:shadow-md transition-transform duration-200 hover:scale-110 text-zinc-900 dark:text-zinc-100 active:bg-zinc-100 dark:active:bg-zinc-800"
-        >
-          <FiHome className="text-2xl" />
-          <p>Home</p>
-        </Link>
-      </div>
-
-      {/* 中央：スクロール可能領域（必要に応じてメニュー追加） */}
-      <nav className="flex-1 overflow-y-auto px-4 pb-4">
-        <ul className="space-y-2" />
-      </nav>
-
-      {/* 下部：カード固定 */}
-      <div className="mt-auto space-y-3 p-4 pt-0">
-        <MonsterBoxCard />
-        <ItemBoxCard />
-      </div>
-    </div>
-  );
-
-  const MobileMenu = (
-    <nav className="px-3 py-2">
-      <ul className="flex flex-col">
-        <li>
-          <MobileNavLink
-            href="/"
-            icon={<FiHome />}
-            label="Home"
-            active={pathname === "/"}
-            onClick={() => setOpen(false)}
-          />
-        </li>
-        <li>
-          <MobileNavLink
-            href="/monsters"
-            icon={<GiDragonHead />}
-            label="モンスターボックス"
-            active={pathname.startsWith("/monsters")}
-            onClick={() => setOpen(false)}
-          />
-        </li>
-        <li>
-          <MobileNavLink
-            href="/items"
-            icon={<GiBackpack />}
-            label="アイテムBOX"
-            active={pathname.startsWith("/items")}
-            onClick={() => setOpen(false)}
-          />
-        </li>
-      </ul>
-    </nav>
-  );
+  const { isAuthenticated, user } = useAuth();
+  const { hero } = useHero(isAuthenticated);
 
   return (
-    <>
-      {/* モバイル：トップバー */}
-      <div className="fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur px-4 shadow-sm md:hidden">
-        <button
-          aria-label="open sidebar menu"
-          aria-controls="mobile-sidebar"
-          aria-expanded={open}
-          onClick={() => setOpen(true)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200/70 dark:border-zinc-700/70 touch-manipulation active:bg-zinc-100 dark:active:bg-zinc-800"
-        >
-          <FiMenu className="text-xl text-zinc-700 dark:text-zinc-200" />
-        </button>
-        <span className="text-lg font-semibold text-zinc-800 dark:text-zinc-100">
-          Home
+    <aside className="fixed left-0 top-0 h-screen w-60 flex flex-col bg-bg-elev border-r border-line">
+      {/* ① ウィンドウクローム */}
+      <div className="flex items-center px-4 py-[14px] border-b border-line">
+        <div className="flex items-center gap-1.5">
+          <span
+            className="w-2.5 h-2.5 rounded-full"
+            style={{ background: "#ff5f56" }}
+          />
+          <span
+            className="w-2.5 h-2.5 rounded-full"
+            style={{ background: "#ffbd2e" }}
+          />
+          <span
+            className="w-2.5 h-2.5 rounded-full"
+            style={{ background: "#27c93f" }}
+          />
+        </div>
+        <span className="ml-auto text-[11px] text-text-faint">
+          bugbash · v0.1.0
         </span>
-        <span className="w-10" />
       </div>
 
-      {/* モバイル：ドロワー */}
-      {open && (
-        <div className="fixed inset-0 z-[60] md:hidden">
-          <button
-            aria-label="close overlay"
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setOpen(false)}
-          />
-          <aside
-            id="mobile-sidebar"
-            className="
-              absolute left-0 top-0 h-screen w-72
-              bg-zinc-50 dark:bg-zinc-900
-              border-r border-zinc-200 dark:border-zinc-800
-              shadow-xl
-              animate-in slide-in-from-left duration-200
-              flex flex-col
-            "
-          >
-            <div className="flex h-14 items-center justify-end px-3">
-              <button
-                aria-label="close sidebar"
-                onClick={() => setOpen(false)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200/70 dark:border-zinc-700/70 touch-manipulation active:bg-zinc-100 dark:active:bg-zinc-800"
+      {/* ② NAVIGATIONセクション */}
+      <div className="flex-1 overflow-y-auto">
+        <p className="px-4 pt-4 pb-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
+          NAVIGATION
+        </p>
+        <nav>
+          {NAV_ITEMS.map(({ glyph, label, href }) => {
+            const isActive =
+              href === "/" ? pathname === "/" : pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={[
+                  "flex items-center mx-2 px-[10px] py-2 rounded text-[13px] transition-colors",
+                  isActive
+                    ? "text-accent border-l-2 border-accent bg-accent/8"
+                    : "text-text-dim hover:bg-bg-elev-2 border-l-2 border-transparent",
+                ].join(" ")}
               >
-                <FiX className="text-xl text-zinc-700 dark:text-zinc-200" />
-              </button>
+                <span className="w-[14px] mr-2 shrink-0">{glyph}</span>
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* ③ HERO_STATUSフッター */}
+      {isAuthenticated && user && hero && (
+        <div className="mt-auto p-3 border-t border-line bg-bg-elev-2">
+          <p className="text-[10px] uppercase tracking-[0.08em] text-text-faint mb-2">
+            HERO_STATUS
+          </p>
+          <div className="flex items-center gap-2">
+            {/* アバタータイル */}
+            <div
+              className="w-8 h-8 rounded-sm flex items-center justify-center shrink-0 text-white text-[14px] font-bold"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--accent), var(--accent-2))",
+              }}
+            >
+              H
             </div>
-            {MobileMenu}
-          </aside>
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] text-text truncate">{user.username}</p>
+              <p className="text-[10px] text-text-faint">Lv.{hero.level}</p>
+            </div>
+          </div>
+          {/* ミニXPバー */}
+          <div className="h-1 mt-2 rounded-full bg-bg-elev overflow-hidden">
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${Math.min(hero.progressRatio * 100, 100)}%`,
+                background:
+                  "linear-gradient(135deg, var(--accent), var(--accent-2))",
+              }}
+            />
+          </div>
         </div>
       )}
-
-      {/* デスクトップ：固定サイドバー */}
-      <aside
-        className="
-          fixed left-0 top-0 hidden h-screen w-72
-          md:block
-          border-r border-zinc-200 dark:border-zinc-800
-          bg-zinc-50 dark:bg-zinc-900
-        "
-      >
-        {DesktopSidebar}
-      </aside>
-    </>
+    </aside>
   );
 }
