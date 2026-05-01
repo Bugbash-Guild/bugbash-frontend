@@ -114,8 +114,8 @@ export default function Home() {
                 {/* name plate */}
                 <div className="px-3.5 py-2.5 border-t border-line"
                   style={{ background: "rgba(11,15,13,0.67)" }}>
-                  <div className="text-[13px] font-semibold text-text">{username}</div>
-                  <div className="text-[10px] text-text-faint mt-0.5 tracking-[0.05em]">click to equip →</div>
+                  <div className="text-[16px] font-semibold text-text">{username}</div>
+                  <div className="text-[12px] text-text-faint mt-1 tracking-[0.05em]">click to equip →</div>
                 </div>
               </div>
 
@@ -159,7 +159,7 @@ export default function Home() {
 
                 {/* XP progress */}
                 <div className="mt-6">
-                  <div className="flex justify-between text-[12px] text-text-dim mb-2">
+                  <div className="flex justify-between text-[14px] text-text-dim mb-2">
                     <span>
                       <span className="text-text font-semibold">{hero.currentLevelExperience}</span>
                       {" / "}{hero.experienceForNextLevel} XP
@@ -176,7 +176,7 @@ export default function Home() {
                         }} />
                     ))}
                   </div>
-                  <div className="text-[12px] text-text-faint mt-2">
+                  <div className="text-[13px] text-text-faint mt-2">
                     <span className="text-text-dim">{hero.experienceToNextLevel} XP</span> to Lv.{hero.level + 1}
                     <span className="text-line mx-2">·</span>
                     ≈ {Math.ceil(hero.experienceToNextLevel / 100)} more PRs
@@ -196,9 +196,9 @@ export default function Home() {
                   { label: "streak",           value: "7d",                         delta: "best: 14d",                          color: "var(--accent-2)" },
                 ].map((s) => (
                   <div key={s.label} className="bg-bg-elev border border-line rounded-[6px] px-3.5 py-3">
-                    <div className="text-[10px] text-text-faint tracking-[0.1em] mb-1.5">{s.label.toUpperCase()}</div>
-                    <div className="text-[20px] font-semibold" style={{ color: s.color }}>{s.value}</div>
-                    <div className="text-[10px] text-text-dim mt-0.5">{s.delta}</div>
+                    <div className="text-[11px] text-text-faint tracking-[0.1em] mb-2">{s.label.toUpperCase()}</div>
+                    <div className="text-[32px] font-bold leading-none" style={{ color: s.color }}>{s.value}</div>
+                    <div className="text-[11px] text-text-dim mt-1.5">{s.delta}</div>
                   </div>
                 ))}
               </div>
