@@ -5,7 +5,7 @@ import { SideBar } from "@/components/SideBar";
 
 export function MainWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-screen flex p-6" style={{ background: "#04070a" }}>
+    <div className="h-screen flex p-6 bg-bg-outer">
       <div
         className="flex flex-1 rounded-[10px] overflow-hidden min-w-0"
         style={{

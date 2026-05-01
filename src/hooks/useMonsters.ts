@@ -4,7 +4,14 @@
 import useSWR from 'swr';
 import type { Monster } from '@/types/monster';
 
-const fetcher = (url: string) => fetch(url).then(r => r.json());
+const fetcher = async (url: string) => {
+    const res = await fetch(url);
+    if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`${res.status} ${res.statusText}: ${txt}`);
+    }
+    return res.json();
+};
 
 export function useMonsters() {
     const { data, error, isLoading, mutate } =
