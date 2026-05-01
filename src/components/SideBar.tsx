@@ -10,7 +10,6 @@ const NAV_ITEMS = [
   { glyph: "⌂", label: "~/home", href: "/" },
   { glyph: "◆", label: "~/monsters", href: "/monsters" },
   { glyph: "▣", label: "~/items", href: "/items" },
-  { glyph: "≡", label: "~/activity", href: "/activity" },
   { glyph: "⚙", label: "~/settings", href: "/settings" },
 ] as const;
 
@@ -20,7 +19,7 @@ export function SideBar() {
   const { hero } = useHero(isAuthenticated);
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-60 flex flex-col bg-bg-elev border-r border-line">
+    <aside className="fixed left-0 top-9 h-[calc(100vh-36px)] w-60 flex flex-col bg-bg-elev border-r border-line">
       {/* ① ウィンドウクローム */}
       <div className="flex items-center px-4 py-[14px] border-b border-line">
         <div className="flex items-center gap-1.5">
@@ -85,7 +84,7 @@ export function SideBar() {
                   "linear-gradient(135deg, var(--accent), var(--accent-2))",
               }}
             >
-              H
+              {user.username[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[12px] text-text truncate">{user.username}</p>
