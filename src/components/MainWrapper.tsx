@@ -5,12 +5,12 @@ import { SideBar } from "@/components/SideBar";
 
 export function MainWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-screen bg-bg flex p-3">
+    <div className="h-screen flex p-6" style={{ background: "#04070a" }}>
       <div
         className="flex flex-1 rounded-[10px] overflow-hidden min-w-0"
         style={{
-          border: "1px solid rgba(255,255,255,0.09)",
-          boxShadow: "0 32px 80px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.03)",
+          border: "1px solid #1f3028",
+          boxShadow: "0 0 0 1px #0d1a14, 0 32px 80px rgba(0,0,0,0.7), 0 0 60px rgba(126,231,135,0.04)",
         }}
       >
         <SideBar />
