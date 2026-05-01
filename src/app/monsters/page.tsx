@@ -95,7 +95,7 @@ export default function MonstersPage() {
         {error && <div className="text-pink text-[13px] mb-4">error: {error}</div>}
         {/* DEBUG */}
         <pre className="text-[10px] text-text-faint bg-bg-elev-2 p-2 mb-4 rounded overflow-auto max-h-40">
-          {[...new Set(monsters.map(m => m.name))].slice(0, 15).join("\n")}
+          {[...new Set(monsters.map(m => `${m.name} | ${m.rarity} | ${m.emoji}`))].sort().join("\n")}
         </pre>
 
         {/* FAVORITE banner */}
