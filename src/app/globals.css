@@ -1,26 +1,46 @@
 @import "tailwindcss";
 
+/* Console RPG Design Tokens */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg:           #0b0f0d;
+  --bg-elev:      #101614;
+  --bg-elev-2:    #161e1b;
+  --line:         #1f2a26;
+  --line-strong:  #2d3d37;
+
+  --text:         #dcefe5;
+  --text-dim:     #7a9c8c;
+  --text-faint:   #4a6157;
+
+  --accent:       #7ee787;
+  --accent-dim:   #3da55a;
+  --accent-2:     #79c0ff;
+  --purple:       #d2a8ff;
+  --gold:         #e3b341;
+  --pink:         #ff7b72;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-bg: var(--bg);
+  --color-bg-elev: var(--bg-elev);
+  --color-bg-elev-2: var(--bg-elev-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-text-dim: var(--text-dim);
+  --color-text-faint: var(--text-faint);
+  --color-accent: var(--accent);
+  --color-accent-dim: var(--accent-dim);
+  --color-accent-2: var(--accent-2);
+  --color-purple: var(--purple);
+  --color-gold: var(--gold);
+  --color-pink: var(--pink);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-jetbrains-mono), 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
 }
