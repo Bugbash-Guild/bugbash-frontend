@@ -8,12 +8,7 @@ import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
 import { MainWrapper } from "@/components/MainWrapper";
 
-const RARITY_COLOR: Record<string, string> = {
-  N: "#7a9c8c",
-  R: "#79c0ff",
-  SR: "#d2a8ff",
-  SSR: "#e3b341",
-};
+import { RARITY_COLOR } from "@/constants/rarity";
 
 const MOCK_ACTIVITIES = [
   { id: 1, xp: 100, monster: { name: "ドラゴン", emoji: "🐉", rarity: "SSR" }, repo: "Bugbash-Guild/bugbash-frontend", prNumber: 142, title: "feat: redesign monster collection page", occurredAt: "2分前", isLevelUp: true },

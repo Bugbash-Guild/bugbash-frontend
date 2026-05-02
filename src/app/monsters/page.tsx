@@ -5,12 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useMonsters } from "@/hooks/useMonsters";
 import { MainWrapper } from "@/components/MainWrapper";
 
-const RARITY_COLOR: Record<string, string> = {
-  N: "#7a9c8c",
-  R: "#79c0ff",
-  SR: "#d2a8ff",
-  SSR: "#e3b341",
-};
+import { RARITY_COLOR, RARITY_ORDER } from "@/constants/rarity";
 
 const FULL_DEX = [
   { id: "01", name: "オーク",       emoji: "🐗", rarity: "N",   requiredLevel: 1  },
@@ -35,7 +30,6 @@ const FULL_DEX = [
   { id: "20", name: "フェニックス", emoji: "🔥", rarity: "SSR", requiredLevel: 50 },
 ] as const;
 
-const RARITY_ORDER: Record<string, number> = { SSR: 0, SR: 1, R: 2, N: 3 };
 
 export default function MonstersPage() {
   const { isAuthenticated } = useAuth();

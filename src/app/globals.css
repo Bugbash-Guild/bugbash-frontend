@@ -2,6 +2,7 @@
 
 /* Console RPG Design Tokens */
 :root {
+  --bg-outer:     #04070a;
   --bg:           #0b0f0d;
   --bg-elev:      #101614;
   --bg-elev-2:    #161e1b;
@@ -21,6 +22,7 @@
 }
 
 @theme inline {
+  --color-bg-outer: var(--bg-outer);
   --color-bg: var(--bg);
   --color-bg-elev: var(--bg-elev);
   --color-bg-elev-2: var(--bg-elev-2);
