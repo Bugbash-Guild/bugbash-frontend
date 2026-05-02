@@ -2,7 +2,9 @@
 export type Monster = {
     id: string;
     name: string;
-    emoji: string;      // 画像の代わりに絵文字で簡易表示
+    emoji: string;
     rarity: 'N' | 'R' | 'SR' | 'SSR';
+    soulCount: number;
+    isOwned: boolean;
 };
 
