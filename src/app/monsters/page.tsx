@@ -153,7 +153,7 @@ export default function MonstersPage() {
                 <div className="text-[10px] text-text-faint leading-[1.5]">
                   <div className="whitespace-nowrap">
                     <span style={{ color: m.isOwned ? "var(--accent)" : "var(--pink)" }}>
-                      {m.isOwned ? "所持中" : "not_found"}
+                      {m.isOwned ? "所持中" : "未入手"}
                     </span>
                   </div>
 
