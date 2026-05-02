@@ -6,8 +6,8 @@ interface User {
     username: string;
 }
 
-const fetcher = async (): Promise<User | null> => {
-    const res = await fetch('/api/auth/status', {
+const fetcher = async (url: string): Promise<User | null> => {
+    const res = await fetch(url, {
         headers: { Accept: 'application/json' },
         cache: 'no-store',
     });
@@ -27,9 +27,10 @@ export function useAuth() {
         window.location.href = `${base}/oauth2/authorization/github`;
     };
 
-    const user = data ?? null;
-    const isAuthenticated = user !== null;
-    const loading = isLoading;
-
-    return { isAuthenticated, user, loading, login };
+    return {
+        isAuthenticated: (data ?? null) !== null,
+        user: data ?? null,
+        loading: isLoading,
+        login,
+    };
 }
