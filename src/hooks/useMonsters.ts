@@ -4,24 +4,46 @@
 import useSWR from 'swr';
 import type { Monster } from '@/types/monster';
 
-const fetcher = async (url: string) => {
-    const res = await fetch(url);
-    if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(`${res.status} ${res.statusText}: ${txt}`);
-    }
-    return res.json();
+type AllMonstersDto = {
+    monsters: { id: string; name: string; emoji: string; rarity: string }[];
+};
+type OwnedMonstersDto = {
+    monsters: { id: string; soulCount: number }[];
+};
+
+const fetchCompendium = async (): Promise<Monster[]> => {
+    const [allRes, ownedRes] = await Promise.all([
+        fetch('/api/monsters/all'),
+        fetch('/api/monsters/owned'),
+    ]);
+    if (!allRes.ok) throw new Error(`monsters/all failed: ${allRes.status}`);
+
+    const allData = (await allRes.json()) as AllMonstersDto;
+    const ownedData = ownedRes.ok
+        ? ((await ownedRes.json()) as OwnedMonstersDto)
+        : { monsters: [] };
+
+    const ownedMap = new Map(ownedData.monsters.map((m) => [m.id, m.soulCount]));
+
+    return allData.monsters.map((m) => ({
+        id: m.id,
+        name: m.name,
+        emoji: m.emoji,
+        rarity: m.rarity as Monster['rarity'],
+        isOwned: ownedMap.has(m.id),
+        soulCount: ownedMap.get(m.id) ?? 0,
+    }));
 };
 
 export function useMonsters() {
-    const { data, error, isLoading, mutate } =
-        useSWR<{ monsters: Monster[] }>('/api/monsters/owned', fetcher, {
-            refreshInterval: 0,
-            revalidateOnFocus: true,
-        });
+    const { data, error, isLoading, mutate } = useSWR<Monster[]>(
+        'monsters-compendium',
+        fetchCompendium,
+        { revalidateOnFocus: true },
+    );
 
     return {
-        monsters: data?.monsters ?? [],
+        monsters: data ?? [],
         loading: isLoading,
         error: error ? String(error) : null,
         refetch: () => mutate(),
