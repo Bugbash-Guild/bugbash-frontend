@@ -1,51 +1,35 @@
-// src/hooks/useAuth.ts
 'use client';
 
-import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 
 interface User {
-  username: string;
+    username: string;
 }
-interface AuthState {
-  isAuthenticated: boolean;
-  user: User | null;
-  loading: boolean;
-}
+
+const fetcher = async (): Promise<User | null> => {
+    const res = await fetch('/api/auth/status', {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    return res.json() as Promise<User>;
+};
 
 export function useAuth() {
-  const [authState, setAuthState] = useState<AuthState>({
-    isAuthenticated: false,
-    user: null,
-    loading: true,
-  });
+    const { data, isLoading } = useSWR<User | null>(
+        '/api/auth/status',
+        fetcher,
+        { revalidateOnFocus: true, dedupingInterval: 2000 },
+    );
 
-  const checkAuthStatus = async () => {
-    try {
-      // ← ここは Next の BFF（同一オリジン）
-      const response = await fetch('/api/auth/status', {
-        headers: { 'Accept': 'application/json' },
-        cache: 'no-store',
-      });
+    const login = () => {
+        const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
+        window.location.href = `${base}/oauth2/authorization/github`;
+    };
 
-      if (response.ok) {
-        const userData = await response.json();
-        setAuthState({ isAuthenticated: true, user: userData, loading: false });
-      } else {
-        setAuthState({ isAuthenticated: false, user: null, loading: false });
-      }
-    } catch (error) {
-      console.error('Authentication check failed:', error);
-      setAuthState({ isAuthenticated: false, user: null, loading: false });
-    }
-  };
+    const user = data ?? null;
+    const isAuthenticated = user !== null;
+    const loading = isLoading;
 
-  useEffect(() => { checkAuthStatus(); }, []);
-
-  const login = () => {
-    // ログイン開始は “ブラウザ遷移” なので直接バックエンドへ
-    const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
-    window.location.href = `${base}/oauth2/authorization/github`;
-  };
-
-  return { ...authState, login, checkAuthStatus };
+    return { isAuthenticated, user, loading, login };
 }
