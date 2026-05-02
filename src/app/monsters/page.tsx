@@ -1,62 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMonsters } from "@/hooks/useMonsters";
+import { usePartner } from "@/hooks/usePartner";
 import { MainWrapper } from "@/components/MainWrapper";
-
 import { RARITY_COLOR, RARITY_ORDER } from "@/constants/rarity";
-
-const FULL_DEX = [
-  { id: "01", name: "オーク",       emoji: "🐗", rarity: "N",   requiredLevel: 1  },
-  { id: "02", name: "ゴブリン",     emoji: "👹", rarity: "N",   requiredLevel: 1  },
-  { id: "03", name: "スライム",     emoji: "🟢", rarity: "N",   requiredLevel: 1  },
-  { id: "04", name: "ウルフ",       emoji: "🐺", rarity: "R",   requiredLevel: 5  },
-  { id: "05", name: "エルフ",       emoji: "🧝", rarity: "R",   requiredLevel: 5  },
-  { id: "06", name: "スケルトン",   emoji: "💀", rarity: "R",   requiredLevel: 8  },
-  { id: "07", name: "ゾンビ",       emoji: "🧟", rarity: "R",   requiredLevel: 10 },
-  { id: "08", name: "トロール",     emoji: "👿", rarity: "R",   requiredLevel: 12 },
-  { id: "09", name: "ベアー",       emoji: "🐻", rarity: "R",   requiredLevel: 15 },
-  { id: "10", name: "ウィザード",   emoji: "🧙", rarity: "SR",  requiredLevel: 18 },
-  { id: "11", name: "オーガ",       emoji: "👹", rarity: "SR",  requiredLevel: 20 },
-  { id: "12", name: "グリフォン",   emoji: "🦅", rarity: "SR",  requiredLevel: 22 },
-  { id: "13", name: "タイガー",     emoji: "🐅", rarity: "SR",  requiredLevel: 25 },
-  { id: "14", name: "ダークエルフ", emoji: "🧝‍♀️", rarity: "SR",  requiredLevel: 28 },
-  { id: "15", name: "ディアウルフ", emoji: "🐺", rarity: "SR",  requiredLevel: 30 },
-  { id: "16", name: "ワイバーン",   emoji: "🦇", rarity: "SR",  requiredLevel: 32 },
-  { id: "17", name: "デーモン",     emoji: "😈", rarity: "SSR", requiredLevel: 35 },
-  { id: "18", name: "ドラゴン",     emoji: "🐉", rarity: "SSR", requiredLevel: 40 },
-  { id: "19", name: "バンパイア",   emoji: "🧛", rarity: "SSR", requiredLevel: 45 },
-  { id: "20", name: "フェニックス", emoji: "🔥", rarity: "SSR", requiredLevel: 50 },
-] as const;
-
 
 export default function MonstersPage() {
   const { isAuthenticated } = useAuth();
   const { monsters, loading, error } = useMonsters();
-  const [companion, setCompanion] = useState<string>("18");
+  const { partnerId, setPartner } = usePartner();
 
-  // merge owned data with full dex — match by name (backend uses UUIDs, not numeric IDs)
-  const ownedByName: Record<string, { count: number; emoji: string }> = {};
-  monsters.forEach((m) => {
-    if (!ownedByName[m.name]) ownedByName[m.name] = { count: 0, emoji: m.emoji };
-    ownedByName[m.name].count += 1;
-  });
-
-  const dex = FULL_DEX.map((m) => {
-    const owned = ownedByName[m.name];
-    return {
-      ...m,
-      emoji: owned ? owned.emoji : m.emoji,
-      owned: owned?.count ?? 0,
-      discovered: !!owned,
-    };
-  }).sort(
+  const dex = [...monsters].sort(
     (a, b) => RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity] || a.id.localeCompare(b.id)
   );
 
-  const companionMon = dex.find((m) => m.id === companion);
-  const discoveredCount = dex.filter((m) => m.discovered).length;
+  const partnerMonster = dex.find((m) => m.id === partnerId) ?? null;
+  const discoveredCount = dex.filter((m) => m.isOwned).length;
 
   return (
     <MainWrapper>
@@ -88,64 +48,81 @@ export default function MonstersPage() {
         {loading && <div className="text-text-faint text-[13px] mb-4">loading dex…</div>}
         {error && <div className="text-pink text-[13px] mb-4">error: {error}</div>}
 
-        {/* FAVORITE banner */}
-        {companionMon && (
-          <div
-            className="mb-4 px-3.5 py-2.5 rounded-[4px] flex items-center gap-3"
-            style={{
-              background: `${RARITY_COLOR[companionMon.rarity]}10`,
-              border: `1px solid ${RARITY_COLOR[companionMon.rarity]}55`,
-            }}
-          >
-            <span className="text-[9px] text-text-faint tracking-[0.12em]">FAVORITE / 連れている</span>
-            <span className="text-[22px]">{companionMon.emoji}</span>
-            <span className="text-[13px] font-semibold" style={{ color: RARITY_COLOR[companionMon.rarity] }}>
-              {companionMon.name}
-            </span>
-            <span className="flex-1 text-text-faint text-[10px]">← クリックで連れているモンスターを変更</span>
-            <span className="text-[11px] text-text-faint">
-              {discoveredCount} / {FULL_DEX.length} discovered
-            </span>
-          </div>
-        )}
+        {/* PARTNER banner */}
+        <div
+          className="mb-4 px-3.5 py-2.5 rounded-[4px]"
+          style={{
+            background: partnerMonster
+              ? `${RARITY_COLOR[partnerMonster.rarity]}10`
+              : "var(--bg-elev)",
+            border: partnerMonster
+              ? `1px solid ${RARITY_COLOR[partnerMonster.rarity]}55`
+              : "1px solid var(--line)",
+          }}
+        >
+          {partnerMonster ? (
+            <div className="flex items-center gap-3">
+              <span className="text-[9px] text-text-faint tracking-[0.12em]">PARTNER / パートナー</span>
+              <span className="text-[22px]">{partnerMonster.emoji}</span>
+              <div className="flex-1">
+                <div
+                  className="text-[13px] font-semibold"
+                  style={{ color: RARITY_COLOR[partnerMonster.rarity] }}
+                >
+                  {partnerMonster.name}
+                </div>
+                <div className="text-xs opacity-60 mt-0.5">🔮 {partnerMonster.soulCount} 魂</div>
+              </div>
+              <span className="text-xs text-yellow-400 border border-yellow-400 px-2 py-0.5 rounded">
+                ✨ パートナー中
+              </span>
+              <span className="text-[11px] text-text-faint">
+                {discoveredCount} / {dex.length} discovered
+              </span>
+            </div>
+          ) : (
+            <div className="p-1 text-sm opacity-40">
+              モンスターカードをクリックしてパートナーに設定しよう
+            </div>
+          )}
+        </div>
 
         {/* 4-column dex grid */}
         <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(max(130px, calc((100% - 72px) / 7)), 1fr))" }}>
           {dex.map((m) => {
             const c = RARITY_COLOR[m.rarity];
-            const isComp = m.id === companion;
+            const isComp = m.id === partnerId;
             return (
               <div
                 key={m.id}
-                onClick={() => { if (m.discovered) setCompanion(m.id); }}
                 className="rounded-[6px] p-3.5 relative transition-transform duration-[120ms]"
                 style={{
                   background: "var(--bg-elev)",
-                  border: `${isComp ? 2 : 1}px ${m.discovered ? "solid" : "dashed"} ${
-                    isComp ? c : m.discovered ? `${c}66` : "var(--line)"
+                  border: `${isComp ? 2 : 1}px ${m.isOwned ? "solid" : "dashed"} ${
+                    isComp ? c : m.isOwned ? `${c}66` : "var(--line)"
                   }`,
-                  opacity: m.discovered ? 1 : 0.5,
+                  opacity: m.isOwned ? 1 : 0.5,
                   boxShadow: isComp
                     ? `0 0 0 1px ${c}aa, 0 8px 24px ${c}33`
-                    : m.discovered && m.rarity === "SSR"
+                    : m.isOwned && m.rarity === "SSR"
                     ? `inset 0 0 24px ${c}22`
                     : "none",
-                  cursor: m.discovered ? "pointer" : "not-allowed",
+                  cursor: m.isOwned ? "pointer" : "not-allowed",
                 }}
               >
-                {/* FAVORITE badge */}
+                {/* PARTNER badge */}
                 {isComp && (
                   <div
                     className="absolute -top-2 right-2.5 text-[9px] font-bold px-2 py-0.5 rounded-[2px] tracking-[0.1em]"
                     style={{ background: c, color: "var(--bg)" }}
                   >
-                    ★ FAVORITE
+                    ★ PARTNER
                   </div>
                 )}
 
                 {/* id + rarity */}
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-[10px] text-text-faint">#{m.id}</span>
+                  <span className="text-[10px] text-text-faint">#{m.id.slice(0, 8)}</span>
                   <span
                     className="text-[9px] font-bold px-1.5 py-0.5 rounded-[2px] tracking-[0.1em]"
                     style={{ color: c, background: `${c}14`, border: `1px solid ${c}55` }}
@@ -161,26 +138,46 @@ export default function MonstersPage() {
                     background: `radial-gradient(circle at 50% 40%, ${c}1a 0%, transparent 70%), var(--bg-elev-2)`,
                   }}
                 >
-                  {m.discovered ? m.emoji : "?"}
+                  {m.isOwned ? m.emoji : "?"}
                 </div>
 
                 {/* name */}
                 <div
                   className="text-[13px] font-semibold mb-0.5"
-                  style={{ color: m.discovered ? "var(--text)" : "var(--text-faint)" }}
+                  style={{ color: m.isOwned ? "var(--text)" : "var(--text-faint)" }}
                 >
-                  {m.discovered ? m.name : "???"}
+                  {m.isOwned ? m.name : "???"}
                 </div>
 
                 {/* stats */}
                 <div className="text-[10px] text-text-faint leading-[1.5]">
-                  <div className="whitespace-nowrap">Lv.{m.requiredLevel}+</div>
                   <div className="whitespace-nowrap">
-                    <span style={{ color: m.discovered ? "var(--accent)" : "var(--pink)" }}>
-                      {m.discovered ? `×${m.owned}` : "not_found"}
+                    <span style={{ color: m.isOwned ? "var(--accent)" : "var(--pink)" }}>
+                      {m.isOwned ? "所持中" : "not_found"}
                     </span>
                   </div>
+
+                  {/* ソウル数（所持のみ） */}
+                  {m.isOwned && (
+                    <div className="text-xs opacity-50 mt-1">🔮 {m.soulCount} 魂</div>
+                  )}
                 </div>
+
+                {/* パートナー設定ボタン / バッジ */}
+                {m.isOwned && isComp && (
+                  <div className="mt-1 text-xs text-yellow-400 text-center">✨ パートナー中</div>
+                )}
+                {m.isOwned && !isComp && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void setPartner(m.id);
+                    }}
+                    className="mt-1 w-full text-xs px-2 py-0.5 rounded border border-current opacity-40 hover:opacity-90 transition-opacity"
+                  >
+                    パートナーに設定
+                  </button>
+                )}
               </div>
             );
           })}
