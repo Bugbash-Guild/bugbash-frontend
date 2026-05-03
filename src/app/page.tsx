@@ -7,7 +7,9 @@ import { useActivities, isMonsterDetail, isPrMergedMetadata, isXpDetail } from "
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
+import { useRewardNotification } from "@/hooks/useRewardNotification";
 import { MainWrapper } from "@/components/MainWrapper";
+import { RewardModal } from "@/components/RewardModal";
 
 import { RARITY_COLOR } from "@/constants/rarity";
 
@@ -39,6 +41,7 @@ export default function Home() {
   const { hero, loading: heroLoading } = useHero(isAuthenticated);
   const { monsters } = useMonsters();
   const { activities, loading: activitiesLoading } = useActivities();
+  const { unread, acknowledge } = useRewardNotification(isAuthenticated);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.replace("/login");
@@ -60,6 +63,7 @@ export default function Home() {
   const filledSegments = hero ? Math.round(hero.progressRatio * 60) : 0;
 
   return (
+    <>
     <MainWrapper>
       <div className="px-9 py-6 min-h-screen">
         {/* prompt header */}
@@ -193,7 +197,7 @@ export default function Home() {
                   { label: "PRs merged",      value: "128",                        delta: "+2 today",                          color: "var(--accent)" },
                   { label: "monsters caught",  value: String(monsters.length || 0), delta: `${monsters.length || 0}/20 dex`,    color: "var(--purple)" },
                   { label: "SSR rate",         value: "4.2%",                       delta: "lifetime",                           color: "var(--gold)" },
-                  { label: "streak",           value: `${hero.streakDays}d`,         delta: hero.streakDays === 1 ? "keep it up!" : "🔥 on fire",  color: "var(--accent-2)" },
+                  { label: "streak",           value: hero.streakDays != null ? `${hero.streakDays}d` : "—", delta: (hero.streakDays ?? 0) > 1 ? "🔥 on fire" : "keep it up!", color: "var(--accent-2)" },
                 ].map((s) => (
                   <div key={s.label} className="bg-bg-elev border border-line rounded-[6px] px-3.5 py-3">
                     <div className="text-[11px] text-text-faint tracking-[0.1em] mb-2">{s.label.toUpperCase()}</div>
@@ -260,5 +264,9 @@ export default function Home() {
         )}
       </div>
     </MainWrapper>
+    {unread.length > 0 && (
+      <RewardModal activities={unread} onClose={() => void acknowledge()} />
+    )}
+    </>
   );
 }
