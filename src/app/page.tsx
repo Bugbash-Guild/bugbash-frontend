@@ -7,7 +7,9 @@ import { useActivities, isMonsterDetail, isPrMergedMetadata, isXpDetail } from "
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
+import { useRewardNotification } from "@/hooks/useRewardNotification";
 import { MainWrapper } from "@/components/MainWrapper";
+import { RewardModal } from "@/components/RewardModal";
 
 import { RARITY_COLOR } from "@/constants/rarity";
 
@@ -39,6 +41,7 @@ export default function Home() {
   const { hero, loading: heroLoading } = useHero(isAuthenticated);
   const { monsters } = useMonsters();
   const { activities, loading: activitiesLoading } = useActivities();
+  const { unread, acknowledge } = useRewardNotification(isAuthenticated);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.replace("/login");
@@ -60,6 +63,7 @@ export default function Home() {
   const filledSegments = hero ? Math.round(hero.progressRatio * 60) : 0;
 
   return (
+    <>
     <MainWrapper>
       <div className="px-9 py-6 min-h-screen">
         {/* prompt header */}
@@ -260,5 +264,9 @@ export default function Home() {
         )}
       </div>
     </MainWrapper>
+    {unread.length > 0 && (
+      <RewardModal activities={unread} onClose={() => void acknowledge()} />
+    )}
+    </>
   );
 }
