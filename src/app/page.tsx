@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import { useRouter } from "next/navigation";
+import { useActivities, isMonsterDetail, isPrMergedMetadata, isXpDetail } from "@/hooks/useActivities";
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
@@ -10,12 +11,15 @@ import { MainWrapper } from "@/components/MainWrapper";
 
 import { RARITY_COLOR } from "@/constants/rarity";
 
-const MOCK_ACTIVITIES = [
-  { id: 1, xp: 100, monster: { name: "ドラゴン", emoji: "🐉", rarity: "SSR" }, repo: "Bugbash-Guild/bugbash-frontend", prNumber: 142, title: "feat: redesign monster collection page", occurredAt: "2分前", isLevelUp: true },
-  { id: 2, xp: 100, monster: { name: "狼", emoji: "🐺", rarity: "R" }, repo: "Bugbash-Guild/bugbash-backend", prNumber: 89, title: "fix: race condition in XP gain", occurredAt: "3時間前" },
-  { id: 3, xp: 100, monster: { name: "スライム", emoji: "🟢", rarity: "N" }, repo: "Bugbash-Guild/bugbash-backend", prNumber: 88, title: "feat: rarity weighting (N:40 R:30 SR:22 SSR:8)", occurredAt: "昨日", isLevelUp: true },
-  { id: 4, xp: 100, monster: { name: "ゾンビ", emoji: "🧟", rarity: "R" }, repo: "Bugbash-Guild/bugbash-frontend", prNumber: 141, title: "chore: bump dependencies", occurredAt: "2日前" },
-];
+function formatTimeAgo(isoString: string): string {
+  const diff = Date.now() - new Date(isoString).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "たった今";
+  if (mins < 60) return `${mins}分前`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}時間前`;
+  return `${Math.floor(hours / 24)}日前`;
+}
 
 const HERO_ASCII = [
   "    ╔═══╗    ",
@@ -34,6 +38,7 @@ export default function Home() {
   const { isAuthenticated, user, loading: authLoading } = useAuth();
   const { hero, loading: heroLoading } = useHero(isAuthenticated);
   const { monsters } = useMonsters();
+  const { activities, loading: activitiesLoading } = useActivities();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.replace("/login");
@@ -188,7 +193,7 @@ export default function Home() {
                   { label: "PRs merged",      value: "128",                        delta: "+2 today",                          color: "var(--accent)" },
                   { label: "monsters caught",  value: String(monsters.length || 0), delta: `${monsters.length || 0}/20 dex`,    color: "var(--purple)" },
                   { label: "SSR rate",         value: "4.2%",                       delta: "lifetime",                           color: "var(--gold)" },
-                  { label: "streak",           value: "7d",                         delta: "best: 14d",                          color: "var(--accent-2)" },
+                  { label: "streak",           value: "—",                          delta: "coming soon",                        color: "var(--accent-2)" },
                 ].map((s) => (
                   <div key={s.label} className="bg-bg-elev border border-line rounded-[6px] px-3.5 py-3">
                     <div className="text-[11px] text-text-faint tracking-[0.1em] mb-2">{s.label.toUpperCase()}</div>
@@ -202,29 +207,53 @@ export default function Home() {
               <div className="bg-bg-elev border border-line rounded-[6px] overflow-hidden">
                 <div className="px-3.5 py-2.5 border-b border-line flex items-center justify-between">
                   <span className="text-[10px] text-text-faint tracking-[0.12em]">git log --activity</span>
-                  <span className="text-[10px] text-accent">● 3 unread</span>
+                  <span className="text-[10px] text-text-faint">{activities.length} events</span>
                 </div>
-                {MOCK_ACTIVITIES.map((a, i) => (
-                  <div key={a.id} className={`px-3.5 py-3 flex gap-3 ${i < MOCK_ACTIVITIES.length - 1 ? "border-b border-line" : ""}`}>
-                    <div className="w-8 h-8 rounded-[4px] shrink-0 bg-bg-elev-2 border border-line flex items-center justify-center text-base">
-                      {a.monster.emoji}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[12px] text-text truncate">
-                        <span className="text-gold">+{a.xp} XP</span>
-                        <span className="text-text-faint"> · </span>
-                        caught <span className="text-text font-medium">{a.monster.name}</span>
-                        <span className="ml-1.5 text-[9px] font-bold" style={{ color: RARITY_COLOR[a.monster.rarity] }}>{a.monster.rarity}</span>
-                        {a.isLevelUp && <span className="ml-1.5 text-[9px] font-bold text-gold">LV.UP</span>}
-                      </div>
-                      <div className="text-[11px] text-text-dim truncate mt-1">
-                        <span className="text-accent-2">{a.repo.split("/")[1]}#{a.prNumber}</span>
-                        <span className="text-text-faint"> · </span>
-                        <span>{a.title}</span>
-                      </div>
-                    </div>
+                {activitiesLoading && (
+                  <div className="px-3.5 py-4 text-[12px] text-text-faint">loading…</div>
+                )}
+                {!activitiesLoading && activities.length === 0 && (
+                  <div className="px-3.5 py-4 text-[12px] text-text-faint">
+                    まだアクティビティがありません — PRをマージしよう
                   </div>
-                ))}
+                )}
+                {activities.slice(0, 6).map((a, i) => {
+                  const xpReward = a.rewards.find((r) => r.rewardType === "xp");
+                  const monsterReward = a.rewards.find((r) => r.rewardType === "monster");
+                  const xpGained = xpReward?.quantity ?? 0;
+                  const xpDetail = xpReward && isXpDetail(xpReward.detail) ? xpReward.detail : null;
+                  const isLevelUp = xpDetail ? xpDetail.levelAfter > xpDetail.levelBefore : false;
+                  const monster = monsterReward && isMonsterDetail(monsterReward.detail) ? monsterReward.detail : null;
+                  const meta = isPrMergedMetadata(a.metadata) ? a.metadata : null;
+                  const repoName = meta?.repositoryFullName.split("/")[1] ?? "—";
+                  return (
+                    <div key={a.id} className={`px-3.5 py-3 flex gap-3 ${i < Math.min(activities.length, 6) - 1 ? "border-b border-line" : ""}`}>
+                      <div className="w-8 h-8 rounded-[4px] shrink-0 bg-bg-elev-2 border border-line flex items-center justify-center text-base">
+                        {monster ? monster.emoji : "⚔️"}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[12px] text-text flex items-center gap-1.5 flex-wrap">
+                          <span className="text-gold">+{xpGained} XP</span>
+                          {monster && (
+                            <>
+                              <span className="text-text-faint">·</span>
+                              <span className="font-medium">{monster.name}</span>
+                              <span className="text-[9px] font-bold" style={{ color: RARITY_COLOR[monster.rarity] ?? "var(--text-faint)" }}>{monster.rarity}</span>
+                            </>
+                          )}
+                          {isLevelUp && <span className="text-[9px] font-bold text-gold">LV.UP ↑{xpDetail!.levelAfter}</span>}
+                        </div>
+                        <div className="text-[11px] text-text-dim truncate mt-0.5">
+                          {meta && (
+                            <span className="text-accent-2 mr-1">{repoName}#{meta.prNumber}</span>
+                          )}
+                          <span className="text-text-faint">{meta?.title}</span>
+                        </div>
+                        <div className="text-[10px] text-text-faint mt-0.5">{formatTimeAgo(a.occurredAt)}</div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </>
