@@ -108,7 +108,7 @@ export default function MonstersPage() {
                   {partnerMonster.name}
                 </div>
                 <div className="text-xs opacity-60 mt-0.5">
-                  {partnerMonster.attributeEmoji} {partnerMonster.soulCount} {partnerMonster.attributeName}ソウル
+                  {partnerMonster.attributeEmoji ?? ''} {partnerMonster.soulCount} {partnerMonster.attributeName ?? ''}ソウル
                 </div>
               </div>
               <span className="text-xs text-yellow-400 border border-yellow-400 px-2 py-0.5 rounded">
@@ -207,7 +207,7 @@ export default function MonstersPage() {
                       )}
                       <div className="flex items-center justify-between mt-1">
                         <span className="text-xs opacity-50">
-                          {m.attributeEmoji || '🔮'} {m.soulCount}
+                          soul × {m.soulCount}
                         </span>
                         <span className="text-xs text-gray-400">Lv.{m.level}</span>
                       </div>
