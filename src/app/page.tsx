@@ -193,7 +193,7 @@ export default function Home() {
                   { label: "PRs merged",      value: "128",                        delta: "+2 today",                          color: "var(--accent)" },
                   { label: "monsters caught",  value: String(monsters.length || 0), delta: `${monsters.length || 0}/20 dex`,    color: "var(--purple)" },
                   { label: "SSR rate",         value: "4.2%",                       delta: "lifetime",                           color: "var(--gold)" },
-                  { label: "streak",           value: "—",                          delta: "coming soon",                        color: "var(--accent-2)" },
+                  { label: "streak",           value: `${hero.streakDays}d`,         delta: hero.streakDays === 1 ? "keep it up!" : "🔥 on fire",  color: "var(--accent-2)" },
                 ].map((s) => (
                   <div key={s.label} className="bg-bg-elev border border-line rounded-[6px] px-3.5 py-3">
                     <div className="text-[11px] text-text-faint tracking-[0.1em] mb-2">{s.label.toUpperCase()}</div>
