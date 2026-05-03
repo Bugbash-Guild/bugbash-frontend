@@ -8,7 +8,7 @@ type AllMonstersDto = {
     monsters: { id: string; name: string; emoji: string; rarity: string }[];
 };
 type OwnedMonstersDto = {
-    monsters: { id: string; soulCount: number }[];
+    monsters: { id: string; soulCount: number; level: number }[];
 };
 
 const fetchCompendium = async (): Promise<Monster[]> => {
@@ -23,7 +23,7 @@ const fetchCompendium = async (): Promise<Monster[]> => {
         ? ((await ownedRes.json()) as OwnedMonstersDto)
         : { monsters: [] };
 
-    const ownedMap = new Map(ownedData.monsters.map((m) => [m.id, m.soulCount]));
+    const ownedMap = new Map(ownedData.monsters.map((m) => [m.id, m]));
 
     return allData.monsters.map((m) => ({
         id: m.id,
@@ -31,7 +31,8 @@ const fetchCompendium = async (): Promise<Monster[]> => {
         emoji: m.emoji,
         rarity: m.rarity as Monster['rarity'],
         isOwned: ownedMap.has(m.id),
-        soulCount: ownedMap.get(m.id) ?? 0,
+        soulCount: ownedMap.get(m.id)?.soulCount ?? 0,
+        level: ownedMap.get(m.id)?.level ?? 1,
     }));
 };
 

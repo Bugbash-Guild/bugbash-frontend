@@ -6,5 +6,6 @@ export type Monster = {
     rarity: 'N' | 'R' | 'SR' | 'SSR';
     soulCount: number;
     isOwned: boolean;
+    level: number;
 };
 

@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
+
 import { useAuth } from "@/hooks/useAuth";
+import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
 import { usePartner } from "@/hooks/usePartner";
 import { MainWrapper } from "@/components/MainWrapper";
@@ -8,8 +11,29 @@ import { RARITY_COLOR, RARITY_ORDER } from "@/constants/rarity";
 
 export default function MonstersPage() {
   const { isAuthenticated } = useAuth();
-  const { monsters, loading, error } = useMonsters();
+  const { monsters, loading, error, refetch } = useMonsters();
   const { partnerId, setPartner } = usePartner();
+  const { hero } = useHero(isAuthenticated);
+  const [levelUpError, setLevelUpError] = useState<string | null>(null);
+  const [levelingUp, setLevelingUp] = useState<string | null>(null);
+
+  const handleLevelUp = async (monsterId: string) => {
+    setLevelingUp(monsterId);
+    setLevelUpError(null);
+    try {
+      const res = await fetch(`/api/monsters/${monsterId}/level-up`, { method: 'POST' });
+      if (!res.ok) {
+        const body = await res.json() as { error?: string };
+        setLevelUpError(body.error ?? `Error ${res.status}`);
+      } else {
+        await refetch();
+      }
+    } catch {
+      setLevelUpError('Network error');
+    } finally {
+      setLevelingUp(null);
+    }
+  };
 
   const dex = [...monsters].sort(
     (a, b) => RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity] || a.id.localeCompare(b.id)
@@ -39,14 +63,26 @@ export default function MonstersPage() {
               detailed view · sorted by rarity
             </div>
           </div>
-          <div className="text-[11px] text-text-faint">
-            [&nbsp;<span className="text-accent">list</span>&nbsp;| grid | tree&nbsp;]
+          <div className="flex items-center gap-4">
+            {hero && (
+              <div className="text-[13px] text-text-dim">
+                🪙 <span className="text-accent font-semibold">{hero.guildCoinBalance}</span> G
+              </div>
+            )}
+            <div className="text-[11px] text-text-faint">
+              [&nbsp;<span className="text-accent">list</span>&nbsp;| grid | tree&nbsp;]
+            </div>
           </div>
         </div>
 
         {/* loading / error */}
         {loading && <div className="text-text-faint text-[13px] mb-4">loading dex…</div>}
         {error && <div className="text-pink text-[13px] mb-4">error: {error}</div>}
+        {levelUpError && (
+          <div className="text-pink text-[13px] mb-4 px-3 py-2 rounded border border-pink/30 bg-pink/10">
+            {levelUpError}
+          </div>
+        )}
 
         {/* PARTNER banner */}
         <div
@@ -157,11 +193,35 @@ export default function MonstersPage() {
                     </span>
                   </div>
 
-                  {/* ソウル数（所持のみ） */}
+                  {/* ソウル数 + レベル（所持のみ） */}
                   {m.isOwned && (
-                    <div className="text-xs opacity-50 mt-1">🔮 {m.soulCount} 魂</div>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-xs opacity-50">🔮 {m.soulCount} 魂</span>
+                      <span className="text-xs text-gray-400">Lv.{m.level}</span>
+                    </div>
                   )}
                 </div>
+
+                {/* レベルアップボタン / MAXバッジ */}
+                {m.isOwned && (
+                  m.level >= 30 ? (
+                    <div className="mt-1 text-[10px] text-center text-yellow-400 font-bold tracking-widest border border-yellow-400/40 rounded py-0.5">
+                      MAX
+                    </div>
+                  ) : (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void handleLevelUp(m.id);
+                      }}
+                      disabled={m.soulCount < m.level * 3 || levelingUp === m.id}
+                      className="mt-1 w-full text-[10px] px-2 py-0.5 rounded border border-current opacity-60 hover:opacity-100 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity"
+                      style={{ color: c }}
+                    >
+                      {levelingUp === m.id ? "…" : `Lv UP (${m.level * 3}魂)`}
+                    </button>
+                  )
+                )}
 
                 {/* パートナー設定ボタン / バッジ */}
                 {m.isOwned && isComp && (
