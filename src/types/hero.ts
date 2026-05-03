@@ -6,4 +6,6 @@ export type Hero = {
     experienceForNextLevel: number;
     experienceToNextLevel: number;
     progressRatio: number;
+    partnerId: string | null;
+    guildCoinBalance: number;
 };
