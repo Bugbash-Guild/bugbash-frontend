@@ -40,9 +40,9 @@ const fetchCompendium = async (): Promise<Monster[]> => {
             emoji: m.emoji,
             rarity: m.rarity as Monster['rarity'],
             isOwned: ownedMap.has(m.id),
-            attribute: owned?.attribute ?? '',
-            attributeName: owned?.attributeName ?? '',
-            attributeEmoji: owned?.attributeEmoji ?? '',
+            attribute: owned?.attribute,
+            attributeName: owned?.attributeName,
+            attributeEmoji: owned?.attributeEmoji,
             soulCount: owned?.soulCount ?? 0,
             level: owned?.level ?? 1,
         };
