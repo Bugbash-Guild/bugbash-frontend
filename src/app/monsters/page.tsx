@@ -107,7 +107,9 @@ export default function MonstersPage() {
                 >
                   {partnerMonster.name}
                 </div>
-                <div className="text-xs opacity-60 mt-0.5">🔮 {partnerMonster.soulCount} 魂</div>
+                <div className="text-xs opacity-60 mt-0.5">
+                  {partnerMonster.attributeEmoji} {partnerMonster.soulCount} {partnerMonster.attributeName}ソウル
+                </div>
               </div>
               <span className="text-xs text-yellow-400 border border-yellow-400 px-2 py-0.5 rounded">
                 ✨ パートナー中
@@ -193,12 +195,23 @@ export default function MonstersPage() {
                     </span>
                   </div>
 
-                  {/* ソウル数 + レベル（所持のみ） */}
+                  {/* 属性 + ソウル + レベル（所持のみ） */}
                   {m.isOwned && (
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-xs opacity-50">🔮 {m.soulCount} 魂</span>
-                      <span className="text-xs text-gray-400">Lv.{m.level}</span>
-                    </div>
+                    <>
+                      {m.attributeName && (
+                        <div className="mt-1">
+                          <span className="text-[9px] px-1 py-0.5 rounded opacity-60 bg-white/5">
+                            {m.attributeEmoji} {m.attributeName}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-xs opacity-50">
+                          {m.attributeEmoji || '🔮'} {m.soulCount}
+                        </span>
+                        <span className="text-xs text-gray-400">Lv.{m.level}</span>
+                      </div>
+                    </>
                   )}
                 </div>
 
@@ -218,7 +231,9 @@ export default function MonstersPage() {
                       className="mt-1 w-full text-[10px] px-2 py-0.5 rounded border border-current opacity-60 hover:opacity-100 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity"
                       style={{ color: c }}
                     >
-                      {levelingUp === m.id ? "…" : `Lv UP (${m.level * 3}魂)`}
+                      {levelingUp === m.id
+                        ? "…"
+                        : `Lv UP (${m.level * 3} ${m.attributeEmoji || ''})`}
                     </button>
                   )
                 )}
