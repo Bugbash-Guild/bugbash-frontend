@@ -9,29 +9,53 @@ import { usePartner } from "@/hooks/usePartner";
 import { MainWrapper } from "@/components/MainWrapper";
 import { RARITY_COLOR, RARITY_ORDER } from "@/constants/rarity";
 
+const AWAKENING_LABEL: Partial<Record<import('@/types/monster').AwakeningState, string>> = {
+  AWAKENED: "✨覚醒",
+  BERSERK: "🔥暴走",
+};
+
 export default function MonstersPage() {
   const { isAuthenticated } = useAuth();
   const { monsters, loading, error, refetch } = useMonsters();
   const { partnerId, setPartner } = usePartner();
   const { hero } = useHero(isAuthenticated);
-  const [levelUpError, setLevelUpError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [levelingUp, setLevelingUp] = useState<string | null>(null);
+  const [evolving, setEvolving] = useState<string | null>(null);
 
   const handleLevelUp = async (monsterId: string) => {
     setLevelingUp(monsterId);
-    setLevelUpError(null);
+    setActionError(null);
     try {
       const res = await fetch(`/api/monsters/${monsterId}/level-up`, { method: 'POST' });
       if (!res.ok) {
         const body = await res.json() as { error?: string };
-        setLevelUpError(body.error ?? `Error ${res.status}`);
+        setActionError(body.error ?? `Error ${res.status}`);
       } else {
         await refetch();
       }
     } catch {
-      setLevelUpError('Network error');
+      setActionError('Network error');
     } finally {
       setLevelingUp(null);
+    }
+  };
+
+  const handleEvolve = async (monsterId: string) => {
+    setEvolving(monsterId);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/monsters/${monsterId}/evolve`, { method: 'POST' });
+      if (!res.ok) {
+        const body = await res.json() as { error?: string };
+        setActionError(body.error ?? `Error ${res.status}`);
+      } else {
+        await refetch();
+      }
+    } catch {
+      setActionError('Network error');
+    } finally {
+      setEvolving(null);
     }
   };
 
@@ -78,9 +102,9 @@ export default function MonstersPage() {
         {/* loading / error */}
         {loading && <div className="text-text-faint text-[13px] mb-4">loading dex…</div>}
         {error && <div className="text-pink text-[13px] mb-4">error: {error}</div>}
-        {levelUpError && (
+        {actionError && (
           <div className="text-pink text-[13px] mb-4 px-3 py-2 rounded border border-pink/30 bg-pink/10">
-            {levelUpError}
+            {actionError}
           </div>
         )}
 
@@ -130,6 +154,8 @@ export default function MonstersPage() {
           {dex.map((m) => {
             const c = RARITY_COLOR[m.rarity];
             const isComp = m.id === partnerId;
+            const isAwakened = m.awakeningState && m.awakeningState !== "NORMAL";
+            const canEvolve = m.isOwned && m.level >= 30 && m.awakeningState === "NORMAL";
             return (
               <div
                 key={m.id}
@@ -215,12 +241,30 @@ export default function MonstersPage() {
                   )}
                 </div>
 
-                {/* レベルアップボタン / MAXバッジ */}
+                {/* 覚醒済みバッジ / 進化ボタン / レベルアップボタン */}
                 {m.isOwned && (
-                  m.level >= 30 ? (
-                    <div className="mt-1 text-[10px] text-center text-yellow-400 font-bold tracking-widest border border-yellow-400/40 rounded py-0.5">
-                      MAX
+                  isAwakened ? (
+                    <div
+                      className="mt-1 text-[10px] text-center font-bold tracking-widest rounded py-0.5"
+                      style={{
+                        color: m.awakeningState === "BERSERK" ? "#f97316" : "#a78bfa",
+                        border: `1px solid ${m.awakeningState === "BERSERK" ? "#f9731640" : "#a78bfa40"}`,
+                      }}
+                    >
+                      {m.awakeningState && (AWAKENING_LABEL[m.awakeningState] ?? m.awakeningState)}
                     </div>
+                  ) : canEvolve ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void handleEvolve(m.id);
+                      }}
+                      disabled={evolving === m.id}
+                      className="mt-1 w-full text-[10px] px-2 py-0.5 rounded border border-current opacity-80 hover:opacity-100 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity"
+                      style={{ color: "#a78bfa" }}
+                    >
+                      {evolving === m.id ? "…" : "💎 進化 (Lv MAX)"}
+                    </button>
                   ) : (
                     <button
                       onClick={(e) => {

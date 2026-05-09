@@ -1,4 +1,6 @@
 // src/types/monster.ts
+export type AwakeningState = 'NORMAL' | 'AWAKENED' | 'BERSERK';
+
 export type Monster = {
     id: string;
     name: string;
@@ -10,5 +12,5 @@ export type Monster = {
     soulCount: number;
     isOwned: boolean;
     level: number;
+    awakeningState?: AwakeningState;
 };
-

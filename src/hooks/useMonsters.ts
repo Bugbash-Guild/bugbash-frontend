@@ -2,7 +2,8 @@
 'use client';
 
 import useSWR from 'swr';
-import type { Monster } from '@/types/monster';
+
+import type { AwakeningState, Monster } from '@/types/monster';
 
 type AllMonstersDto = {
     monsters: { id: string; name: string; emoji: string; rarity: string }[];
@@ -12,6 +13,7 @@ type OwnedMonstersDto = {
         id: string;
         soulCount: number;
         level: number;
+        awakeningState: AwakeningState;
         attribute: string;
         attributeName: string;
         attributeEmoji: string;
@@ -45,6 +47,7 @@ const fetchCompendium = async (): Promise<Monster[]> => {
             attributeEmoji: owned?.attributeEmoji,
             soulCount: owned?.soulCount ?? 0,
             level: owned?.level ?? 1,
+            awakeningState: owned?.awakeningState,
         };
     });
 };
