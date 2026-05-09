@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 import { useActivities, isMonsterDetail, isPrMergedMetadata, isXpDetail } from "@/hooks/useActivities";
@@ -35,10 +35,52 @@ const HERO_ASCII = [
   "  /       \\  ",
 ];
 
+function DevPanel({ onSuccess }: { onSuccess: () => void }) {
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function handleGrant() {
+    setLoading(true);
+    setMsg(null);
+    try {
+      const res = await fetch("/api/dev/grant-resources", { method: "POST" });
+      const data = await res.json() as Record<string, unknown>;
+      if (res.ok) {
+        const coins = typeof data.guildCoinGranted === "number" ? data.guildCoinGranted : "?";
+        const souls = typeof data.soulsGrantedPerAttribute === "number" ? data.soulsGrantedPerAttribute : "?";
+        setMsg(`✓ +${coins} GUILD_COIN · +${souls} souls/attr · items added`);
+        onSuccess();
+      } else {
+        setMsg(`Error: ${String(data.error ?? res.status)}`);
+      }
+    } catch (e) {
+      setMsg(`Error: ${e instanceof Error ? e.message : "unknown"}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mb-4 border border-dashed border-line rounded p-3 text-[11px]">
+      <div className="text-[9px] uppercase tracking-[0.12em] text-text-faint mb-2">
+        DEV TOOLS
+      </div>
+      <button
+        onClick={() => void handleGrant()}
+        disabled={loading}
+        className="px-3 py-1 border border-accent text-accent rounded text-[11px] hover:bg-accent hover:text-bg disabled:opacity-40 transition-colors"
+      >
+        {loading ? "付与中…" : "[ リソース付与 +10k coins +500 souls ]"}
+      </button>
+      {msg && <div className="mt-2 text-text-dim">{msg}</div>}
+    </div>
+  );
+}
+
 export default function Home() {
   const router = useRouter();
   const { isAuthenticated, user, loading: authLoading } = useAuth();
-  const { hero, loading: heroLoading } = useHero(isAuthenticated);
+  const { hero, loading: heroLoading, refetch: refetchHero } = useHero(isAuthenticated);
   const { monsters } = useMonsters();
   const { activities, loading: activitiesLoading } = useActivities();
   const { unread, acknowledge } = useRewardNotification(isAuthenticated);
@@ -75,6 +117,10 @@ export default function Home() {
           <span>./hero --render --interactive</span>
           <span className="inline-block w-2 h-[14px] ml-0.5 bg-accent align-middle animate-pulse" />
         </div>
+
+        {process.env.NODE_ENV === "development" && (
+          <DevPanel onSuccess={() => void refetchHero()} />
+        )}
 
         {heroLoading || !hero ? (
           <div className="text-text-faint text-[13px]">loading hero…</div>
