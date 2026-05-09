@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { useItems } from "@/hooks/useItems";
+import { useInventory } from "@/hooks/useInventory";
 import { MainWrapper } from "@/components/MainWrapper";
-import type { Item } from "@/types/item";
+import type { InventoryItem } from "@/types/inventory";
 
 const ROWS = 4;
 const COLS = 12;
@@ -12,15 +13,37 @@ const STORAGE_SLOTS = ROWS * COLS;
 const HOTBAR_SLOTS = 12;
 
 export default function ItemsPage() {
-  const { isAuthenticated } = useAuth();
-  const { items, loading, error } = useItems();
+  const router = useRouter();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { items, loading, error } = useInventory(isAuthenticated);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [hotbarSelected, setHotbarSelected] = useState<number>(0);
 
-  const storageSlots: (Item | null)[] = Array.from({ length: STORAGE_SLOTS }, (_, i) => items[i] ?? null);
-  const hotbarSlots: (Item | null)[] = Array.from({ length: HOTBAR_SLOTS }, (_, i) => items[i] ?? null);
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) router.replace("/login");
+  }, [authLoading, isAuthenticated, router]);
 
-  const totalQty = items.reduce((a, b) => a + b.qty, 0);
+  if (authLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg">
+        <div className="flex items-center gap-2 text-text-dim text-[13px]">
+          <span className="w-4 h-4 border border-accent border-t-transparent rounded-full animate-spin" />
+          authenticating…
+        </div>
+      </div>
+    );
+  }
+
+  const storageSlots: (InventoryItem | null)[] = Array.from(
+    { length: STORAGE_SLOTS },
+    (_, i) => items[i] ?? null,
+  );
+  const hotbarSlots: (InventoryItem | null)[] = Array.from(
+    { length: HOTBAR_SLOTS },
+    (_, i) => items[i] ?? null,
+  );
+
+  const totalQty = items.reduce((a, b) => a + b.quantity, 0);
   const occupied = items.length;
 
   const selectedItem =
@@ -31,7 +54,7 @@ export default function ItemsPage() {
       <div className="px-9 py-6">
         {/* prompt header */}
         <div className="text-[13px] text-text-dim mb-5">
-          <span className="text-accent">{isAuthenticated ? "hero" : "guest"}@bugbash</span>
+          <span className="text-accent">hero@bugbash</span>
           <span className="text-text-faint">:</span>
           <span className="text-accent-2">~/items</span>
           <span className="text-text-faint">$ </span>
@@ -52,11 +75,10 @@ export default function ItemsPage() {
 
         {/* main layout: left grows, right is fixed-width panel */}
         <div className="flex gap-5 items-start">
-          {/* LEFT: storage + hotbar — flex-1 to fill all available width */}
+          {/* LEFT: storage + hotbar */}
           <div className="bg-bg-elev border border-line rounded-[6px] p-3.5 flex-1 min-w-0">
             <div className="text-[10px] text-text-faint tracking-[0.12em] mb-2.5">STORAGE</div>
 
-            {/* 4×12 grid — 1fr columns fill the card width */}
             <div
               className="grid gap-1"
               style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}
@@ -78,7 +100,6 @@ export default function ItemsPage() {
               })}
             </div>
 
-            {/* HOTBAR — same 12-column grid */}
             <div className="mt-4 pt-3.5 border-t border-line">
               <div className="text-[10px] text-text-faint tracking-[0.12em] mb-2.5">
                 HOTBAR · 1–{HOTBAR_SLOTS}
@@ -115,7 +136,6 @@ export default function ItemsPage() {
 
             {selectedItem ? (
               <>
-                {/* large artwork */}
                 <div
                   className="w-full aspect-square rounded-[4px] flex items-center justify-center text-[96px] mb-4 border border-line"
                   style={{
@@ -123,10 +143,9 @@ export default function ItemsPage() {
                       "radial-gradient(circle at 50% 40%, rgba(126,231,135,0.1) 0%, transparent 70%), var(--bg-elev-2)",
                   }}
                 >
-                  {selectedItem.emoji}
+                  {selectedItem.iconEmoji}
                 </div>
 
-                {/* name + type badge */}
                 <div className="flex items-center gap-2 mb-1.5">
                   <div className="text-[15px] font-semibold flex-1 leading-tight">
                     {selectedItem.name}
@@ -139,62 +158,22 @@ export default function ItemsPage() {
                       border: "1px solid rgba(79,201,211,0.3)",
                     }}
                   >
-                    ITEM
+                    {selectedItem.category}
                   </span>
                 </div>
 
-                {/* flavor text */}
                 <div className="text-[11px] text-text-faint leading-[1.65] mb-3">
-                  所持アイテム。使用すると即時効果が発動する。
+                  {selectedItem.description}
                 </div>
 
                 <div className="border-t border-line my-3" />
 
-                {/* stats table */}
-                <div className="space-y-2 mb-3">
+                <div className="space-y-2">
                   <div className="flex justify-between text-[11px]">
                     <span className="text-text-faint">qty</span>
-                    <span className="text-accent font-bold">×{selectedItem.qty}</span>
-                  </div>
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-text-faint">type</span>
-                    <span className="text-text-dim">消耗品</span>
-                  </div>
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-text-faint">rarity</span>
-                    <span style={{ color: "var(--purple)" }}>★★☆☆</span>
-                  </div>
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-text-faint">weight</span>
-                    <span className="text-text-dim">0.1 kg</span>
+                    <span className="text-accent font-bold">×{selectedItem.quantity}</span>
                   </div>
                 </div>
-
-                <div className="border-t border-line my-3" />
-
-                {/* effect box */}
-                <div
-                  className="rounded-[4px] p-2.5 mb-4 text-[10px] leading-[1.75]"
-                  style={{ background: "var(--bg-elev-2)", border: "1px solid var(--line)" }}
-                >
-                  <div className="text-[9px] text-text-faint tracking-[0.12em] mb-1.5">EFFECT</div>
-                  <div className="text-text-dim">
-                    経験値 <span className="text-accent font-bold">+100 XP</span>
-                  </div>
-                  <div className="text-text-faint/70 text-[10px] mt-0.5">
-                    即時発動 · 取り消し不可
-                  </div>
-                </div>
-
-                {/* actions */}
-                <button className="w-full py-2.5 bg-accent text-bg text-[12px] font-bold tracking-[0.05em] rounded-[4px] hover:opacity-90 transition-opacity">
-                  USE [E]
-                </button>
-                <button
-                  className="mt-2 w-full py-2 text-[11px] text-text-faint tracking-[0.05em] rounded-[4px] border border-line hover:border-line-strong hover:text-text-dim transition-colors"
-                >
-                  DISCARD [Del]
-                </button>
               </>
             ) : (
               <div className="text-[11px] text-text-faint leading-[1.6]">
@@ -215,7 +194,7 @@ function Cell({
   selected,
   onClick,
 }: {
-  item: Item | null;
+  item: InventoryItem | null;
   selected: boolean;
   onClick: () => void;
 }) {
@@ -235,12 +214,12 @@ function Cell({
     >
       {item && (
         <>
-          <span className="text-[28px] select-none leading-none">{item.emoji}</span>
+          <span className="text-[28px] select-none leading-none">{item.iconEmoji}</span>
           <span
             className="absolute bottom-0.5 right-1 text-[10px] font-bold leading-none"
             style={{ textShadow: "1px 1px 0 #000" }}
           >
-            {item.qty}
+            {item.quantity}
           </span>
         </>
       )}
