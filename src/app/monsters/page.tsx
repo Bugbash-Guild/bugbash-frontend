@@ -169,11 +169,11 @@ export default function MonstersPage() {
                 key={m.id}
                 className="rounded-[6px] p-3.5 relative transition-transform duration-[120ms]"
                 style={{
-                  background: "var(--bg-elev)",
+                  background: m.isOwned ? "var(--bg-elev)" : "var(--bg-elev-2)",
                   border: `${isComp ? 2 : 1}px ${m.isOwned ? "solid" : "dashed"} ${
-                    isComp ? c : m.isOwned ? `${c}66` : "var(--line)"
+                    isComp ? c : m.isOwned ? `${c}66` : "var(--line-strong)"
                   }`,
-                  opacity: m.isOwned ? 1 : 0.5,
+                  opacity: m.isOwned ? 1 : 0.6,
                   boxShadow: isComp
                     ? `0 0 0 1px ${c}aa, 0 8px 24px ${c}33`
                     : m.isOwned && m.rarity === "SSR"
@@ -205,12 +205,28 @@ export default function MonstersPage() {
 
                 {/* portrait */}
                 <div
-                  className="aspect-square rounded-[4px] flex items-center justify-center text-[64px] mb-2.5 border border-line"
+                  className="aspect-square rounded-[4px] flex items-center justify-center text-[64px] mb-2.5 border border-line relative overflow-hidden"
                   style={{
-                    background: `radial-gradient(circle at 50% 40%, ${c}1a 0%, transparent 70%), var(--bg-elev-2)`,
+                    background: m.isOwned
+                      ? `radial-gradient(circle at 50% 40%, ${c}1a 0%, transparent 70%), var(--bg-elev-2)`
+                      : "var(--bg-elev-2)",
                   }}
                 >
-                  {m.isOwned ? m.emoji : "?"}
+                  {m.isOwned ? (
+                    m.emoji
+                  ) : (
+                    <span
+                      className="text-[64px] select-none"
+                      style={{ filter: "brightness(0)", opacity: 0.35 }}
+                    >
+                      {m.emoji}
+                    </span>
+                  )}
+                  {!m.isOwned && (
+                    <span className="absolute bottom-1 right-1.5 text-[9px] text-text-faint tracking-[0.1em]">
+                      ???
+                    </span>
+                  )}
                 </div>
 
                 {/* name */}
