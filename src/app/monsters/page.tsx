@@ -34,7 +34,7 @@ export default function MonstersPage() {
       if (!res.ok) {
         setActionError(body.error ?? `Error ${res.status}`);
       } else {
-        setSuccessMsg(`Lv.${body.newLevel ?? '?'} に上昇！ +100 GUILD_COIN 獲得`);
+        setSuccessMsg(`Lv.${body.newLevel ?? '?'} に上昇！`);
         await Promise.all([refetch(), refetchHero()]);
       }
     } catch {
@@ -47,13 +47,15 @@ export default function MonstersPage() {
   const handleEvolve = async (monsterId: string) => {
     setEvolving(monsterId);
     setActionError(null);
+    setSuccessMsg(null);
     try {
       const res = await fetch(`/api/monsters/${monsterId}/evolve`, { method: 'POST' });
+      const body = await res.json() as { awakeningState?: string; evolutionStonesRemaining?: number; error?: string };
       if (!res.ok) {
-        const body = await res.json() as { error?: string };
         setActionError(body.error ?? `Error ${res.status}`);
       } else {
-        await refetch();
+        setSuccessMsg(`覚醒：${body.awakeningState ?? '?'}`);
+        await Promise.all([refetch(), refetchHero()]);
       }
     } catch {
       setActionError('Network error');
@@ -223,7 +225,7 @@ export default function MonstersPage() {
                     </span>
                   )}
                   {!m.isOwned && (
-                    <span className="absolute bottom-1 right-1.5 text-[9px] text-text-faint tracking-[0.1em]">
+                    <span className="absolute bottom-1 right-1.5 text-[9px] text-text-faint tracking-[0.1em] opacity-80">
                       ???
                     </span>
                   )}
