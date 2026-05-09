@@ -13,6 +13,10 @@ export function usePurchase() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<PurchaseError | null>(null);
 
+    function reset() {
+        setError(null);
+    }
+
     async function purchase(itemId: string): Promise<PurchaseResponse> {
         setLoading(true);
         setError(null);
@@ -35,5 +39,5 @@ export function usePurchase() {
         }
     }
 
-    return { purchase, loading, error };
+    return { purchase, loading, error, reset };
 }
