@@ -8,5 +8,5 @@ export async function POST(
     { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
     const { id } = await params;
-    return proxyPost(req, `/api/monsters/${id}/level-up`);
+    return proxyPost(req, `/api/monsters/${id}/evolve`);
 }
