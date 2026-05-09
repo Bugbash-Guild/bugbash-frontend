@@ -31,6 +31,9 @@ const RARITY_BG: Record<ItemRarity, string> = {
   SSR: "bg-[#2a1e06]",
 };
 
+const SOFT_PITY_THRESHOLD = 60;
+const HARD_PITY_LIMIT = 80;
+
 const ITEM_NAMES: Record<string, string> = {
   "evolution-stone": "進化の輝石",
   "purification-proof": "浄化の証",
@@ -106,7 +109,7 @@ export default function SummonPage() {
   }
 
   const pullCount = pity?.pullCount ?? 0;
-  const hardPityProgress = Math.min(100, (pullCount / 80) * 100);
+  const hardPityProgress = Math.min(100, (pullCount / HARD_PITY_LIMIT) * 100);
 
   return (
     <MainWrapper>
@@ -157,7 +160,7 @@ export default function SummonPage() {
                 <span className="text-[32px] text-text font-semibold tabular-nums">
                   {pullCount}
                 </span>
-                <span className="text-[13px] text-text-dim">/ 80 pulls</span>
+                <span className="text-[13px] text-text-dim">/ {HARD_PITY_LIMIT} pulls</span>
               </div>
               <div className="w-full h-1.5 bg-bg-elev-2 rounded-full overflow-hidden mb-2">
                 <div
@@ -184,7 +187,7 @@ export default function SummonPage() {
                 )}
                 {!pity?.isSoftPity && !pity?.isHardPity && (
                   <span className="text-text-faint">
-                    soft pity at 60 · hard pity at 80
+                    soft pity at {SOFT_PITY_THRESHOLD} · hard pity at {HARD_PITY_LIMIT}
                   </span>
                 )}
               </div>
@@ -240,8 +243,8 @@ export default function SummonPage() {
               </div>
             ) : (
               <div className="space-y-0">
-                {entries.slice(0, 20).map((entry, i) => (
-                  <HistoryRow key={i} entry={entry} />
+                {entries.slice(0, 20).map((entry) => (
+                  <HistoryRow key={`${entry.itemId}-${entry.pulledAt}`} entry={entry} />
                 ))}
               </div>
             )}
@@ -255,6 +258,9 @@ export default function SummonPage() {
             onClick={() => setResult(null)}
           >
             <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="召喚結果"
               className="bg-bg-elev border border-line-strong rounded-lg p-6 w-full max-w-sm mx-4"
               onClick={(e) => e.stopPropagation()}
             >
@@ -313,7 +319,7 @@ function TenResult({ data }: { data: SummonTenResponse }) {
   return (
     <div className="grid grid-cols-5 gap-2">
       {data.results.map((item, i) => (
-        <SummonCard key={i} item={item} />
+        <SummonCard key={`${item.itemId}-${i}`} item={item} />
       ))}
     </div>
   );
