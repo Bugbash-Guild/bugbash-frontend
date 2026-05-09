@@ -18,21 +18,24 @@ export default function MonstersPage() {
   const { isAuthenticated } = useAuth();
   const { monsters, loading, error, refetch } = useMonsters();
   const { partnerId, setPartner } = usePartner();
-  const { hero } = useHero(isAuthenticated);
+  const { hero, refetch: refetchHero } = useHero(isAuthenticated);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [levelingUp, setLevelingUp] = useState<string | null>(null);
   const [evolving, setEvolving] = useState<string | null>(null);
 
   const handleLevelUp = async (monsterId: string) => {
     setLevelingUp(monsterId);
     setActionError(null);
+    setSuccessMsg(null);
     try {
       const res = await fetch(`/api/monsters/${monsterId}/level-up`, { method: 'POST' });
+      const body = await res.json() as { newLevel?: number; soulsRemaining?: number; guildCoinBalance?: number; error?: string };
       if (!res.ok) {
-        const body = await res.json() as { error?: string };
         setActionError(body.error ?? `Error ${res.status}`);
       } else {
-        await refetch();
+        setSuccessMsg(`Lv.${body.newLevel ?? '?'} に上昇！ +100 GUILD_COIN 獲得`);
+        await Promise.all([refetch(), refetchHero()]);
       }
     } catch {
       setActionError('Network error');
@@ -102,6 +105,11 @@ export default function MonstersPage() {
         {/* loading / error */}
         {loading && <div className="text-text-faint text-[13px] mb-4">loading dex…</div>}
         {error && <div className="text-pink text-[13px] mb-4">error: {error}</div>}
+        {successMsg && (
+          <div className="text-accent text-[13px] mb-4 px-3 py-2 rounded border border-accent/30 bg-accent/10">
+            ✓ {successMsg}
+          </div>
+        )}
         {actionError && (
           <div className="text-pink text-[13px] mb-4 px-3 py-2 rounded border border-pink/30 bg-pink/10">
             {actionError}
