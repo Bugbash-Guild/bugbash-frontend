@@ -18,21 +18,24 @@ export default function MonstersPage() {
   const { isAuthenticated } = useAuth();
   const { monsters, loading, error, refetch } = useMonsters();
   const { partnerId, setPartner } = usePartner();
-  const { hero } = useHero(isAuthenticated);
+  const { hero, refetch: refetchHero } = useHero(isAuthenticated);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [levelingUp, setLevelingUp] = useState<string | null>(null);
   const [evolving, setEvolving] = useState<string | null>(null);
 
   const handleLevelUp = async (monsterId: string) => {
     setLevelingUp(monsterId);
     setActionError(null);
+    setSuccessMsg(null);
     try {
       const res = await fetch(`/api/monsters/${monsterId}/level-up`, { method: 'POST' });
+      const body = await res.json() as { newLevel?: number; soulsRemaining?: number; guildCoinBalance?: number; error?: string };
       if (!res.ok) {
-        const body = await res.json() as { error?: string };
         setActionError(body.error ?? `Error ${res.status}`);
       } else {
-        await refetch();
+        setSuccessMsg(`Lv.${body.newLevel ?? '?'} に上昇！`);
+        await Promise.all([refetch(), refetchHero()]);
       }
     } catch {
       setActionError('Network error');
@@ -44,13 +47,15 @@ export default function MonstersPage() {
   const handleEvolve = async (monsterId: string) => {
     setEvolving(monsterId);
     setActionError(null);
+    setSuccessMsg(null);
     try {
       const res = await fetch(`/api/monsters/${monsterId}/evolve`, { method: 'POST' });
+      const body = await res.json() as { awakeningState?: string; evolutionStonesRemaining?: number; error?: string };
       if (!res.ok) {
-        const body = await res.json() as { error?: string };
         setActionError(body.error ?? `Error ${res.status}`);
       } else {
-        await refetch();
+        setSuccessMsg(`覚醒：${body.awakeningState ?? '?'}`);
+        await Promise.all([refetch(), refetchHero()]);
       }
     } catch {
       setActionError('Network error');
@@ -102,6 +107,11 @@ export default function MonstersPage() {
         {/* loading / error */}
         {loading && <div className="text-text-faint text-[13px] mb-4">loading dex…</div>}
         {error && <div className="text-pink text-[13px] mb-4">error: {error}</div>}
+        {successMsg && (
+          <div className="text-accent text-[13px] mb-4 px-3 py-2 rounded border border-accent/30 bg-accent/10">
+            ✓ {successMsg}
+          </div>
+        )}
         {actionError && (
           <div className="text-pink text-[13px] mb-4 px-3 py-2 rounded border border-pink/30 bg-pink/10">
             {actionError}
@@ -161,11 +171,11 @@ export default function MonstersPage() {
                 key={m.id}
                 className="rounded-[6px] p-3.5 relative transition-transform duration-[120ms]"
                 style={{
-                  background: "var(--bg-elev)",
+                  background: m.isOwned ? "var(--bg-elev)" : "var(--bg-elev-2)",
                   border: `${isComp ? 2 : 1}px ${m.isOwned ? "solid" : "dashed"} ${
-                    isComp ? c : m.isOwned ? `${c}66` : "var(--line)"
+                    isComp ? c : m.isOwned ? `${c}66` : "var(--line-strong)"
                   }`,
-                  opacity: m.isOwned ? 1 : 0.5,
+                  opacity: m.isOwned ? 1 : 0.6,
                   boxShadow: isComp
                     ? `0 0 0 1px ${c}aa, 0 8px 24px ${c}33`
                     : m.isOwned && m.rarity === "SSR"
@@ -197,12 +207,28 @@ export default function MonstersPage() {
 
                 {/* portrait */}
                 <div
-                  className="aspect-square rounded-[4px] flex items-center justify-center text-[64px] mb-2.5 border border-line"
+                  className="aspect-square rounded-[4px] flex items-center justify-center text-[64px] mb-2.5 border border-line relative overflow-hidden"
                   style={{
-                    background: `radial-gradient(circle at 50% 40%, ${c}1a 0%, transparent 70%), var(--bg-elev-2)`,
+                    background: m.isOwned
+                      ? `radial-gradient(circle at 50% 40%, ${c}1a 0%, transparent 70%), var(--bg-elev-2)`
+                      : "var(--bg-elev-2)",
                   }}
                 >
-                  {m.isOwned ? m.emoji : "?"}
+                  {m.isOwned ? (
+                    m.emoji
+                  ) : (
+                    <span
+                      className="text-[64px] select-none"
+                      style={{ filter: "brightness(0)", opacity: 0.35 }}
+                    >
+                      {m.emoji}
+                    </span>
+                  )}
+                  {!m.isOwned && (
+                    <span className="absolute bottom-1 right-1.5 text-[9px] text-text-faint tracking-[0.1em] opacity-80">
+                      ???
+                    </span>
+                  )}
                 </div>
 
                 {/* name */}
