@@ -46,9 +46,9 @@ function DevPanel({ onSuccess }: { onSuccess: () => void }) {
       const res = await fetch("/api/dev/grant-resources", { method: "POST" });
       const data = await res.json() as Record<string, unknown>;
       if (res.ok) {
-        setMsg(
-          `✓ +${data.guildCoinGranted as number} GUILD_COIN · +${data.soulsGrantedPerAttribute as number} souls/attr · items added`
-        );
+        const coins = typeof data.guildCoinGranted === "number" ? data.guildCoinGranted : "?";
+        const souls = typeof data.soulsGrantedPerAttribute === "number" ? data.soulsGrantedPerAttribute : "?";
+        setMsg(`✓ +${coins} GUILD_COIN · +${souls} souls/attr · items added`);
         onSuccess();
       } else {
         setMsg(`Error: ${String(data.error ?? res.status)}`);
