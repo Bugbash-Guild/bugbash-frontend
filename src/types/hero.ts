@@ -8,5 +8,6 @@ export type Hero = {
     progressRatio: number;
     partnerId: string | null;
     guildCoinBalance: number;
-    streakDays?: number;
+    streakDays: number;
+    totalPrsMerged: number;
 };

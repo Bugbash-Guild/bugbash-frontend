@@ -23,8 +23,9 @@ export function useAuth() {
     );
 
     const login = () => {
-        const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
-        window.location.href = `${base}/oauth2/authorization/github`;
+        // 相対パスにすることで Next.js rewrite 経由になり、
+        // セッションクッキーがフロントエンドドメインに設定される
+        window.location.href = '/oauth2/authorization/github';
     };
 
     return {
