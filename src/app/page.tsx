@@ -187,9 +187,9 @@ export default function Home() {
                   <div className="text-[13px] text-text-dim mt-2">
                     {hero.totalExperience.toLocaleString()} XP earned
                     <span className="text-text-faint mx-2">·</span>
-                    128 PRs merged
+                    {hero.totalPrsMerged} PRs merged
                     <span className="text-text-faint mx-2">·</span>
-                    7d streak
+                    {hero.streakDays}d streak
                   </div>
 
                   {/* ATK / DEF / LUCK */}
@@ -228,8 +228,6 @@ export default function Home() {
                   </div>
                   <div className="text-[13px] text-text-faint mt-2">
                     <span className="text-text-dim">{hero.experienceToNextLevel} XP</span> to Lv.{hero.level + 1}
-                    <span className="text-line mx-2">·</span>
-                    ≈ {Math.ceil(hero.experienceToNextLevel / 100)} more PRs
                   </div>
                 </div>
               </div>
@@ -240,10 +238,10 @@ export default function Home() {
               {/* 2×2 stat boxes */}
               <div className="grid grid-cols-2 gap-2.5">
                 {[
-                  { label: "PRs merged",      value: "128",                        delta: "+2 today",                          color: "var(--accent)" },
+                  { label: "PRs merged",      value: String(hero.totalPrsMerged),  delta: "lifetime",                          color: "var(--accent)" },
                   { label: "monsters caught",  value: String(monsters.length || 0), delta: `${monsters.length || 0}/20 dex`,    color: "var(--purple)" },
                   { label: "SSR rate",         value: "4.2%",                       delta: "lifetime",                           color: "var(--gold)" },
-                  { label: "streak",           value: hero.streakDays != null ? `${hero.streakDays}d` : "—", delta: (hero.streakDays ?? 0) > 1 ? "🔥 on fire" : "keep it up!", color: "var(--accent-2)" },
+                  { label: "streak",           value: `${hero.streakDays}d`,         delta: hero.streakDays > 1 ? "🔥 on fire" : "keep it up!", color: "var(--accent-2)" },
                 ].map((s) => (
                   <div key={s.label} className="bg-bg-elev border border-line rounded-[6px] px-3.5 py-3">
                     <div className="text-[11px] text-text-faint tracking-[0.1em] mb-2">{s.label.toUpperCase()}</div>
