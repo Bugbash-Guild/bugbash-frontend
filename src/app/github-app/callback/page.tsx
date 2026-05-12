@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function GithubAppCallback() {
+function GithubAppCallbackInner() {
     const router = useRouter();
     const params = useSearchParams();
     const [status, setStatus] = useState<"saving" | "done" | "error">("saving");
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         const installationId = params.get("installation_id");
@@ -32,7 +33,7 @@ export default function GithubAppCallback() {
                 });
                 if (res.ok) {
                     setStatus("done");
-                    setTimeout(() => router.replace("/"), 1500);
+                    timerRef.current = setTimeout(() => router.replace("/"), 1500);
                 } else {
                     setStatus("error");
                 }
@@ -40,6 +41,10 @@ export default function GithubAppCallback() {
                 setStatus("error");
             }
         })();
+
+        return () => {
+            if (timerRef.current !== null) clearTimeout(timerRef.current);
+        };
     }, [params, router]);
 
     return (
@@ -69,5 +74,20 @@ export default function GithubAppCallback() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function GithubAppCallback() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-bg">
+                <div className="flex items-center gap-2 text-text-dim text-[13px]">
+                    <span className="w-4 h-4 border border-accent border-t-transparent rounded-full animate-spin" />
+                    読み込み中…
+                </div>
+            </div>
+        }>
+            <GithubAppCallbackInner />
+        </Suspense>
     );
 }
