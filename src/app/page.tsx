@@ -35,6 +35,33 @@ const HERO_ASCII = [
   "  /       \\  ",
 ];
 
+function GithubAppBanner() {
+  const appSlug = process.env.NEXT_PUBLIC_GITHUB_APP_SLUG ?? "";
+  const installUrl = appSlug
+    ? `https://github.com/apps/${appSlug}/installations/new`
+    : "#";
+
+  return (
+    <div className="mb-4 border border-gold/40 rounded-[6px] p-3.5 flex items-center justify-between gap-4"
+      style={{ background: "rgba(227,179,65,0.06)" }}>
+      <div>
+        <div className="text-[12px] font-semibold text-gold">GitHub App をインストールしてください</div>
+        <div className="text-[11px] text-text-faint mt-0.5">
+          PRをマージするとXPを獲得できます。インストールすることで自動的に追跡が開始されます。
+        </div>
+      </div>
+      <a
+        href={installUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="shrink-0 px-4 py-1.5 rounded text-[12px] font-semibold text-bg bg-gold hover:opacity-90 transition-opacity"
+      >
+        インストール
+      </a>
+    </div>
+  );
+}
+
 function DevPanel({ onSuccess }: { onSuccess: () => void }) {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -120,6 +147,11 @@ export default function Home() {
 
         {process.env.NODE_ENV === "development" && (
           <DevPanel onSuccess={() => void refetchHero()} />
+        )}
+
+        {/* GitHub App install banner */}
+        {!heroLoading && hero && !hero.hasGithubAppInstalled && (
+          <GithubAppBanner />
         )}
 
         {heroLoading || !hero ? (
