@@ -10,4 +10,5 @@ export type Hero = {
     guildCoinBalance: number;
     streakDays: number;
     totalPrsMerged: number;
+    hasGithubAppInstalled: boolean;
 };
