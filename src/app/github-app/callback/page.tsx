@@ -19,13 +19,15 @@ export default function GithubAppCallback() {
 
         void (async () => {
             try {
+                const accountLogin = params.get("account_login") ?? "";
+                const accountType = params.get("account_type") ?? "User";
                 const res = await fetch("/api/github/app/installation", {
                     method: "POST",
                     headers: { "content-type": "application/json" },
                     body: JSON.stringify({
                         installationId: Number(installationId),
-                        accountLogin: "",
-                        accountType: "User",
+                        accountLogin,
+                        accountType,
                     }),
                 });
                 if (res.ok) {
