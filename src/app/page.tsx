@@ -154,6 +154,20 @@ export default function Home() {
           <GithubAppBanner />
         )}
 
+        {/* GitHub App manage link — shown when already installed */}
+        {!heroLoading && hero?.hasGithubAppInstalled && (
+          <div className="text-[11px] text-text-faint text-right mb-3">
+            <a
+              href={`https://github.com/apps/${process.env.NEXT_PUBLIC_GITHUB_APP_SLUG ?? ""}/installations/new`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-text-dim transition-colors"
+            >
+              + GitHub App にリポジトリを追加
+            </a>
+          </div>
+        )}
+
         {heroLoading || !hero ? (
           <div className="text-text-faint text-[13px]">loading hero…</div>
         ) : (
