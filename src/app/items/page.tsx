@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/hooks/useInventory";
@@ -21,14 +21,22 @@ export default function ItemsPage() {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [hotbarSelected, setHotbarSelected] = useState<number>(0);
   const [useResult, setUseResult] = useState<UseItemResponse | null>(null);
+  const [refetching, setRefetching] = useState(false);
+  const activeItemIdRef = useRef<string | null>(null);
 
   async function handleUseItem(itemId: string) {
     resetUseError();
     setUseResult(null);
+    activeItemIdRef.current = itemId;
     const result = await consume(itemId).catch(() => null);
-    if (result) {
+    if (result && activeItemIdRef.current === itemId) {
       setUseResult(result);
-      await refetch();
+      setRefetching(true);
+      try {
+        await refetch();
+      } finally {
+        setRefetching(false);
+      }
     }
   }
 
@@ -109,6 +117,7 @@ export default function ItemsPage() {
                       setHotbarSelected(-1);
                       setUseResult(null);
                       resetUseError();
+                      activeItemIdRef.current = null;
                     }}
                   />
                 );
@@ -135,6 +144,7 @@ export default function ItemsPage() {
                           setSelectedIdx(null);
                           setUseResult(null);
                           resetUseError();
+                          activeItemIdRef.current = null;
                         }}
                       />
                       <span className="absolute top-0.5 left-1 text-[9px] text-text-faint leading-none pointer-events-none">
@@ -195,7 +205,7 @@ export default function ItemsPage() {
                 {selectedItem.category === 'SOUL_PACK' && (
                   <div className="mt-4 space-y-2">
                     <button
-                      disabled={useLoading || selectedItem.quantity === 0}
+                      disabled={useLoading || refetching || selectedItem.quantity === 0}
                       onClick={() => handleUseItem(selectedItem.itemId)}
                       className="w-full py-2 rounded-[4px] text-[12px] font-bold tracking-[0.05em] transition-all duration-[80ms] disabled:opacity-40 disabled:cursor-not-allowed"
                       style={{
@@ -209,6 +219,8 @@ export default function ItemsPage() {
 
                     {useResult && (
                       <div
+                        role="status"
+                        aria-live="polite"
                         className="rounded-[4px] p-2.5 text-[11px] space-y-1"
                         style={{ background: 'rgba(126,231,135,0.06)', border: '1px solid rgba(126,231,135,0.2)' }}
                       >
@@ -225,6 +237,8 @@ export default function ItemsPage() {
 
                     {useError && (
                       <div
+                        role="alert"
+                        aria-live="assertive"
                         className="rounded-[4px] p-2.5 text-[11px]"
                         style={{ background: 'rgba(255,100,100,0.06)', border: '1px solid rgba(255,100,100,0.2)', color: 'var(--pink)' }}
                       >

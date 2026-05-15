@@ -21,10 +21,18 @@ export function useUseItem() {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`/api/inventory/${itemId}/use`, {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
-            });
+            let res: Response;
+            try {
+                res = await fetch(`/api/inventory/${itemId}/use`, {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                });
+            } catch (networkErr) {
+                const msg = networkErr instanceof Error ? networkErr.message : 'ネットワークエラー';
+                const err: UseItemError = { status: 0, message: msg };
+                setError(err);
+                throw err;
+            }
             if (!res.ok) {
                 const errBody = await res.json().catch(() => ({ error: `${res.status}` }));
                 const errMsg = (errBody as { error?: string }).error ?? `HTTP ${res.status}`;
