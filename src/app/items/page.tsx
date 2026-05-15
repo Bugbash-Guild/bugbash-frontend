@@ -17,7 +17,7 @@ export default function ItemsPage() {
   const router = useRouter();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const { items, loading, error, refetch } = useInventory(isAuthenticated);
-  const { useItem, loading: useLoading, error: useError, reset: resetUseError } = useUseItem();
+  const { consume, loading: useLoading, error: useError, reset: resetUseError } = useUseItem();
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [hotbarSelected, setHotbarSelected] = useState<number>(0);
   const [useResult, setUseResult] = useState<UseItemResponse | null>(null);
@@ -25,7 +25,7 @@ export default function ItemsPage() {
   async function handleUseItem(itemId: string) {
     resetUseError();
     setUseResult(null);
-    const result = await useItem(itemId).catch(() => null);
+    const result = await consume(itemId).catch(() => null);
     if (result) {
       setUseResult(result);
       await refetch();

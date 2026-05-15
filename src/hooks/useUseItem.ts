@@ -17,7 +17,7 @@ export function useUseItem() {
         setError(null);
     }
 
-    async function useItem(itemId: string): Promise<UseItemResponse> {
+    async function consume(itemId: string): Promise<UseItemResponse> {
         setLoading(true);
         setError(null);
         try {
@@ -38,5 +38,5 @@ export function useUseItem() {
         }
     }
 
-    return { useItem, loading, error, reset };
+    return { consume, loading, error, reset };
 }
