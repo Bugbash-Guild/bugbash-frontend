@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/hooks/useInventory";
+import { useUseItem } from "@/hooks/useUseItem";
 import { MainWrapper } from "@/components/MainWrapper";
-import type { InventoryItem } from "@/types/inventory";
+import type { InventoryItem, UseItemResponse } from "@/types/inventory";
 
 const ROWS = 4;
 const COLS = 12;
@@ -15,9 +16,21 @@ const HOTBAR_SLOTS = 12;
 export default function ItemsPage() {
   const router = useRouter();
   const { isAuthenticated, loading: authLoading } = useAuth();
-  const { items, loading, error } = useInventory(isAuthenticated);
+  const { items, loading, error, refetch } = useInventory(isAuthenticated);
+  const { useItem, loading: useLoading, error: useError, reset: resetUseError } = useUseItem();
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [hotbarSelected, setHotbarSelected] = useState<number>(0);
+  const [useResult, setUseResult] = useState<UseItemResponse | null>(null);
+
+  async function handleUseItem(itemId: string) {
+    resetUseError();
+    setUseResult(null);
+    const result = await useItem(itemId).catch(() => null);
+    if (result) {
+      setUseResult(result);
+      await refetch();
+    }
+  }
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.replace("/login");
@@ -94,6 +107,8 @@ export default function ItemsPage() {
                     onClick={() => {
                       setSelectedIdx(isSelected ? null : idx);
                       setHotbarSelected(-1);
+                      setUseResult(null);
+                      resetUseError();
                     }}
                   />
                 );
@@ -118,6 +133,8 @@ export default function ItemsPage() {
                         onClick={() => {
                           setHotbarSelected(i);
                           setSelectedIdx(null);
+                          setUseResult(null);
+                          resetUseError();
                         }}
                       />
                       <span className="absolute top-0.5 left-1 text-[9px] text-text-faint leading-none pointer-events-none">
@@ -174,6 +191,48 @@ export default function ItemsPage() {
                     <span className="text-accent font-bold">×{selectedItem.quantity}</span>
                   </div>
                 </div>
+
+                {selectedItem.category === 'SOUL_PACK' && (
+                  <div className="mt-4 space-y-2">
+                    <button
+                      disabled={useLoading || selectedItem.quantity === 0}
+                      onClick={() => handleUseItem(selectedItem.itemId)}
+                      className="w-full py-2 rounded-[4px] text-[12px] font-bold tracking-[0.05em] transition-all duration-[80ms] disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={{
+                        background: 'rgba(126,231,135,0.12)',
+                        border: '1px solid rgba(126,231,135,0.35)',
+                        color: 'var(--accent)',
+                      }}
+                    >
+                      {useLoading ? '使用中…' : '使う'}
+                    </button>
+
+                    {useResult && (
+                      <div
+                        className="rounded-[4px] p-2.5 text-[11px] space-y-1"
+                        style={{ background: 'rgba(126,231,135,0.06)', border: '1px solid rgba(126,231,135,0.2)' }}
+                      >
+                        <div className="text-accent font-bold">✓ 使用しました</div>
+                        <div className="text-text-faint">
+                          <span className="capitalize">{useResult.attribute}</span> 属性に{' '}
+                          <span className="text-accent">+{useResult.soulsAdded}</span> ソウル付与
+                        </div>
+                        <div className="text-text-faint">
+                          合計: <span className="text-text">{useResult.soulsAfter}</span> ソウル
+                        </div>
+                      </div>
+                    )}
+
+                    {useError && (
+                      <div
+                        className="rounded-[4px] p-2.5 text-[11px]"
+                        style={{ background: 'rgba(255,100,100,0.06)', border: '1px solid rgba(255,100,100,0.2)', color: 'var(--pink)' }}
+                      >
+                        {useError.message}
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             ) : (
               <div className="text-[11px] text-text-faint leading-[1.6]">
