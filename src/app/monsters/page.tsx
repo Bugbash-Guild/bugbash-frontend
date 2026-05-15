@@ -57,7 +57,7 @@ export default function MonstersPage() {
       } else {
         const label = body.awakeningState === 'AWAKENED' ? '✨覚醒' : '🔥暴走';
         setSuccessMsg(`路線変更：${label}（証残数: ${body.itemRemaining ?? '?'}）`);
-        await refetch();
+        await Promise.all([refetch(), refetchHero()]);
       }
     } catch {
       setActionError('Network error');
