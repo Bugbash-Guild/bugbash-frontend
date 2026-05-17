@@ -51,11 +51,11 @@ export default function MonstersPage() {
     setSuccessMsg(null);
     try {
       const res = await fetch(`/api/monsters/${monsterId}/change-path`, { method: 'POST' });
-      const body = await res.json() as { awakeningState?: string; itemRemaining?: number; error?: string };
+      const body = await res.json() as { awakeningState?: import('@/types/monster').AwakeningState; itemRemaining?: number; error?: string };
       if (!res.ok) {
         setActionError(body.error ?? `Error ${res.status}`);
       } else {
-        const label = body.awakeningState === 'AWAKENED' ? '✨覚醒' : '🔥暴走';
+        const label = body.awakeningState ? (AWAKENING_LABEL[body.awakeningState] ?? body.awakeningState) : '?';
         setSuccessMsg(`路線変更：${label}（証残数: ${body.itemRemaining ?? '?'}）`);
         await Promise.all([refetch(), refetchHero()]);
       }
