@@ -23,6 +23,7 @@ export default function MonstersPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [levelingUp, setLevelingUp] = useState<string | null>(null);
   const [evolving, setEvolving] = useState<string | null>(null);
+  const [changingPath, setChangingPath] = useState<string | null>(null);
 
   const handleLevelUp = async (monsterId: string) => {
     setLevelingUp(monsterId);
@@ -41,6 +42,27 @@ export default function MonstersPage() {
       setActionError('Network error');
     } finally {
       setLevelingUp(null);
+    }
+  };
+
+  const handleChangePath = async (monsterId: string) => {
+    setChangingPath(monsterId);
+    setActionError(null);
+    setSuccessMsg(null);
+    try {
+      const res = await fetch(`/api/monsters/${monsterId}/change-path`, { method: 'POST' });
+      const body = await res.json() as { awakeningState?: import('@/types/monster').AwakeningState; itemRemaining?: number; error?: string };
+      if (!res.ok) {
+        setActionError(body.error ?? `Error ${res.status}`);
+      } else {
+        const label = body.awakeningState ? (AWAKENING_LABEL[body.awakeningState] ?? body.awakeningState) : '?';
+        setSuccessMsg(`路線変更：${label}（証残数: ${body.itemRemaining ?? '?'}）`);
+        await Promise.all([refetch(), refetchHero()]);
+      }
+    } catch {
+      setActionError('Network error');
+    } finally {
+      setChangingPath(null);
     }
   };
 
@@ -270,14 +292,27 @@ export default function MonstersPage() {
                 {/* 覚醒済みバッジ / 進化ボタン / レベルアップボタン */}
                 {m.isOwned && (
                   isAwakened ? (
-                    <div
-                      className="mt-1 text-[10px] text-center font-bold tracking-widest rounded py-0.5"
-                      style={{
-                        color: m.awakeningState === "BERSERK" ? "#f97316" : "#a78bfa",
-                        border: `1px solid ${m.awakeningState === "BERSERK" ? "#f9731640" : "#a78bfa40"}`,
-                      }}
-                    >
-                      {m.awakeningState && (AWAKENING_LABEL[m.awakeningState] ?? m.awakeningState)}
+                    <div className="mt-1 space-y-1">
+                      <div
+                        className="text-[10px] text-center font-bold tracking-widest rounded py-0.5"
+                        style={{
+                          color: m.awakeningState === "BERSERK" ? "#f97316" : "#a78bfa",
+                          border: `1px solid ${m.awakeningState === "BERSERK" ? "#f9731640" : "#a78bfa40"}`,
+                        }}
+                      >
+                        {m.awakeningState && (AWAKENING_LABEL[m.awakeningState] ?? m.awakeningState)}
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void handleChangePath(m.id);
+                        }}
+                        disabled={changingPath === m.id}
+                        className="w-full text-[10px] px-2 py-0.5 rounded border border-current opacity-60 hover:opacity-100 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity"
+                        style={{ color: m.awakeningState === "BERSERK" ? "#a78bfa" : "#f97316" }}
+                      >
+                        {changingPath === m.id ? "…" : "🔄 路線変更"}
+                      </button>
                     </div>
                   ) : canEvolve ? (
                     <button
