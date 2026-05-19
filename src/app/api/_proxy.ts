@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { createProxyResponse } from './_proxyCore';
 
-type ProxyMethod = 'GET' | 'POST' | 'PUT';
+type ProxyMethod = 'DELETE' | 'GET' | 'PATCH' | 'POST' | 'PUT';
 
 const getBackendOrigin = (): string | null =>
     process.env.BACKEND_ORIGIN ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? null;
@@ -13,7 +13,7 @@ const createProxyHeaders = (req: NextRequest, hasBody: boolean): HeadersInit => 
     ...(hasBody && { 'content-type': 'application/json' }),
 });
 
-async function proxyRequest(
+export async function proxyRequest(
     req: NextRequest,
     backendPath: string,
     method: ProxyMethod,
