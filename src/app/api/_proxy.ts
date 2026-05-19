@@ -21,7 +21,10 @@ async function proxyRequest(
 ): Promise<Response> {
     const backend = getBackendOrigin();
     if (!backend) {
-        return NextResponse.json({ error: 'BACKEND_URL not set' }, { status: 500 });
+        return NextResponse.json(
+            { error: 'BACKEND_ORIGIN or NEXT_PUBLIC_API_BASE_URL not set' },
+            { status: 500 },
+        );
     }
 
     try {

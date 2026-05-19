@@ -41,7 +41,16 @@ const createResponseHeaders = (response: Response): Headers => {
 
 export const createProxyResponse = async (response: Response): Promise<Response> => {
     if (isLoginRedirect(response)) {
-        return Response.json({ authenticated: false }, { status: 401 });
+        const headers = createResponseHeaders(response);
+        headers.set('content-type', JSON_CONTENT_TYPE);
+
+        return Response.json(
+            { authenticated: false },
+            {
+                status: 401,
+                headers,
+            },
+        );
     }
 
     const bodyText = await response.text();

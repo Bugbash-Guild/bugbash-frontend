@@ -9,6 +9,7 @@ describe('createProxyResponse', () => {
             status: 302,
             headers: {
                 location: 'https://app.bugbashguild.com/login',
+                'set-cookie': 'JSESSIONID=expired; Path=/; Max-Age=0; Secure; HttpOnly',
             },
         });
 
@@ -16,6 +17,10 @@ describe('createProxyResponse', () => {
 
         assert.equal(response.status, 401);
         assert.equal(response.headers.get('content-type'), 'application/json');
+        assert.equal(
+            response.headers.get('set-cookie'),
+            'JSESSIONID=expired; Path=/; Max-Age=0; Secure; HttpOnly',
+        );
         assert.deepEqual(await response.json(), { authenticated: false });
     });
 
