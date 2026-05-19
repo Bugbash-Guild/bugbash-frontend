@@ -1,111 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function proxyPut(req: NextRequest, backendPath: string): Promise<NextResponse> {
-    const backend = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { createProxyResponse } from './_proxyCore';
+
+type ProxyMethod = 'GET' | 'POST' | 'PUT';
+
+const getBackendOrigin = (): string | null =>
+    process.env.BACKEND_ORIGIN ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? null;
+
+const createProxyHeaders = (req: NextRequest, hasBody: boolean): HeadersInit => ({
+    cookie: req.headers.get('cookie') ?? '',
+    accept: 'application/json',
+    ...(hasBody && { 'content-type': 'application/json' }),
+});
+
+async function proxyRequest(
+    req: NextRequest,
+    backendPath: string,
+    method: ProxyMethod,
+    body?: string,
+): Promise<Response> {
+    const backend = getBackendOrigin();
     if (!backend) {
         return NextResponse.json({ error: 'BACKEND_URL not set' }, { status: 500 });
     }
+
     try {
-        const body = await req.text();
-        const res = await fetch(`${backend}${backendPath}`, {
-            method: 'PUT',
-            headers: {
-                cookie: req.headers.get('cookie') ?? '',
-                'content-type': 'application/json',
-                accept: 'application/json',
-            },
+        const res = await fetch(`${backend}${backendPath}${req.nextUrl.search}`, {
+            method,
+            headers: createProxyHeaders(req, body !== undefined),
             body,
             cache: 'no-store',
+            redirect: 'manual',
         });
-        const bodyText = await res.text();
-        return new NextResponse(bodyText, {
-            status: res.status,
-            headers: { 'content-type': res.headers.get('content-type') ?? 'application/json' },
-        });
+
+        return createProxyResponse(res);
     } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Failed to proxy';
         return NextResponse.json({ error: message }, { status: 500 });
     }
 }
 
-export async function proxyPost(req: NextRequest, backendPath: string): Promise<NextResponse> {
-    const backend = process.env.NEXT_PUBLIC_API_BASE_URL;
-    if (!backend) {
-        return NextResponse.json({ error: 'BACKEND_URL not set' }, { status: 500 });
-    }
-    try {
-        const res = await fetch(`${backend}${backendPath}`, {
-            method: 'POST',
-            headers: {
-                cookie: req.headers.get('cookie') ?? '',
-                'content-type': 'application/json',
-                accept: 'application/json',
-            },
-            cache: 'no-store',
-        });
-        const bodyText = await res.text();
-        return new NextResponse(bodyText, {
-            status: res.status,
-            headers: { 'content-type': res.headers.get('content-type') ?? 'application/json' },
-        });
-    } catch (e: unknown) {
-        const message = e instanceof Error ? e.message : 'Failed to proxy';
-        return NextResponse.json({ error: message }, { status: 500 });
-    }
+export async function proxyPut(req: NextRequest, backendPath: string): Promise<Response> {
+    return proxyRequest(req, backendPath, 'PUT', await req.text());
 }
 
-export async function proxyPostWithBody(req: NextRequest, backendPath: string): Promise<NextResponse> {
-    const backend = process.env.NEXT_PUBLIC_API_BASE_URL;
-    if (!backend) {
-        return NextResponse.json({ error: 'BACKEND_URL not set' }, { status: 500 });
-    }
-    try {
-        const body = await req.text();
-        const res = await fetch(`${backend}${backendPath}`, {
-            method: 'POST',
-            headers: {
-                cookie: req.headers.get('cookie') ?? '',
-                'content-type': 'application/json',
-                accept: 'application/json',
-            },
-            body,
-            cache: 'no-store',
-        });
-        const bodyText = await res.text();
-        return new NextResponse(bodyText, {
-            status: res.status,
-            headers: { 'content-type': res.headers.get('content-type') ?? 'application/json' },
-        });
-    } catch (e: unknown) {
-        const message = e instanceof Error ? e.message : 'Failed to proxy';
-        return NextResponse.json({ error: message }, { status: 500 });
-    }
+export async function proxyPost(req: NextRequest, backendPath: string): Promise<Response> {
+    return proxyRequest(req, backendPath, 'POST');
 }
 
-export async function proxyGet(req: NextRequest, backendPath: string): Promise<NextResponse> {
-    const backend = process.env.NEXT_PUBLIC_API_BASE_URL;
-    if (!backend) {
-        return NextResponse.json({ error: 'BACKEND_URL not set' }, { status: 500 });
-    }
+export async function proxyPostWithBody(req: NextRequest, backendPath: string): Promise<Response> {
+    return proxyRequest(req, backendPath, 'POST', await req.text());
+}
 
-    const search = req.nextUrl.search;
-    try {
-        const res = await fetch(`${backend}${backendPath}${search}`, {
-            method: 'GET',
-            headers: {
-                cookie: req.headers.get('cookie') ?? '',
-                accept: 'application/json',
-            },
-            cache: 'no-store',
-        });
-
-        const bodyText = await res.text();
-        return new NextResponse(bodyText, {
-            status: res.status,
-            headers: { 'content-type': res.headers.get('content-type') ?? 'application/json' },
-        });
-    } catch (e: unknown) {
-        const message = e instanceof Error ? e.message : 'Failed to proxy';
-        return NextResponse.json({ error: message }, { status: 500 });
-    }
+export async function proxyGet(req: NextRequest, backendPath: string): Promise<Response> {
+    return proxyRequest(req, backendPath, 'GET');
 }
