@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { createProxyResponse } from './_proxyCore';
 
-type ProxyMethod = 'GET' | 'POST' | 'PUT';
+type ProxyMethod = 'DELETE' | 'GET' | 'PATCH' | 'POST' | 'PUT';
 
 const getBackendOrigin = (): string | null =>
     process.env.BACKEND_ORIGIN ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? null;
@@ -13,7 +13,7 @@ const createProxyHeaders = (req: NextRequest, hasBody: boolean): HeadersInit => 
     ...(hasBody && { 'content-type': 'application/json' }),
 });
 
-async function proxyRequest(
+export async function proxyRequest(
     req: NextRequest,
     backendPath: string,
     method: ProxyMethod,
@@ -26,12 +26,13 @@ async function proxyRequest(
             { status: 500 },
         );
     }
+    const forwardedBody = body === '' ? undefined : body;
 
     try {
         const res = await fetch(`${backend}${backendPath}${req.nextUrl.search}`, {
             method,
-            headers: createProxyHeaders(req, body !== undefined),
-            body,
+            headers: createProxyHeaders(req, forwardedBody !== undefined),
+            body: forwardedBody,
             cache: 'no-store',
             redirect: 'manual',
         });
@@ -41,20 +42,4 @@ async function proxyRequest(
         const message = e instanceof Error ? e.message : 'Failed to proxy';
         return NextResponse.json({ error: message }, { status: 500 });
     }
-}
-
-export async function proxyPut(req: NextRequest, backendPath: string): Promise<Response> {
-    return proxyRequest(req, backendPath, 'PUT', await req.text());
-}
-
-export async function proxyPost(req: NextRequest, backendPath: string): Promise<Response> {
-    return proxyRequest(req, backendPath, 'POST');
-}
-
-export async function proxyPostWithBody(req: NextRequest, backendPath: string): Promise<Response> {
-    return proxyRequest(req, backendPath, 'POST', await req.text());
-}
-
-export async function proxyGet(req: NextRequest, backendPath: string): Promise<Response> {
-    return proxyRequest(req, backendPath, 'GET');
 }
