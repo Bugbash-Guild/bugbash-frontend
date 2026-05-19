@@ -43,19 +43,3 @@ export async function proxyRequest(
         return NextResponse.json({ error: message }, { status: 500 });
     }
 }
-
-export async function proxyPut(req: NextRequest, backendPath: string): Promise<Response> {
-    return proxyRequest(req, backendPath, 'PUT', await req.text());
-}
-
-export async function proxyPost(req: NextRequest, backendPath: string): Promise<Response> {
-    return proxyRequest(req, backendPath, 'POST');
-}
-
-export async function proxyPostWithBody(req: NextRequest, backendPath: string): Promise<Response> {
-    return proxyRequest(req, backendPath, 'POST', await req.text());
-}
-
-export async function proxyGet(req: NextRequest, backendPath: string): Promise<Response> {
-    return proxyRequest(req, backendPath, 'GET');
-}
