@@ -26,12 +26,13 @@ export async function proxyRequest(
             { status: 500 },
         );
     }
+    const forwardedBody = body === '' ? undefined : body;
 
     try {
         const res = await fetch(`${backend}${backendPath}${req.nextUrl.search}`, {
             method,
-            headers: createProxyHeaders(req, body !== undefined),
-            body,
+            headers: createProxyHeaders(req, forwardedBody !== undefined),
+            body: forwardedBody,
             cache: 'no-store',
             redirect: 'manual',
         });
