@@ -2,15 +2,13 @@
 'use client';
 
 import useSWR from 'swr';
+
+import { fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
 import type { Hero } from '@/types/hero';
+import { useRedirectOnUnauthorized } from './useRedirectOnUnauthorized';
 
 const fetcher = async (url: string) => {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(`${res.status} ${res.statusText}: ${txt}`);
-    }
-    return (await res.json()) as Hero;
+    return fetchJson<Hero>(url, { cache: 'no-store' }, 'hero/stats');
 };
 
 export function useHero(enabled: boolean) {
@@ -23,11 +21,12 @@ export function useHero(enabled: boolean) {
             shouldRetryOnError: true,
         }
     );
+    useRedirectOnUnauthorized(error);
 
     return {
         hero: data ?? null,
         loading: isLoading,
-        error: error ? String(error.message ?? error) : null,
+        error: error && !isUnauthorizedApiError(error) ? String(error.message ?? error) : null,
         refetch: () => mutate(),
     };
 }

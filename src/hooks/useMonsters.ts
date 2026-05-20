@@ -3,7 +3,9 @@
 
 import useSWR from 'swr';
 
+import { fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
 import type { AwakeningState, Monster } from '@/types/monster';
+import { useRedirectOnUnauthorized } from './useRedirectOnUnauthorized';
 
 type AllMonstersDto = {
     monsters: { id: string; name: string; emoji: string; rarity: string }[];
@@ -21,16 +23,15 @@ type OwnedMonstersDto = {
 };
 
 const fetchCompendium = async (): Promise<Monster[]> => {
-    const [allRes, ownedRes] = await Promise.all([
-        fetch('/api/monsters/all'),
-        fetch('/api/monsters/owned'),
+    const [allData, ownedData] = await Promise.all([
+        fetchJson<AllMonstersDto>('/api/monsters/all', undefined, 'monsters/all'),
+        fetchJson<OwnedMonstersDto>('/api/monsters/owned', undefined, 'monsters/owned').catch(
+            (error: unknown) => {
+                if (isUnauthorizedApiError(error)) throw error;
+                return { monsters: [] };
+            },
+        ),
     ]);
-    if (!allRes.ok) throw new Error(`monsters/all failed: ${allRes.status}`);
-
-    const allData = (await allRes.json()) as AllMonstersDto;
-    const ownedData = ownedRes.ok
-        ? ((await ownedRes.json()) as OwnedMonstersDto)
-        : { monsters: [] };
 
     const ownedMap = new Map(ownedData.monsters.map((m) => [m.id, m]));
 
@@ -58,11 +59,12 @@ export function useMonsters() {
         fetchCompendium,
         { revalidateOnFocus: true },
     );
+    useRedirectOnUnauthorized(error);
 
     return {
         monsters: data ?? [],
         loading: isLoading,
-        error: error ? String(error) : null,
+        error: error && !isUnauthorizedApiError(error) ? String(error) : null,
         refetch: () => mutate(),
     };
 }

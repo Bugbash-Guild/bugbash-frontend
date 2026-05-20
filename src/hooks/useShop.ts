@@ -1,15 +1,13 @@
 'use client';
 
 import useSWR from 'swr';
+
+import { fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
 import type { ListShopResponse } from '@/types/shop';
+import { useRedirectOnUnauthorized } from './useRedirectOnUnauthorized';
 
 const fetcher = async (url: string) => {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(`${res.status} ${res.statusText}: ${txt}`);
-    }
-    return (await res.json()) as ListShopResponse;
+    return fetchJson<ListShopResponse>(url, { cache: 'no-store' }, 'shop/items');
 };
 
 export function useShop(enabled: boolean) {
@@ -17,12 +15,13 @@ export function useShop(enabled: boolean) {
         enabled ? '/api/shop/items' : null,
         fetcher,
     );
+    useRedirectOnUnauthorized(error);
 
     return {
         items: data?.items ?? [],
         guildCoinBalance: data?.guildCoinBalance ?? 0,
         loading: isLoading,
-        error: error ? String(error.message ?? error) : null,
+        error: error && !isUnauthorizedApiError(error) ? String(error.message ?? error) : null,
         refetch: () => mutate(),
     };
 }
