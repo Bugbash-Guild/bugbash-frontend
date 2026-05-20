@@ -1,12 +1,13 @@
 'use client';
 
 import useSWR from 'swr';
+
+import { fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
 import type { ActivitiesResponse, Activity, MonsterDetail, PrMergedMetadata, XpDetail } from '@/types/activity';
+import { useRedirectOnUnauthorized } from './useRedirectOnUnauthorized';
 
 const fetcher = async (url: string): Promise<Activity[]> => {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`activities fetch failed: ${res.status}`);
-    const data = (await res.json()) as ActivitiesResponse;
+    const data = await fetchJson<ActivitiesResponse>(url, undefined, 'hero/activities');
     return data.activities;
 };
 
@@ -16,11 +17,12 @@ export function useActivities() {
         fetcher,
         { revalidateOnFocus: true },
     );
+    useRedirectOnUnauthorized(error);
 
     return {
         activities: data ?? [],
         loading: isLoading,
-        error: error ? String(error) : null,
+        error: error && !isUnauthorizedApiError(error) ? String(error) : null,
         refetch: () => mutate(),
     };
 }

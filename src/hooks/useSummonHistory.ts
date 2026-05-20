@@ -2,15 +2,12 @@
 
 import useSWR from 'swr';
 
+import { fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
 import type { SummonHistoryResponse } from '@/types/summon';
+import { useRedirectOnUnauthorized } from './useRedirectOnUnauthorized';
 
 const fetcher = async (url: string): Promise<SummonHistoryResponse> => {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(`${res.status} ${res.statusText}: ${txt}`);
-    }
-    return res.json() as Promise<SummonHistoryResponse>;
+    return fetchJson<SummonHistoryResponse>(url, { cache: 'no-store' }, 'summon/history');
 };
 
 export function useSummonHistory(enabled: boolean) {
@@ -23,11 +20,12 @@ export function useSummonHistory(enabled: boolean) {
             shouldRetryOnError: false,
         },
     );
+    useRedirectOnUnauthorized(error);
 
     return {
         entries: data?.entries ?? [],
         loading: isLoading,
-        error: error ? String(error.message ?? error) : null,
+        error: error && !isUnauthorizedApiError(error) ? String(error.message ?? error) : null,
         refetch: () => mutate(),
     };
 }

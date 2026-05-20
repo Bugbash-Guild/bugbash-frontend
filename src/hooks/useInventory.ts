@@ -1,15 +1,13 @@
 'use client';
 
 import useSWR from 'swr';
+
+import { fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
 import type { ListInventoryResponse } from '@/types/inventory';
+import { useRedirectOnUnauthorized } from './useRedirectOnUnauthorized';
 
 const fetcher = async (url: string) => {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(`${res.status} ${res.statusText}: ${txt}`);
-    }
-    return (await res.json()) as ListInventoryResponse;
+    return fetchJson<ListInventoryResponse>(url, { cache: 'no-store' }, 'inventory');
 };
 
 export function useInventory(enabled: boolean) {
@@ -17,11 +15,12 @@ export function useInventory(enabled: boolean) {
         enabled ? '/api/inventory' : null,
         fetcher,
     );
+    useRedirectOnUnauthorized(error);
 
     return {
         items: data?.items ?? [],
         loading: isLoading,
-        error: error ? String(error.message ?? error) : null,
+        error: error && !isUnauthorizedApiError(error) ? String(error.message ?? error) : null,
         refetch: () => mutate(),
     };
 }
