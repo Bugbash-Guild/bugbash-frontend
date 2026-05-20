@@ -4,7 +4,7 @@ export type ShopItem = {
     description: string;
     currency: 'GUILD_COIN' | 'RUNE';
     price: number;
-    category: 'EVOLUTION';
+    category: 'EVOLUTION' | 'SOUL_PACK';
     iconEmoji: string;
 };
 

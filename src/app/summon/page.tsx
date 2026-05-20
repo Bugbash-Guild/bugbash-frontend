@@ -9,6 +9,13 @@ import { usePityCounter } from "@/hooks/usePityCounter";
 import { useSummon } from "@/hooks/useSummon";
 import { useSummonHistory } from "@/hooks/useSummonHistory";
 import { MainWrapper } from "@/components/MainWrapper";
+import {
+  formatGuildCoinCost,
+  getSummonItemDisplay,
+  NORMAL_SUMMON_COST,
+  NORMAL_SUMMON_RATES,
+  NORMAL_SUMMON_SUMMARY,
+} from "./summonDisplay";
 import type {
   ItemRarity,
   SummonHistoryEntry,
@@ -33,18 +40,6 @@ const RARITY_BG: Record<ItemRarity, string> = {
 
 const SOFT_PITY_THRESHOLD = 60;
 const HARD_PITY_LIMIT = 80;
-
-const ITEM_NAMES: Record<string, string> = {
-  "evolution-stone": "進化の輝石",
-  "purification-proof": "浄化の証",
-  "abyss-proof": "深淵の証",
-};
-
-const ITEM_EMOJIS: Record<string, string> = {
-  "evolution-stone": "💎",
-  "purification-proof": "🌟",
-  "abyss-proof": "⭐",
-};
 
 type SummonResult =
   | { type: "once"; data: SummonOnceResponse }
@@ -133,21 +128,15 @@ export default function SummonPage() {
               </div>
               <div className="text-[15px] text-text font-semibold mb-1">通常召喚</div>
               <div className="text-[12px] text-text-dim mb-3">
-                進化素材アイテムが排出されます
+                {NORMAL_SUMMON_SUMMARY}
               </div>
               <div className="flex items-center gap-4 text-[12px]">
-                <span>
-                  <span className="text-accent-2">R</span>
-                  <span className="text-text-faint ml-1">70%</span>
-                </span>
-                <span>
-                  <span className="text-purple">SR</span>
-                  <span className="text-text-faint ml-1">22%</span>
-                </span>
-                <span>
-                  <span className="text-gold">SSR</span>
-                  <span className="text-text-faint ml-1">8%</span>
-                </span>
+                {NORMAL_SUMMON_RATES.map((rate) => (
+                  <span key={rate.label}>
+                    <span className={RARITY_COLOR[rate.label]}>{rate.label}</span>
+                    <span className="text-text-faint ml-1">{rate.percent}%</span>
+                  </span>
+                ))}
               </div>
             </div>
 
@@ -221,7 +210,8 @@ export default function SummonPage() {
             </div>
 
             <div className="text-[11px] text-text-faint px-1">
-              1回: 100 GUILD_COIN · 10連: 1,000 GUILD_COIN
+              1回: {formatGuildCoinCost(NORMAL_SUMMON_COST.single)} GUILD_COIN · 10連:{" "}
+              {formatGuildCoinCost(NORMAL_SUMMON_COST.ten)} GUILD_COIN
             </div>
 
             {/* error */}
@@ -302,14 +292,15 @@ export default function SummonPage() {
 }
 
 function SingleResult({ data }: { data: SummonOnceResponse }) {
+  const display = getSummonItemDisplay(data.itemId);
   return (
     <div className={`rounded-lg p-6 text-center ${RARITY_BG[data.rarity]}`}>
-      <div className="text-[48px] mb-2">{ITEM_EMOJIS[data.itemId] ?? "❓"}</div>
+      <div className="text-[48px] mb-2">{display.emoji}</div>
       <div className={`text-[20px] font-bold mb-1 ${RARITY_COLOR[data.rarity]}`}>
         {data.rarity}
       </div>
       <div className="text-[15px] text-text">
-        {ITEM_NAMES[data.itemId] ?? data.itemId}
+        {display.name}
       </div>
     </div>
   );
@@ -326,11 +317,12 @@ function TenResult({ data }: { data: SummonTenResponse }) {
 }
 
 function SummonCard({ item }: { item: SummonItem }) {
+  const display = getSummonItemDisplay(item.itemId);
   return (
     <div
       className={`rounded p-2 text-center border border-line ${RARITY_BG[item.rarity]}`}
     >
-      <div className="text-[22px]">{ITEM_EMOJIS[item.itemId] ?? "❓"}</div>
+      <div className="text-[22px]">{display.emoji}</div>
       <div className={`text-[10px] font-bold mt-0.5 ${RARITY_COLOR[item.rarity]}`}>
         {item.rarity}
       </div>
@@ -339,6 +331,7 @@ function SummonCard({ item }: { item: SummonItem }) {
 }
 
 function HistoryRow({ entry }: { entry: SummonHistoryEntry }) {
+  const display = getSummonItemDisplay(entry.itemId);
   const dt = new Date(entry.pulledAt);
   const label = dt.toLocaleString("ja-JP", {
     month: "numeric",
@@ -350,13 +343,13 @@ function HistoryRow({ entry }: { entry: SummonHistoryEntry }) {
   return (
     <div className="flex items-center gap-3 py-1.5 border-b border-line last:border-0 text-[12px]">
       <span className="text-[16px] w-5 text-center">
-        {ITEM_EMOJIS[entry.itemId] ?? "❓"}
+        {display.emoji}
       </span>
       <span className={`w-8 text-center font-semibold ${RARITY_COLOR[entry.rarity]}`}>
         {entry.rarity}
       </span>
       <span className="text-text flex-1">
-        {ITEM_NAMES[entry.itemId] ?? entry.itemId}
+        {display.name}
       </span>
       <span className="text-text-faint shrink-0">{label}</span>
     </div>
