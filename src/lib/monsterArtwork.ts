@@ -14,8 +14,8 @@ const MONSTER_ARTWORK: MonsterArtworkEntry[] = [
         aliases: ['branch pup', 'git branch kitsune', 'branch pup base', 'git branch kitsune base'],
     },
     {
-        src: '/monsters/timeout-jelly.png',
-        alt: 'Timeout Jelly',
+        src: '/monsters/latency-polyp.png',
+        alt: 'Latency Polyp',
         aliases: ['timeout jelly', 'timeout jellyfish', 'latency polyp', 'timeout jelly base'],
     },
     {

@@ -7,8 +7,8 @@ describe('monster artwork catalog', () => {
     it('resolves the adopted base monsters by display name', () => {
         assert.equal(getMonsterArtwork({ name: 'Branch Pup' })?.src, '/monsters/branch-pup.png');
         assert.equal(
-            getMonsterArtwork({ name: 'Timeout Jelly' })?.src,
-            '/monsters/timeout-jelly.png',
+            getMonsterArtwork({ name: 'Latency Polyp' })?.src,
+            '/monsters/latency-polyp.png',
         );
         assert.equal(getMonsterArtwork({ name: 'Flag Gecko' })?.src, '/monsters/flag-gecko.png');
     });
@@ -20,7 +20,7 @@ describe('monster artwork catalog', () => {
         );
         assert.equal(
             getMonsterArtwork({ name: 'Timeout Jellyfish' })?.src,
-            '/monsters/timeout-jelly.png',
+            '/monsters/latency-polyp.png',
         );
         assert.equal(
             getMonsterArtwork({ id: 'feature_flag_chameleon' })?.src,

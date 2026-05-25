@@ -282,18 +282,26 @@ Make the berserk route evil and desirable, not merely scary, glitchy, or red.
 - ゲーム内では `/public/monsters/*.png` に置く。
 - 画像が未採用のモンスターは、既存の絵文字表示にフォールバックする。
 
+採用済みコンタクトシートから単体化する場合:
+
+- 新しい解釈で作り直さない。
+- 採用済みシートの体型、顔、姿勢、色、ラベル、装備を固定する。
+- 単体生成プロンプトには「同じキャラを単体化する。新しいキャラデにしない」と明記する。
+- とくにBase形態は、過剰にメカ化・大型化・高級化しすぎない。
+- 採用済みシートから名前も引き継ぐ。
+
 ## 採用済み単体アセット
 
 | 表示名        | 系統                         | 用途     | ファイル                         |
 | ------------- | ---------------------------- | -------- | -------------------------------- |
 | Branch Pup    | Git Branch Kitsune           | Base形態 | `/monsters/branch-pup.png`       |
-| Timeout Jelly | Timeout Jellyfish            | Base形態 | `/monsters/timeout-jelly.png`    |
+| Latency Polyp | Timeout Jellyfish            | Base形態 | `/monsters/latency-polyp.png`    |
 | Flag Gecko    | Feature Flag Chameleon       | Base形態 | `/monsters/flag-gecko.png`       |
 
 実装上の別名:
 
 - `Branch Pup`: `git-branch-kitsune`, `git_branch_kitsune`, `Git Branch Kitsune`
-- `Timeout Jelly`: `timeout-jellyfish`, `timeout_jellyfish`, `Latency Polyp`
+- `Latency Polyp`: `timeout-jellyfish`, `timeout_jellyfish`, `Timeout Jelly`
 - `Flag Gecko`: `feature-flag-chameleon`, `feature_flag_chameleon`, `Feature Flag Chameleon`
 
 ## IT感を失わないためのチェック
