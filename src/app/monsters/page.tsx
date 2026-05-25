@@ -7,7 +7,9 @@ import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
 import { usePartner } from "@/hooks/usePartner";
 import { MainWrapper } from "@/components/MainWrapper";
+import { MonsterVisual } from "@/components/MonsterVisual";
 import { RARITY_COLOR, RARITY_ORDER } from "@/constants/rarity";
+import { cn } from "@/lib/cn";
 
 const AWAKENING_LABEL: Partial<Record<import('@/types/monster').AwakeningState, string>> = {
   AWAKENED: "✨覚醒",
@@ -155,7 +157,14 @@ export default function MonstersPage() {
           {partnerMonster ? (
             <div className="flex items-center gap-3">
               <span className="text-[9px] text-text-faint tracking-[0.12em]">PARTNER / パートナー</span>
-              <span className="text-[22px]">{partnerMonster.emoji}</span>
+              <MonsterVisual
+                className="size-8"
+                emoji={partnerMonster.emoji}
+                emojiClassName="text-[22px]"
+                id={partnerMonster.id}
+                name={partnerMonster.name}
+                sizes="32px"
+              />
               <div className="flex-1">
                 <div
                   className="text-[13px] font-semibold"
@@ -236,16 +245,18 @@ export default function MonstersPage() {
                       : "var(--bg-elev-2)",
                   }}
                 >
-                  {m.isOwned ? (
-                    m.emoji
-                  ) : (
-                    <span
-                      className="text-[64px] select-none"
-                      style={{ filter: "brightness(0)", opacity: 0.35 }}
-                    >
-                      {m.emoji}
-                    </span>
-                  )}
+                  <MonsterVisual
+                    className="size-full"
+                    emoji={m.emoji}
+                    emojiClassName={cn(
+                      "text-[64px] select-none",
+                      !m.isOwned && "brightness-0 opacity-35",
+                    )}
+                    id={m.id}
+                    imageClassName={!m.isOwned ? "brightness-0 opacity-35" : undefined}
+                    name={m.name}
+                    sizes="160px"
+                  />
                   {!m.isOwned && (
                     <span className="absolute bottom-1 right-1.5 text-[9px] text-text-faint tracking-[0.1em] opacity-80">
                       ???

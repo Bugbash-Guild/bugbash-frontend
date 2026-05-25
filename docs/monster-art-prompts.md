@@ -275,6 +275,27 @@ Make the berserk route evil and desirable, not merely scary, glitchy, or red.
 - 全身がキャンバス内に収まるようにする。
 - 後で背景透過・サイズ統一しやすいように、暖かい白背景と薄い影にする。
 
+実装用の透過PNGを作る場合:
+
+- 生成時は単色背景を使い、後処理で背景透過する。
+- 透明化しやすいように、背景色をキャラ本体に使わない。
+- ゲーム内では `/public/monsters/*.png` に置く。
+- 画像が未採用のモンスターは、既存の絵文字表示にフォールバックする。
+
+## 採用済み単体アセット
+
+| 表示名        | 系統                         | 用途     | ファイル                         |
+| ------------- | ---------------------------- | -------- | -------------------------------- |
+| Branch Pup    | Git Branch Kitsune           | Base形態 | `/monsters/branch-pup.png`       |
+| Timeout Jelly | Timeout Jellyfish            | Base形態 | `/monsters/timeout-jelly.png`    |
+| Flag Gecko    | Feature Flag Chameleon       | Base形態 | `/monsters/flag-gecko.png`       |
+
+実装上の別名:
+
+- `Branch Pup`: `git-branch-kitsune`, `git_branch_kitsune`, `Git Branch Kitsune`
+- `Timeout Jelly`: `timeout-jellyfish`, `timeout_jellyfish`, `Latency Polyp`
+- `Flag Gecko`: `feature-flag-chameleon`, `feature_flag_chameleon`, `Feature Flag Chameleon`
+
 ## IT感を失わないためのチェック
 
 生成プロンプトには必ず以下の意図を入れる。
