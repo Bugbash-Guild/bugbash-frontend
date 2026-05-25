@@ -205,37 +205,53 @@ Do not create light/dark recolors of the same body.
 
 ## 暴走ルートの品質基準
 
-暴走は「黒い差分」ではなく、捕食者・侵入者・要塞・支配者などの危険な役割を持つ上位形態にする。Token Mimic 系統の `Token Exfiltrator` / `Shadow IAM Proxy` のように、爪・鎖・露出コア・低い構え・壊れた装甲・非対称シルエットが見える状態を基準にする。
+暴走は「黒い差分」ではなく、そのエンジニアリング概念が破綻・悪用・肥大化した姿にする。表現方法は系統ごとに変える。Token Mimic のように捕食者が合う系統もあるが、すべての暴走を爪・鎖・低い構えに寄せない。
 
-必須要素:
+基本ルール:
 
 - `Berserk` は、`Evo` より明確に危険で強そうに見せる。
 - `Berserk` は、単なる黒色版・紫色版・赤色版にしない。
-- `Berserk` には、最低3つ以上の危険な構造を入れる。
-  - 低い捕食姿勢
-  - 長い爪
-  - 重い尻尾
-  - 露出した闇コア
-  - 壊れた装甲
-  - 鎖や拘束具
-  - 片側に偏った翼や外殻
-  - 侵入・盗難・汚染・迷路化・破壊を示す大きな部位
+- `Berserk` は、その系統の failure mode から身体構造を決める。
+- `Berserk` には、その failure mode を表す大きな構造を最低2つ入れる。
 - `Berserk Final` は、`Berserk` の役割をさらに強くした最終形にする。
 - 暴走の魅力は「怖い」より「邪悪でかっこいい」「引きたい敵役」に寄せる。
+
+failure mode ごとの表現例:
+
+- 盗難・侵入: 捕食姿勢、鍵爪、盗んだトークン、認証チェーン、露出コア
+- 迷路化・閉じ込め: 要塞化した外殻、迷路状の甲羅、ループ構造、重い壁のような脚
+- 汚染・破損: 割れたコア、壊れた装甲、濁った発光、崩れた結晶
+- 肥大化・過負荷: 膨張した体、溢れる液体/滴、重い尾、圧縮されたコア
+- 断片化・分裂: 複数の破片、ばらけた身体、ズレたパーツ、同期しない目
+- 連鎖崩壊: 壊れたグラフ、絡まったリンク、割れたパッケージ、崩れるリング
+- 遮断・支配: 巨大な壁、封鎖ゲート、広い盾、支配的な直立姿勢
+- 暴走実行: 赤いパイプライン、壊れたジョブレーン、破損した実行モジュール
+
+系統別の考え方:
+
+- `Token Mimic`: 認証情報を盗む捕食者。爪・鎖・露出コアが合う。
+- `Cache Turtle`: 迷路化した要塞。爪よりも巨大な迷路甲羅・ループ構造・閉じ込める外殻が大事。
+- `Dependency Cub`: 破壊的変更を撒き散らす存在。爪よりも壊れた依存グラフ・割れたパッケージ・連鎖崩壊が大事。
+- `Memory Leak Wisp`: ヒープを喰い潰す存在。爪よりも膨張・吸収・重いメモリ滴・圧迫感が大事。
+- `Firewall Crab`: 通信を遮断する暴君。爪は合うが、遮断壁・封鎖ゲート・境界線が主役。
 
 避けるもの:
 
 - 覚醒と同じポーズ・同じ骨格で色だけ違うこと
 - ただ赤いエラー表示やグリッチを足すこと
 - 小さくまとまったかわいい差分になること
+- 1つの暴走表現を全系統に使い回すこと
 - ファンタジーの悪魔・ドラゴン・死神に逃げて、IT概念が薄れること
 
 プロンプトには必要に応じて以下を入れる。
 
 ```text
-Berserk is not a color variant. It must look like a dangerous higher-form monster with a functional threat role.
-Use at least three dangerous structural features: low predatory posture, long claws, heavy tail, exposed dark core, broken armor, chains, asymmetric wing/shell structure, or large body parts that express intrusion, theft, corruption, maze trapping, or destructive change.
-Berserk Final must amplify that same threat role into a dominant final form.
+Berserk is not a color variant. It must express this family’s engineering failure mode as a dangerous higher-form monster.
+Do not reuse one fixed berserk visual formula across all families.
+For this family, derive the berserk anatomy from: {failure_mode}.
+The berserk form can be predatory, fortress-like, swollen, fragmented, chained, corrupted, labyrinthine, overloaded, or authoritarian depending on the concept.
+Use large structural features that express the selected failure mode, not generic claws/chains unless they fit this family.
+Berserk Final must amplify that same failure mode into a dominant final form.
 Make the berserk route evil and desirable, not merely scary, glitchy, or red.
 ```
 
