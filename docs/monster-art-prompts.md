@@ -203,6 +203,42 @@ Do not create light/dark recolors of the same body.
 | Firewall Crab        | 境界を守る防壁             | 通信を遮断する暴君           |
 | CI Runner Golem      | 成功パイプラインの実行者   | 失敗ビルドを撒く暴走機械     |
 
+## 暴走ルートの品質基準
+
+暴走は「黒い差分」ではなく、捕食者・侵入者・要塞・支配者などの危険な役割を持つ上位形態にする。Token Mimic 系統の `Token Exfiltrator` / `Shadow IAM Proxy` のように、爪・鎖・露出コア・低い構え・壊れた装甲・非対称シルエットが見える状態を基準にする。
+
+必須要素:
+
+- `Berserk` は、`Evo` より明確に危険で強そうに見せる。
+- `Berserk` は、単なる黒色版・紫色版・赤色版にしない。
+- `Berserk` には、最低3つ以上の危険な構造を入れる。
+  - 低い捕食姿勢
+  - 長い爪
+  - 重い尻尾
+  - 露出した闇コア
+  - 壊れた装甲
+  - 鎖や拘束具
+  - 片側に偏った翼や外殻
+  - 侵入・盗難・汚染・迷路化・破壊を示す大きな部位
+- `Berserk Final` は、`Berserk` の役割をさらに強くした最終形にする。
+- 暴走の魅力は「怖い」より「邪悪でかっこいい」「引きたい敵役」に寄せる。
+
+避けるもの:
+
+- 覚醒と同じポーズ・同じ骨格で色だけ違うこと
+- ただ赤いエラー表示やグリッチを足すこと
+- 小さくまとまったかわいい差分になること
+- ファンタジーの悪魔・ドラゴン・死神に逃げて、IT概念が薄れること
+
+プロンプトには必要に応じて以下を入れる。
+
+```text
+Berserk is not a color variant. It must look like a dangerous higher-form monster with a functional threat role.
+Use at least three dangerous structural features: low predatory posture, long claws, heavy tail, exposed dark core, broken armor, chains, asymmetric wing/shell structure, or large body parts that express intrusion, theft, corruption, maze trapping, or destructive change.
+Berserk Final must amplify that same threat role into a dominant final form.
+Make the berserk route evil and desirable, not merely scary, glitchy, or red.
+```
+
 ## 切り出し・実装前提ルール
 
 検討用コンタクトシート:
