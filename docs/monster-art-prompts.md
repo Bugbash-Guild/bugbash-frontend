@@ -162,6 +162,47 @@ Each evolved form must change at least three of these: body posture, limb struct
 Keep family identity through shared core materials and motifs, but change the body plan enough that each form feels like a true evolution.
 ```
 
+## 覚醒・暴走の役割分離
+
+覚醒と暴走は、色や明暗だけで分けない。各モンスターごとに、覚醒ルートと暴走ルートの「役割」を別物として定義する。
+
+基本ルール:
+
+- `Awakened` は、そのエンジニアリング概念を正しく扱った姿にする。
+- `Berserk` は、そのエンジニアリング概念が悪用・肥大化・破綻した姿にする。
+- 覚醒と暴走は同じ体高・同じ存在感でもよいが、役割・姿勢・骨格・主要部位は変える。
+- 覚醒と暴走を、白版・黒版の色違いとして作らない。
+
+プロンプトには必ず以下を入れる。
+
+```text
+Awakened and Berserk must not be defined by color.
+They must be defined by different functional roles.
+
+For this family:
+Awakened role: {awakened_role}
+Berserk role: {berserk_role}
+
+The awakened form's silhouette, posture, protected core, and major body parts must express its role.
+The berserk form's silhouette, posture, exposed core, and major body parts must express its role.
+Do not create light/dark recolors of the same body.
+```
+
+10系統の役割案:
+
+| 系統                 | 覚醒の役割                 | 暴走の役割                   |
+| -------------------- | -------------------------- | ---------------------------- |
+| Token Mimic          | 認証ゲートウェイ           | 認証情報を盗む捕食者         |
+| Cache Turtle         | 高速化したランナー         | 迷路化した要塞               |
+| Dependency Cub       | 依存グラフを整理する守護者 | 破壊的変更を撒き散らす捕食者 |
+| Regex Moth           | 構文を解釈する予言者       | バックトラックで絡め取る狩人 |
+| Deploy Wyrm          | 安定リリースの守護者       | ロールバック事故の支配者     |
+| Memory Leak Wisp     | メモリを回収する清掃者     | ヒープを喰い潰す亡霊         |
+| Race Condition Twins | スレッドを同期する調停者   | デッドロックを起こす双子     |
+| Database Golem       | スキーマを整える番人       | インデックスを壊す巨像       |
+| Firewall Crab        | 境界を守る防壁             | 通信を遮断する暴君           |
+| CI Runner Golem      | 成功パイプラインの実行者   | 失敗ビルドを撒く暴走機械     |
+
 ## 切り出し・実装前提ルール
 
 検討用コンタクトシート:
@@ -282,6 +323,15 @@ Evo must be visibly smaller than both route forms. Awakened and Berserk must be 
 
 True evolution rule:
 Do not evolve by simply scaling up the same silhouette. Each evolved form must change at least three of these: body posture, limb structure, core placement, armor shape, tail shape, back structure, role silhouette. Keep family identity through shared token core, vault-shell material, key teeth, access badges, OAuth rings, and session-cookie chains, but change the body plan enough that each form feels like a true evolution.
+
+Functional role rule:
+Awakened and Berserk must not be defined by color. They must be defined by different functional roles.
+For this family:
+Awakened role: authentication gateway.
+Berserk role: credential-stealing predator.
+The awakened form's silhouette, posture, protected core, and major body parts must express authentication gateway/control architecture.
+The berserk form's silhouette, posture, exposed core, and major body parts must express credential theft, intrusion, and predatory architecture.
+Do not create light/dark recolors of the same body.
 
 Technical label rule:
 Use 1-2 large readable technical labels per form, integrated into major body parts only. Labels should be on token cores, rings, badges, or armor plates. Avoid dense tiny text, repeated code strings, decorative text noise, or text covering faces/silhouettes.
