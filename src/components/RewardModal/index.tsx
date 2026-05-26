@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
+import { MonsterVisual } from '@/components/MonsterVisual';
 import type { Activity, ActivityReward, MonsterDetail, XpDetail } from '@/types/activity';
 
 type Props = {
@@ -41,7 +42,13 @@ function RewardLine({ reward }: { reward: ActivityReward }) {
         const c = rarityColor[detail.rarity] ?? '#9ca3af';
         return (
             <div className="flex items-center gap-2 text-[13px]">
-                <span className="text-[20px]">{detail.emoji}</span>
+                <MonsterVisual
+                    className="size-7"
+                    emoji={detail.emoji}
+                    emojiClassName="text-[20px]"
+                    name={detail.name}
+                    sizes="28px"
+                />
                 <span style={{ color: c }} className="font-semibold">{detail.name}</span>
                 <span className="text-[10px] px-1 py-0.5 rounded border font-bold" style={{ color: c, borderColor: `${c}55` }}>
                     {detail.rarity}

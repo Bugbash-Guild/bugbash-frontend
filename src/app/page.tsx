@@ -9,6 +9,7 @@ import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
 import { useRewardNotification } from "@/hooks/useRewardNotification";
 import { MainWrapper } from "@/components/MainWrapper";
+import { MonsterVisual } from "@/components/MonsterVisual";
 import { RewardModal } from "@/components/RewardModal";
 
 import { RARITY_COLOR } from "@/constants/rarity";
@@ -323,7 +324,17 @@ export default function Home() {
                   return (
                     <div key={a.id} className={`px-3.5 py-3 flex gap-3 ${i < Math.min(activities.length, 6) - 1 ? "border-b border-line" : ""}`}>
                       <div className="w-8 h-8 rounded-[4px] shrink-0 bg-bg-elev-2 border border-line flex items-center justify-center text-base">
-                        {monster ? monster.emoji : "⚔️"}
+                        {monster ? (
+                          <MonsterVisual
+                            className="size-full"
+                            emoji={monster.emoji}
+                            emojiClassName="text-base"
+                            name={monster.name}
+                            sizes="32px"
+                          />
+                        ) : (
+                          "⚔️"
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-[12px] text-text flex items-center gap-1.5 flex-wrap">

@@ -7,9 +7,21 @@ import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
 import { usePartner } from "@/hooks/usePartner";
 import { MainWrapper } from "@/components/MainWrapper";
+import { MonsterVisual } from "@/components/MonsterVisual";
 import { RARITY_COLOR, RARITY_ORDER } from "@/constants/rarity";
+import { cn } from "@/lib/cn";
+import {
+  canEvolveMonster,
+  canLevelUpMonster,
+  getMonsterLevelUpCost,
+  isMonsterAwakened,
+  MONSTER_EVOLUTION_LEVEL,
+  MONSTER_MAX_LEVEL,
+} from "@/lib/monsterProgression";
 
-const AWAKENING_LABEL: Partial<Record<import('@/types/monster').AwakeningState, string>> = {
+const AWAKENING_LABEL: Partial<
+  Record<import("@/types/monster").AwakeningState, string>
+> = {
   AWAKENED: "✨覚醒",
   BERSERK: "🔥暴走",
 };
@@ -30,16 +42,23 @@ export default function MonstersPage() {
     setActionError(null);
     setSuccessMsg(null);
     try {
-      const res = await fetch(`/api/monsters/${monsterId}/level-up`, { method: 'POST' });
-      const body = await res.json() as { newLevel?: number; soulsRemaining?: number; guildCoinBalance?: number; error?: string };
+      const res = await fetch(`/api/monsters/${monsterId}/level-up`, {
+        method: "POST",
+      });
+      const body = (await res.json()) as {
+        newLevel?: number;
+        soulsRemaining?: number;
+        guildCoinBalance?: number;
+        error?: string;
+      };
       if (!res.ok) {
         setActionError(body.error ?? `Error ${res.status}`);
       } else {
-        setSuccessMsg(`Lv.${body.newLevel ?? '?'} に上昇！`);
+        setSuccessMsg(`Lv.${body.newLevel ?? "?"} に上昇！`);
         await Promise.all([refetch(), refetchHero()]);
       }
     } catch {
-      setActionError('Network error');
+      setActionError("Network error");
     } finally {
       setLevelingUp(null);
     }
@@ -50,17 +69,27 @@ export default function MonstersPage() {
     setActionError(null);
     setSuccessMsg(null);
     try {
-      const res = await fetch(`/api/monsters/${monsterId}/change-path`, { method: 'POST' });
-      const body = await res.json() as { awakeningState?: import('@/types/monster').AwakeningState; itemRemaining?: number; error?: string };
+      const res = await fetch(`/api/monsters/${monsterId}/change-path`, {
+        method: "POST",
+      });
+      const body = (await res.json()) as {
+        awakeningState?: import("@/types/monster").AwakeningState;
+        itemRemaining?: number;
+        error?: string;
+      };
       if (!res.ok) {
         setActionError(body.error ?? `Error ${res.status}`);
       } else {
-        const label = body.awakeningState ? (AWAKENING_LABEL[body.awakeningState] ?? body.awakeningState) : '?';
-        setSuccessMsg(`路線変更：${label}（証残数: ${body.itemRemaining ?? '?'}）`);
+        const label = body.awakeningState
+          ? (AWAKENING_LABEL[body.awakeningState] ?? body.awakeningState)
+          : "?";
+        setSuccessMsg(
+          `路線変更：${label}（証残数: ${body.itemRemaining ?? "?"}）`,
+        );
         await Promise.all([refetch(), refetchHero()]);
       }
     } catch {
-      setActionError('Network error');
+      setActionError("Network error");
     } finally {
       setChangingPath(null);
     }
@@ -71,23 +100,31 @@ export default function MonstersPage() {
     setActionError(null);
     setSuccessMsg(null);
     try {
-      const res = await fetch(`/api/monsters/${monsterId}/evolve`, { method: 'POST' });
-      const body = await res.json() as { awakeningState?: string; evolutionStonesRemaining?: number; error?: string };
+      const res = await fetch(`/api/monsters/${monsterId}/evolve`, {
+        method: "POST",
+      });
+      const body = (await res.json()) as {
+        awakeningState?: string;
+        evolutionStonesRemaining?: number;
+        error?: string;
+      };
       if (!res.ok) {
         setActionError(body.error ?? `Error ${res.status}`);
       } else {
-        setSuccessMsg(`覚醒：${body.awakeningState ?? '?'}`);
+        setSuccessMsg(`覚醒：${body.awakeningState ?? "?"}`);
         await Promise.all([refetch(), refetchHero()]);
       }
     } catch {
-      setActionError('Network error');
+      setActionError("Network error");
     } finally {
       setEvolving(null);
     }
   };
 
   const dex = [...monsters].sort(
-    (a, b) => RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity] || a.id.localeCompare(b.id)
+    (a, b) =>
+      RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity] ||
+      a.id.localeCompare(b.id),
   );
 
   const partnerMonster = dex.find((m) => m.id === partnerId) ?? null;
@@ -98,7 +135,9 @@ export default function MonstersPage() {
       <div className="px-9 py-6">
         {/* prompt header */}
         <div className="text-[13px] text-text-dim mb-5">
-          <span className="text-accent">{isAuthenticated ? "hero" : "guest"}@bugbash</span>
+          <span className="text-accent">
+            {isAuthenticated ? "hero" : "guest"}@bugbash
+          </span>
           <span className="text-text-faint">:</span>
           <span className="text-accent-2">~/monsters</span>
           <span className="text-text-faint">$ </span>
@@ -117,18 +156,27 @@ export default function MonstersPage() {
           <div className="flex items-center gap-4">
             {hero && (
               <div className="text-[13px] text-text-dim">
-                🪙 <span className="text-accent font-semibold">{hero.guildCoinBalance}</span> G
+                🪙{" "}
+                <span className="text-accent font-semibold">
+                  {hero.guildCoinBalance}
+                </span>{" "}
+                G
               </div>
             )}
             <div className="text-[11px] text-text-faint">
-              [&nbsp;<span className="text-accent">list</span>&nbsp;| grid | tree&nbsp;]
+              [&nbsp;<span className="text-accent">list</span>&nbsp;| grid |
+              tree&nbsp;]
             </div>
           </div>
         </div>
 
         {/* loading / error */}
-        {loading && <div className="text-text-faint text-[13px] mb-4">loading dex…</div>}
-        {error && <div className="text-pink text-[13px] mb-4">error: {error}</div>}
+        {loading && (
+          <div className="text-text-faint text-[13px] mb-4">loading dex…</div>
+        )}
+        {error && (
+          <div className="text-pink text-[13px] mb-4">error: {error}</div>
+        )}
         {successMsg && (
           <div className="text-accent text-[13px] mb-4 px-3 py-2 rounded border border-accent/30 bg-accent/10">
             ✓ {successMsg}
@@ -154,8 +202,20 @@ export default function MonstersPage() {
         >
           {partnerMonster ? (
             <div className="flex items-center gap-3">
-              <span className="text-[9px] text-text-faint tracking-[0.12em]">PARTNER / パートナー</span>
-              <span className="text-[22px]">{partnerMonster.emoji}</span>
+              <span className="text-[9px] text-text-faint tracking-[0.12em]">
+                PARTNER / パートナー
+              </span>
+              <MonsterVisual
+                className="size-8"
+                emoji={partnerMonster.emoji}
+                emojiClassName="text-[22px]"
+                formStage={partnerMonster.formStage}
+                id={partnerMonster.id}
+                awakeningState={partnerMonster.awakeningState}
+                level={partnerMonster.level}
+                name={partnerMonster.name}
+                sizes="32px"
+              />
               <div className="flex-1">
                 <div
                   className="text-[13px] font-semibold"
@@ -164,7 +224,9 @@ export default function MonstersPage() {
                   {partnerMonster.name}
                 </div>
                 <div className="text-xs opacity-60 mt-0.5">
-                  {partnerMonster.attributeEmoji ?? ''} {partnerMonster.soulCount} {partnerMonster.attributeName ?? ''}ソウル
+                  {partnerMonster.attributeEmoji ?? ""}{" "}
+                  {partnerMonster.soulCount}{" "}
+                  {partnerMonster.attributeName ?? ""}ソウル
                 </div>
               </div>
               <span className="text-xs text-yellow-400 border border-yellow-400 px-2 py-0.5 rounded">
@@ -182,12 +244,20 @@ export default function MonstersPage() {
         </div>
 
         {/* 4-column dex grid */}
-        <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(max(130px, calc((100% - 72px) / 7)), 1fr))" }}>
+        <div
+          className="grid gap-3"
+          style={{
+            gridTemplateColumns:
+              "repeat(auto-fill, minmax(max(130px, calc((100% - 72px) / 7)), 1fr))",
+          }}
+        >
           {dex.map((m) => {
             const c = RARITY_COLOR[m.rarity];
             const isComp = m.id === partnerId;
-            const isAwakened = m.awakeningState && m.awakeningState !== "NORMAL";
-            const canEvolve = m.isOwned && m.level >= 30 && m.awakeningState === "NORMAL";
+            const isAwakened = isMonsterAwakened(m);
+            const canEvolve = canEvolveMonster(m);
+            const canLevelUp = canLevelUpMonster(m);
+            const levelUpCost = getMonsterLevelUpCost(m.level);
             return (
               <div
                 key={m.id}
@@ -201,8 +271,8 @@ export default function MonstersPage() {
                   boxShadow: isComp
                     ? `0 0 0 1px ${c}aa, 0 8px 24px ${c}33`
                     : m.isOwned && m.rarity === "SSR"
-                    ? `inset 0 0 24px ${c}22`
-                    : "none",
+                      ? `inset 0 0 24px ${c}22`
+                      : "none",
                   cursor: m.isOwned ? "pointer" : "not-allowed",
                 }}
               >
@@ -218,10 +288,16 @@ export default function MonstersPage() {
 
                 {/* id + rarity */}
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-[10px] text-text-faint">#{m.id.slice(0, 8)}</span>
+                  <span className="text-[10px] text-text-faint">
+                    #{m.id.slice(0, 8)}
+                  </span>
                   <span
                     className="text-[9px] font-bold px-1.5 py-0.5 rounded-[2px] tracking-[0.1em]"
-                    style={{ color: c, background: `${c}14`, border: `1px solid ${c}55` }}
+                    style={{
+                      color: c,
+                      background: `${c}14`,
+                      border: `1px solid ${c}55`,
+                    }}
                   >
                     {m.rarity}
                   </span>
@@ -236,16 +312,23 @@ export default function MonstersPage() {
                       : "var(--bg-elev-2)",
                   }}
                 >
-                  {m.isOwned ? (
-                    m.emoji
-                  ) : (
-                    <span
-                      className="text-[64px] select-none"
-                      style={{ filter: "brightness(0)", opacity: 0.35 }}
-                    >
-                      {m.emoji}
-                    </span>
-                  )}
+                  <MonsterVisual
+                    className="size-full"
+                    emoji={m.emoji}
+                    emojiClassName={cn(
+                      "text-[64px] select-none",
+                      !m.isOwned && "brightness-0 opacity-35",
+                    )}
+                    formStage={m.formStage}
+                    id={m.id}
+                    imageClassName={
+                      !m.isOwned ? "brightness-0 opacity-35" : undefined
+                    }
+                    awakeningState={m.awakeningState}
+                    level={m.level}
+                    name={m.name}
+                    sizes="160px"
+                  />
                   {!m.isOwned && (
                     <span className="absolute bottom-1 right-1.5 text-[9px] text-text-faint tracking-[0.1em] opacity-80">
                       ???
@@ -256,7 +339,9 @@ export default function MonstersPage() {
                 {/* name */}
                 <div
                   className="text-[13px] font-semibold mb-0.5"
-                  style={{ color: m.isOwned ? "var(--text)" : "var(--text-faint)" }}
+                  style={{
+                    color: m.isOwned ? "var(--text)" : "var(--text-faint)",
+                  }}
                 >
                   {m.isOwned ? m.name : "???"}
                 </div>
@@ -264,7 +349,11 @@ export default function MonstersPage() {
                 {/* stats */}
                 <div className="text-[10px] text-text-faint leading-[1.5]">
                   <div className="whitespace-nowrap">
-                    <span style={{ color: m.isOwned ? "var(--accent)" : "var(--pink)" }}>
+                    <span
+                      style={{
+                        color: m.isOwned ? "var(--accent)" : "var(--pink)",
+                      }}
+                    >
                       {m.isOwned ? "所持中" : "未入手"}
                     </span>
                   </div>
@@ -283,7 +372,9 @@ export default function MonstersPage() {
                         <span className="text-xs opacity-50">
                           soul × {m.soulCount}
                         </span>
-                        <span className="text-xs text-gray-400">Lv.{m.level}</span>
+                        <span className="text-xs text-gray-400">
+                          Lv.{m.level}
+                        </span>
                       </div>
                     </>
                   )}
@@ -291,61 +382,87 @@ export default function MonstersPage() {
 
                 {/* 覚醒済みバッジ / 進化ボタン / レベルアップボタン */}
                 {m.isOwned && (
-                  isAwakened ? (
-                    <div className="mt-1 space-y-1">
-                      <div
-                        className="text-[10px] text-center font-bold tracking-widest rounded py-0.5"
-                        style={{
-                          color: m.awakeningState === "BERSERK" ? "#f97316" : "#a78bfa",
-                          border: `1px solid ${m.awakeningState === "BERSERK" ? "#f9731640" : "#a78bfa40"}`,
-                        }}
-                      >
-                        {m.awakeningState && (AWAKENING_LABEL[m.awakeningState] ?? m.awakeningState)}
-                      </div>
+                  <div className="mt-1 space-y-1">
+                    {isAwakened && (
+                      <>
+                        <div
+                          className="text-[10px] text-center font-bold tracking-widest rounded py-0.5"
+                          style={{
+                            color:
+                              m.awakeningState === "BERSERK"
+                                ? "#f97316"
+                                : "#a78bfa",
+                            border: `1px solid ${m.awakeningState === "BERSERK" ? "#f9731640" : "#a78bfa40"}`,
+                          }}
+                        >
+                          {m.awakeningState &&
+                            (AWAKENING_LABEL[m.awakeningState] ??
+                              m.awakeningState)}
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void handleChangePath(m.id);
+                          }}
+                          disabled={changingPath === m.id}
+                          className="w-full text-[10px] px-2 py-0.5 rounded border border-current opacity-60 hover:opacity-100 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity"
+                          style={{
+                            color:
+                              m.awakeningState === "BERSERK"
+                                ? "#a78bfa"
+                                : "#f97316",
+                          }}
+                        >
+                          {changingPath === m.id ? "…" : "🔄 路線変更"}
+                        </button>
+                      </>
+                    )}
+
+                    {canEvolve && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          void handleChangePath(m.id);
+                          void handleEvolve(m.id);
                         }}
-                        disabled={changingPath === m.id}
-                        className="w-full text-[10px] px-2 py-0.5 rounded border border-current opacity-60 hover:opacity-100 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity"
-                        style={{ color: m.awakeningState === "BERSERK" ? "#a78bfa" : "#f97316" }}
+                        disabled={evolving === m.id}
+                        className="w-full text-[10px] px-2 py-0.5 rounded border border-current opacity-80 hover:opacity-100 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity"
+                        style={{ color: "#a78bfa" }}
                       >
-                        {changingPath === m.id ? "…" : "🔄 路線変更"}
+                        {evolving === m.id
+                          ? "…"
+                          : `💎 進化 (Lv${MONSTER_EVOLUTION_LEVEL}+)`}
                       </button>
-                    </div>
-                  ) : canEvolve ? (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        void handleEvolve(m.id);
-                      }}
-                      disabled={evolving === m.id}
-                      className="mt-1 w-full text-[10px] px-2 py-0.5 rounded border border-current opacity-80 hover:opacity-100 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity"
-                      style={{ color: "#a78bfa" }}
-                    >
-                      {evolving === m.id ? "…" : "💎 進化 (Lv MAX)"}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        void handleLevelUp(m.id);
-                      }}
-                      disabled={m.soulCount < m.level * 3 || levelingUp === m.id}
-                      className="mt-1 w-full text-[10px] px-2 py-0.5 rounded border border-current opacity-60 hover:opacity-100 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity"
-                      style={{ color: c }}
-                    >
-                      {levelingUp === m.id
-                        ? "…"
-                        : `Lv UP (${m.level * 3} ${m.attributeEmoji || ''})`}
-                    </button>
-                  )
+                    )}
+
+                    {canLevelUp ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void handleLevelUp(m.id);
+                        }}
+                        disabled={
+                          m.soulCount < levelUpCost || levelingUp === m.id
+                        }
+                        className="w-full text-[10px] px-2 py-0.5 rounded border border-current opacity-60 hover:opacity-100 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity"
+                        style={{ color: c }}
+                      >
+                        {levelingUp === m.id
+                          ? "…"
+                          : `Lv UP (${levelUpCost} ${m.attributeEmoji || ""})`}
+                      </button>
+                    ) : !canEvolve ? (
+                      <div className="text-[10px] text-center font-bold tracking-widest rounded py-0.5 border border-line text-text-faint">
+                        Lv.{MONSTER_MAX_LEVEL}
+                      </div>
+                    ) : null}
+                  </div>
                 )}
 
                 {/* パートナー設定ボタン / バッジ */}
                 {m.isOwned && isComp && (
-                  <div className="mt-1 text-xs text-yellow-400 text-center">✨ パートナー中</div>
+                  <div className="mt-1 text-xs text-yellow-400 text-center">
+                    ✨ パートナー中
+                  </div>
                 )}
                 {m.isOwned && !isComp && (
                   <button
