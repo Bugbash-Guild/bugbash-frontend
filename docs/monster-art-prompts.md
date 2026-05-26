@@ -71,6 +71,76 @@ Lv 80〜100   BERSERK       => BERSERK_FINAL
 | `BERSERK` | Void Leech Axolotl | `/monsters/void-leech-axolotl.png` |
 | `BERSERK_FINAL` | Null Abyss Devourer | `/monsters/null-abyss-devourer.png` |
 
+### Null Pointer Axolotl 分岐コンタクトシート用プロンプト
+
+```text
+Create a crop-friendly named branching evolution contact sheet for BugBash Guild, a collectible web RPG for software engineers.
+
+Monster family: Null Pointer Axolotl.
+Theme: null references, dangling references, safe optional handling, dereferencing, memory safety, and panic when null is misused.
+Art direction target: cute-to-cool premium collectible mascot quality, clearly monster-like, strongly software-engineering themed, clean readable silhouettes. Controlled readable technical labels are wanted for this family because labels like null, ref, Some, Option, safe, panic, pointer, and memory help communicate the coding theme.
+
+Use a branching evolution layout, not a 3x2 equal grid.
+Layout structure:
+- Column 1 center: Null Pointer Axolotl
+- Column 2 center: Dereference Newt
+- Column 3 top: Optional Guardian
+- Column 4 top: Safe Memory Oracle
+- Column 3 bottom: Void Leech Axolotl
+- Column 4 bottom: Null Abyss Devourer
+
+Base and Evo are pre-branch forms and should be vertically centered between the two route rows. Awakened route is the top row. Berserk route is the bottom row. No arrows if possible; if guides are needed, use very faint thin lines that do not touch monsters or names.
+
+Strict size rule:
+Use the same camera distance. Do not let Base fill its cell.
+- Null Pointer Axolotl body height: 35-40% of its cell height
+- Dereference Newt body height: 40-45% of its cell height
+- Optional Guardian body height: 60-65% of its cell height
+- Safe Memory Oracle body height: 70-78% of its cell height
+- Void Leech Axolotl body height: 60-65%, matching Optional Guardian size and presence
+- Null Abyss Devourer body height: 70-78%, matching Safe Memory Oracle size and presence
+Evo must be visibly smaller than both route forms. Awakened and Berserk must be equal size. Both final forms must be equal size and largest.
+
+True evolution rule:
+Do not evolve by simply scaling up the same silhouette. Each evolved form must change at least three of these: body posture, limb structure, core placement, armor shape, tail shape, back structure, role silhouette. Keep family identity through shared axolotl/newt anatomy, translucent aquatic material, pointer antennae, circuit-gill frills, nullable memory core, bracket armor, memory bead nodes, and cable tails, but change the body plan enough that each form feels like a true evolution.
+
+Functional role rule:
+Awakened and Berserk must not be defined by color. They must be defined by different functional roles.
+For this family:
+Awakened role: safe optional guardian that protects and resolves missing values correctly.
+Berserk role: dangling-reference predator that consumes invalid references and spreads panic.
+The awakened form's silhouette, posture, protected core, and major body parts must express safe optional handling, memory safety, and controlled fallback behavior.
+The berserk form's silhouette, posture, exposed core, and major body parts must express dangling pointers, invalid references, panic, and predatory null consumption.
+Do not create light/dark recolors of the same body.
+
+Technical label rule:
+Use 1-2 large readable technical labels per form, integrated into major body parts only. Labels should be on cores, armor plates, badges, small tags, or rings. Good labels for this family: null, ref, Some, Option, safe, panic, ptr, memory. Avoid dense tiny text, repeated code strings, decorative text noise, or text covering faces/silhouettes.
+
+Evolution forms:
+1. Null Pointer Axolotl — smallest form. Tiny cute translucent axolotl with circuit-gill frills, pointer-cursor antennae, a small chest core labeled null, dangling ref charm, rounded body, curious expression, and tiny memory bead nodes.
+2. Dereference Newt — small waypoint form, not just bigger. Slightly longer newt with cable-like pointer tail, clearer circuit gills, small glass stack-frame armor, a chest core labeled ref, and a few bracket-shaped plates. Transitional, not final.
+3. Optional Guardian — awakened form, clearly bigger and structurally different. Protective upright guardian posture, nullable capsule armor around the core, shield-like side fins shaped like brackets, safe fallback ring fragments, core or armor label Some or Option, calm controlled expression.
+4. Safe Memory Oracle — awakened final. Large elegant oracle-guardian axolotl/newt with halo-like memory ring, protected central core labeled safe or Option, layered translucent armor, organized circuit-gill crown, bracket wings/fins, and stable blue-green memory glow. Heroic, trustworthy, clearly memory-safety themed.
+5. Void Leech Axolotl — berserk form, same size as Optional Guardian but different body plan. Low predatory stance, exposed violet-black core labeled null or panic, dangling pointer hooks, broken-reference cable tail, hooked aquatic fins, black chrome shell fragments, and hungry villain expression. Evil, cool, not glitchy, not a recolor.
+6. Null Abyss Devourer — berserk final, same size as Safe Memory Oracle. Dominating abyssal axolotl predator with maw-like void core labeled null, heavy hooked fins, corrupted memory bead lures, dangling pointer chains, broken bracket armor, and a powerful low silhouette. Evil, readable, desirable villain art, not generic demon.
+
+Critical evolution rules:
+- Coding / IT / memory-safety identity must become stronger as it evolves.
+- Evo is only a small waypoint, not the finished form.
+- Awakened and Berserk must be visibly larger and stronger than Evo.
+- Final forms must be the largest and most dominant silhouettes.
+- Awakened route changes into guardian/safe optional architecture.
+- Berserk route changes into dangling-reference predator/panic architecture.
+
+Art direction:
+Premium collectible mascot illustration, high-end designer toy blended with polished fantasy game character art. Glossy enamel, translucent resin, aquatic glass, metallic gold accents, crystal memory cores, expressive faces, clean professional rendering, strong thumbnail readability, commercially desirable.
+
+Layout and crop rules:
+16:9 landscape, warm-white studio background, subtle soft shadow under each monster, generous empty margin around every character. Place each monster name centered below its monster and separated from the silhouette. Add a small family title at the top: Null Pointer Axolotl Line. Add a small theme subtitle below the title: null refs / optional safety / memory safety. No large card frames, no UI clutter, no decorative background, no labels like Base/Evo/Awk.
+
+Avoid: 3x2 equal grid, generic fantasy dragon/demon/angel, simple scale-up evolution, weak-looking evolved forms, later forms smaller than earlier forms, dense terminal text, random pasted symbols, insect complexity, messy effects, cheap emoji style, pixel art, horror gore, human characters, text overlapping characters.
+```
+
 ## コンタクトシートの分岐レイアウト
 
 6形態の比較では、`3x2` の単純な一覧にしない。単純な一覧にすると `Evo` と `Berserk` が同格に見え、サイズも揃ってしまう。
