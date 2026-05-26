@@ -161,7 +161,10 @@ export default function MonstersPage() {
                 className="size-8"
                 emoji={partnerMonster.emoji}
                 emojiClassName="text-[22px]"
+                formStage={partnerMonster.formStage}
                 id={partnerMonster.id}
+                awakeningState={partnerMonster.awakeningState}
+                level={partnerMonster.level}
                 name={partnerMonster.name}
                 sizes="32px"
               />
@@ -252,8 +255,11 @@ export default function MonstersPage() {
                       "text-[64px] select-none",
                       !m.isOwned && "brightness-0 opacity-35",
                     )}
+                    formStage={m.formStage}
                     id={m.id}
                     imageClassName={!m.isOwned ? "brightness-0 opacity-35" : undefined}
+                    awakeningState={m.awakeningState}
+                    level={m.level}
                     name={m.name}
                     sizes="160px"
                   />

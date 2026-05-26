@@ -28,6 +28,66 @@ describe('monster artwork catalog', () => {
         );
     });
 
+    it('selects the Null Pointer family artwork from form stage', () => {
+        assert.equal(
+            getMonsterArtwork({ name: 'Null Pointer Axolotl', formStage: 'BASE' })?.src,
+            '/monsters/null-pointer-axolotl.png',
+        );
+        assert.equal(
+            getMonsterArtwork({ name: 'Null Pointer Axolotl', formStage: 'EVO' })?.src,
+            '/monsters/dereference-newt.png',
+        );
+        assert.equal(
+            getMonsterArtwork({
+                name: 'Null Pointer Axolotl',
+                formStage: 'AWAKENED',
+            })?.src,
+            '/monsters/optional-guardian.png',
+        );
+        assert.equal(
+            getMonsterArtwork({
+                name: 'Null Pointer Axolotl',
+                formStage: 'AWAKENED_FINAL',
+            })?.src,
+            '/monsters/safe-memory-oracle.png',
+        );
+        assert.equal(
+            getMonsterArtwork({
+                name: 'Null Pointer Axolotl',
+                formStage: 'BERSERK',
+            })?.src,
+            '/monsters/void-leech-axolotl.png',
+        );
+        assert.equal(
+            getMonsterArtwork({
+                name: 'Null Pointer Axolotl',
+                formStage: 'BERSERK_FINAL',
+            })?.src,
+            '/monsters/null-abyss-devourer.png',
+        );
+    });
+
+    it('can derive Null Pointer artwork from legacy level and awakening state data', () => {
+        assert.equal(
+            getMonsterArtwork({ name: 'Null Pointer Axolotl', level: 29, awakeningState: 'NORMAL' })
+                ?.src,
+            '/monsters/null-pointer-axolotl.png',
+        );
+        assert.equal(
+            getMonsterArtwork({ name: 'Null Pointer Axolotl', level: 30, awakeningState: 'NORMAL' })
+                ?.src,
+            '/monsters/dereference-newt.png',
+        );
+        assert.equal(
+            getMonsterArtwork({
+                name: 'Null Pointer Axolotl',
+                level: 80,
+                awakeningState: 'AWAKENED',
+            })?.src,
+            '/monsters/safe-memory-oracle.png',
+        );
+    });
+
     it('falls back when a monster has no adopted artwork yet', () => {
         assert.equal(getMonsterArtwork({ id: 'unknown-slime', name: 'Unknown Slime' }), null);
     });

@@ -1,5 +1,12 @@
 // src/types/monster.ts
 export type AwakeningState = 'NORMAL' | 'AWAKENED' | 'BERSERK';
+export type MonsterFormStage =
+    | 'BASE'
+    | 'EVO'
+    | 'AWAKENED'
+    | 'AWAKENED_FINAL'
+    | 'BERSERK'
+    | 'BERSERK_FINAL';
 
 export type Monster = {
     id: string;
@@ -13,4 +20,5 @@ export type Monster = {
     isOwned: boolean;
     level: number;
     awakeningState?: AwakeningState;
+    formStage?: MonsterFormStage;
 };

@@ -6,6 +6,9 @@ import { getMonsterArtwork } from '@/lib/monsterArtwork';
 type Props = {
     id?: string | null;
     name?: string | null;
+    formStage?: string | null;
+    level?: number | null;
+    awakeningState?: string | null;
     emoji: string;
     alt?: string;
     className?: string;
@@ -18,6 +21,9 @@ type Props = {
 export function MonsterVisual({
     id,
     name,
+    formStage,
+    level,
+    awakeningState,
     emoji,
     alt,
     className,
@@ -26,7 +32,7 @@ export function MonsterVisual({
     sizes = '80px',
     priority = false,
 }: Props) {
-    const artwork = getMonsterArtwork({ id, name });
+    const artwork = getMonsterArtwork({ id, name, formStage, level, awakeningState });
     const label = alt ?? name ?? artwork?.alt ?? 'monster';
 
     if (!artwork) {

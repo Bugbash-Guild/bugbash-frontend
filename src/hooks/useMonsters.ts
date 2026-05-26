@@ -4,7 +4,7 @@
 import useSWR from 'swr';
 
 import { fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
-import type { AwakeningState, Monster } from '@/types/monster';
+import type { AwakeningState, Monster, MonsterFormStage } from '@/types/monster';
 import { useRedirectOnUnauthorized } from './useRedirectOnUnauthorized';
 
 type AllMonstersDto = {
@@ -16,6 +16,7 @@ type OwnedMonstersDto = {
         soulCount: number;
         level: number;
         awakeningState: AwakeningState;
+        formStage: MonsterFormStage;
         attribute: string;
         attributeName: string;
         attributeEmoji: string;
@@ -49,6 +50,7 @@ const fetchCompendium = async (): Promise<Monster[]> => {
             soulCount: owned?.soulCount ?? 0,
             level: owned?.level ?? 1,
             awakeningState: owned?.awakeningState,
+            formStage: owned?.formStage,
         };
     });
 };

@@ -27,6 +27,50 @@ Berserk Final
 
 最初の一覧確認では6形態を1枚に並べる。採用後は1体ずつ単体生成する。
 
+ゲーム内では、バックエンドから返る `formStage` に対応して画像を出し分ける。
+
+```text
+Lv 1〜29     NORMAL        => BASE
+Lv 30〜100   NORMAL        => EVO
+Lv 50〜79    AWAKENED      => AWAKENED
+Lv 80〜100   AWAKENED      => AWAKENED_FINAL
+Lv 50〜79    BERSERK       => BERSERK
+Lv 80〜100   BERSERK       => BERSERK_FINAL
+```
+
+進行ライン:
+
+- Lv30で中間形態 `EVO` の見た目になる。
+- Lv50で覚醒/暴走が可能になる。
+- Lv80で各ルートのFinal見た目になる。
+- 最大レベルはLv100。
+- DB上は別モンスターにせず、1種族 + `level` + `awakeningState` + `formStage` として扱う。
+
+## 制作フロー
+
+量産は10系統ずつ進める。
+
+```text
+1. 10体の初期モンスター候補をコンタクトシートで作る
+2. 採用する系統を選ぶ
+3. 採用系統だけ6形態を単体生成する
+4. 画質・進化感・IT感がOKならゲームに登録する
+5. `formStage` と画像パスを紐づける
+```
+
+コンタクトシートからの切り出しは画質が落ちやすいため、本番用は最初から単体画像として生成する。
+
+## 採用済み: Null Pointer Axolotl
+
+| formStage | 表示名 | 画像 |
+|-----------|--------|------|
+| `BASE` | Null Pointer Axolotl | `/monsters/null-pointer-axolotl.png` |
+| `EVO` | Dereference Newt | `/monsters/dereference-newt.png` |
+| `AWAKENED` | Optional Guardian | `/monsters/optional-guardian.png` |
+| `AWAKENED_FINAL` | Safe Memory Oracle | `/monsters/safe-memory-oracle.png` |
+| `BERSERK` | Void Leech Axolotl | `/monsters/void-leech-axolotl.png` |
+| `BERSERK_FINAL` | Null Abyss Devourer | `/monsters/null-abyss-devourer.png` |
+
 ## コンタクトシートの分岐レイアウト
 
 6形態の比較では、`3x2` の単純な一覧にしない。単純な一覧にすると `Evo` と `Berserk` が同格に見え、サイズも揃ってしまう。
