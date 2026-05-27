@@ -68,7 +68,7 @@ Lv 80〜100   BERSERK       => BERSERK_FINAL
 1. 10系統ぶんの候補名・テーマ・覚醒役割・暴走役割を決める
 2. 1系統ずつ、分岐コンタクトシートを生成する
 3. 採用する系統だけ、6形態を1枚ずつ単体生成する
-4. 単体画像は背景を抜きやすい単色背景で生成する
+4. 単体画像は、モンスター内の色と被らない単色背景で生成する
 5. 背景を透過し、透明PNGをSVGコンテナに埋め込む
 6. `/public/monster-svgs/{slug}.svg` に置く
 7. `src/lib/monsterArtwork.ts` に base species + formStage の対応を追加する
@@ -95,19 +95,33 @@ Do not redesign the character. Preserve the same species identity, face, posture
 
 Single monster only. No name text, no arrows, no UI, no card frame, no extra characters.
 Full body centered with generous padding. Nothing cropped.
-Use a perfectly flat #ff00ff chroma-key background and no shadow so the background can be removed cleanly.
+Use a perfectly flat {background_key_color} chroma-key background and no shadow so the background can be removed cleanly.
+Choose {background_key_color} so it is as far as possible from every important monster color, glow color, crystal color, label color, and edge highlight.
+Do not use magenta or hot pink for monsters with purple/violet glow. Do not use green/cyan for monsters with green, teal, cache, nature, or blue energy. Do not use a key color that appears in the subject.
 Keep all monster parts away from the canvas edge.
 ```
 
 後処理:
 
 ```text
-1. #ff00ff 背景を透過する
+1. 背景色は固定しない。生成前に、その系統のキャラ内にほぼ存在しない色を選ぶ
 2. 透過PNGを確認する。四隅のalphaが0であること
 3. SVGコンテナにbase64埋め込みする
 4. ファイル名は kebab-case にする
 5. 必要ならローカル確認用ギャラリーを生成する。本番の `public` には入れない
 ```
+
+背景色の選び方:
+
+- まず真の透明背景で生成できる場合は、それを優先する。
+- 透明背景が使えない場合だけ、単色背景 + 後処理で透過する。
+- 背景色は毎回固定しない。コンタクトシートを見て、キャラ本体・発光・半透明素材・ラベル・縁取りに使われていない色を選ぶ。
+- Token Mimic のような紫発光系には、マゼンタ・ピンク・青紫を使わない。
+- Cache Turtle のような緑・ティール・水色系には、緑・シアン・青緑を使わない。
+- Race Condition Twins のような青・紫・白・金系には、青・紫・マゼンタを使わない。
+- 背景を抜くときは、同系色を画像全体から一括削除しない。外周につながっている背景領域だけを透過する。
+- 内部の発光、エッジ光、半透明クリスタル、コア、ラベル色は必ず残す。
+- 生成後に `hasAlpha` を確認する。プロンプトに transparent と書いても、実ファイルが透明とは限らない。
 
 SVGコンテナの前提:
 
@@ -563,13 +577,15 @@ Make the berserk route evil and desirable, not merely scary, glitchy, or red.
 - `JWT`、`OAuth`、`IAM`、`scope`、`session` などの技術ラベルは、IT感を強める場合のみ使う。
 - 技術ラベルは体の大きな部位に1〜2個だけ入れる。細かい文字模様や大量の英字は避ける。
 - 全身がキャンバス内に収まるようにする。
-- 透過SVG化する場合は、後処理しやすいように `#ff00ff` の完全な単色背景にして、影を入れない。
+- 透過SVG化する場合は、後処理しやすい完全な単色背景にして、影を入れない。
+- 背景色は固定しない。キャラ内の色、発光、半透明パーツ、ラベル色と最も衝突しない色を系統ごとに選ぶ。
 - 確認用やコンタクトシートでは、暖かい白背景と薄い影を使ってよい。
 
 実装用の透過PNGを作る場合:
 
 - 生成時は単色背景を使い、後処理で背景透過する。
 - 透明化しやすいように、背景色をキャラ本体に使わない。
+- 背景透過は外周につながっている背景だけを対象にする。色が近いという理由だけで、キャラ内部の発光や装飾を消さない。
 - 現在の新規実装では `/public/monster-svgs/*.svg` に置く。
 - 既存PNGアセットは引き続き `/public/monsters/*.png` に置かれている。
 - 画像が未採用のモンスターは、既存の絵文字表示にフォールバックする。
