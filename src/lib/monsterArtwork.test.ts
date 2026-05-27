@@ -129,24 +129,6 @@ describe("monster artwork catalog", () => {
     }
   });
 
-  it("selects Cache Turtle family SVG artwork from form stage", () => {
-    const expectedByStage = {
-      BASE: "/monster-svgs/cache-turtle.svg",
-      EVO: "/monster-svgs/cache-runner.svg",
-      AWAKENED: "/monster-svgs/hot-cache-courier.svg",
-      AWAKENED_FINAL: "/monster-svgs/edge-cache-monarch.svg",
-      BERSERK: "/monster-svgs/stale-cache-polyp.svg",
-      BERSERK_FINAL: "/monster-svgs/invalidation-maw.svg",
-    };
-
-    for (const formStage of formStages) {
-      assert.equal(
-        getMonsterArtwork({ name: "Cache Turtle", formStage })?.src,
-        expectedByStage[formStage],
-      );
-    }
-  });
-
   it("selects Race Condition Twins family SVG artwork from form stage", () => {
     const expectedByStage = {
       BASE: "/monster-svgs/race-condition-twins.svg",

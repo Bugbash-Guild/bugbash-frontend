@@ -237,17 +237,6 @@ Avoid: 3x2 equal grid, generic fantasy dragon/demon/angel, simple scale-up evolu
 | `BERSERK`        | Token Exfiltrator | `/monster-svgs/token-exfiltrator.svg` |
 | `BERSERK_FINAL`  | Shadow IAM Proxy  | `/monster-svgs/shadow-iam-proxy.svg`  |
 
-### Cache Turtle
-
-| formStage        | 表示名             | 画像                                   |
-| ---------------- | ------------------ | -------------------------------------- |
-| `BASE`           | Cache Turtle       | `/monster-svgs/cache-turtle.svg`       |
-| `EVO`            | Cache Runner       | `/monster-svgs/cache-runner.svg`       |
-| `AWAKENED`       | Hot Cache Courier  | `/monster-svgs/hot-cache-courier.svg`  |
-| `AWAKENED_FINAL` | Edge Cache Monarch | `/monster-svgs/edge-cache-monarch.svg` |
-| `BERSERK`        | Stale Cache Polyp  | `/monster-svgs/stale-cache-polyp.svg`  |
-| `BERSERK_FINAL`  | Invalidation Maw   | `/monster-svgs/invalidation-maw.svg`   |
-
 ### Race Condition Twins
 
 | formStage        | 表示名                 | 画像                                       |

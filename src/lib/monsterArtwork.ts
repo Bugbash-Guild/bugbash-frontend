@@ -131,33 +131,6 @@ const TOKEN_MIMIC_ARTWORK_BY_STAGE: MonsterArtworkByStage = {
   },
 };
 
-const CACHE_TURTLE_ARTWORK_BY_STAGE: MonsterArtworkByStage = {
-  BASE: {
-    src: "/monster-svgs/cache-turtle.svg",
-    alt: "Cache Turtle",
-  },
-  EVO: {
-    src: "/monster-svgs/cache-runner.svg",
-    alt: "Cache Runner",
-  },
-  AWAKENED: {
-    src: "/monster-svgs/hot-cache-courier.svg",
-    alt: "Hot Cache Courier",
-  },
-  AWAKENED_FINAL: {
-    src: "/monster-svgs/edge-cache-monarch.svg",
-    alt: "Edge Cache Monarch",
-  },
-  BERSERK: {
-    src: "/monster-svgs/stale-cache-polyp.svg",
-    alt: "Stale Cache Polyp",
-  },
-  BERSERK_FINAL: {
-    src: "/monster-svgs/invalidation-maw.svg",
-    alt: "Invalidation Maw",
-  },
-};
-
 const RACE_CONDITION_TWINS_ARTWORK_BY_STAGE: MonsterArtworkByStage = {
   BASE: {
     src: "/monster-svgs/race-condition-twins.svg",
@@ -205,16 +178,6 @@ const MONSTER_ARTWORK_FAMILIES: MonsterArtworkFamily[] = [
       "authentication token mimic",
     ],
     TOKEN_MIMIC_ARTWORK_BY_STAGE,
-  ),
-  createArtworkFamily(
-    [
-      "cache turtle",
-      "cache-turtle",
-      "cache_turtle",
-      "cache monster",
-      "cache turtle line",
-    ],
-    CACHE_TURTLE_ARTWORK_BY_STAGE,
   ),
   createArtworkFamily(
     [
