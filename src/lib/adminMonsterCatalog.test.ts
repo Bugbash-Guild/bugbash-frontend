@@ -39,6 +39,27 @@ describe("admin monster catalog", () => {
     );
   });
 
+  it("detects API-provided stage artwork without frontend catalog changes", () => {
+    const previews = getAdminMonsterStagePreviews({
+      id: "cdn-monster",
+      name: "CDN Monster",
+      emoji: "◇",
+      rarity: "SR",
+      artworkByStage: {
+        BASE: "https://assets.example.test/monsters/cdn-monster/base.webp",
+        BERSERK_FINAL:
+          "https://assets.example.test/monsters/cdn-monster/berserk-final.webp",
+      },
+    });
+
+    assert.equal(previews.find((preview) => preview.formStage === "BASE")?.hasArtwork, true);
+    assert.equal(
+      previews.find((preview) => preview.formStage === "BERSERK_FINAL")?.hasArtwork,
+      true,
+    );
+    assert.equal(previews.find((preview) => preview.formStage === "EVO")?.hasArtwork, false);
+  });
+
   it("sorts monsters by rarity and name for scan-friendly review", () => {
     const catalog = buildAdminMonsterCatalog([
       { id: "n-2", name: "Zeta Slime", emoji: "🟢", rarity: "N" },

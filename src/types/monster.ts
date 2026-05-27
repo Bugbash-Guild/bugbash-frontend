@@ -10,6 +10,7 @@ export type MonsterFormStage =
 
 export type Monster = {
     id: string;
+    slug?: string;
     name: string;
     emoji: string;
     rarity: 'N' | 'R' | 'SR' | 'SSR';
@@ -21,4 +22,6 @@ export type Monster = {
     level: number;
     awakeningState?: AwakeningState;
     formStage?: MonsterFormStage;
+    assetUrl?: string | null;
+    artworkByStage?: Partial<Record<MonsterFormStage, string>>;
 };

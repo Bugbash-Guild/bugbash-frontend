@@ -55,4 +55,18 @@ describe('summon display catalog', () => {
             emoji: '⭐',
         });
     });
+
+    it('keeps API-provided item asset URLs with the display metadata', () => {
+        assert.deepEqual(
+            getSummonItemDisplay(
+                'evolution-stone',
+                'https://assets.example.test/items/evolution-stone.webp',
+            ),
+            {
+                name: '進化の輝石',
+                emoji: '💎',
+                assetUrl: 'https://assets.example.test/items/evolution-stone.webp',
+            },
+        );
+    });
 });

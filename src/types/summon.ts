@@ -3,11 +3,13 @@ export type ItemRarity = 'N' | 'R' | 'SR' | 'SSR';
 export type SummonItem = {
     itemId: string;
     rarity: ItemRarity;
+    assetUrl?: string | null;
 };
 
 export type SummonOnceResponse = {
     itemId: string;
     rarity: ItemRarity;
+    assetUrl?: string | null;
     newPullCount: number;
     coinsRemaining: number;
 };
@@ -28,6 +30,7 @@ export type PityCounterResponse = {
 export type SummonHistoryEntry = {
     itemId: string;
     rarity: ItemRarity;
+    assetUrl?: string | null;
     pulledAt: string;
 };
 

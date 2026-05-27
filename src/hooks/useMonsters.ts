@@ -8,15 +8,25 @@ import type { AwakeningState, Monster, MonsterFormStage } from '@/types/monster'
 import { useRedirectOnUnauthorized } from './useRedirectOnUnauthorized';
 
 type AllMonstersDto = {
-    monsters: { id: string; name: string; emoji: string; rarity: string }[];
+    monsters: {
+        id: string;
+        slug?: string;
+        name: string;
+        emoji: string;
+        rarity: string;
+        artworkByStage?: Partial<Record<MonsterFormStage, string>>;
+    }[];
 };
 type OwnedMonstersDto = {
     monsters: {
         id: string;
+        slug?: string;
         soulCount: number;
         level: number;
         awakeningState: AwakeningState;
         formStage: MonsterFormStage;
+        assetUrl?: string | null;
+        artworkByStage?: Partial<Record<MonsterFormStage, string>>;
         attribute: string;
         attributeName: string;
         attributeEmoji: string;
@@ -40,6 +50,7 @@ const fetchCompendium = async (): Promise<Monster[]> => {
         const owned = ownedMap.get(m.id);
         return {
             id: m.id,
+            slug: owned?.slug ?? m.slug,
             name: m.name,
             emoji: m.emoji,
             rarity: m.rarity as Monster['rarity'],
@@ -51,6 +62,8 @@ const fetchCompendium = async (): Promise<Monster[]> => {
             level: owned?.level ?? 1,
             awakeningState: owned?.awakeningState,
             formStage: owned?.formStage,
+            assetUrl: owned?.assetUrl,
+            artworkByStage: owned?.artworkByStage ?? m.artworkByStage,
         };
     });
 };

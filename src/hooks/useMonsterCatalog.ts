@@ -7,7 +7,14 @@ import type { AdminMonsterInput } from "@/lib/adminMonsterCatalog";
 import type { Monster } from "@/types/monster";
 
 type AllMonstersDto = {
-  monsters: { id: string; name: string; emoji: string; rarity: string }[];
+  monsters: {
+    id: string;
+    slug?: string;
+    name: string;
+    emoji: string;
+    rarity: string;
+    artworkByStage?: AdminMonsterInput["artworkByStage"];
+  }[];
 };
 
 const fetchMonsterCatalog = async (): Promise<AdminMonsterInput[]> => {
@@ -19,9 +26,11 @@ const fetchMonsterCatalog = async (): Promise<AdminMonsterInput[]> => {
 
   return data.monsters.map((monster) => ({
     id: monster.id,
+    slug: monster.slug,
     name: monster.name,
     emoji: monster.emoji,
     rarity: monster.rarity as Monster["rarity"],
+    artworkByStage: monster.artworkByStage,
   }));
 };
 

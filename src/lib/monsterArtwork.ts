@@ -6,6 +6,8 @@ export type MonsterArtwork = {
 type MonsterArtworkInput = {
   id?: string | null;
   name?: string | null;
+  assetUrl?: string | null;
+  artworkByStage?: Partial<Record<MonsterFormStage, string | null>>;
   formStage?: string | null;
   level?: number | null;
   awakeningState?: string | null;
@@ -260,6 +262,9 @@ for (const family of MONSTER_ARTWORK_FAMILIES) {
 export function getMonsterArtwork(
   input: MonsterArtworkInput,
 ): MonsterArtwork | null {
+  const apiArtwork = getApiMonsterArtwork(input);
+  if (apiArtwork) return apiArtwork;
+
   const { id, name } = input;
   for (const value of [id, name]) {
     if (!value) continue;
@@ -269,4 +274,23 @@ export function getMonsterArtwork(
     if (resolveArtwork) return resolveArtwork(input);
   }
   return null;
+}
+
+function getApiMonsterArtwork(input: MonsterArtworkInput): MonsterArtwork | null {
+  const alt = input.name ?? "monster";
+  if (input.assetUrl) {
+    return {
+      src: input.assetUrl,
+      alt,
+    };
+  }
+
+  const formStage = resolveFormStage(input);
+  const stageUrl = input.artworkByStage?.[formStage];
+  if (!stageUrl) return null;
+
+  return {
+    src: stageUrl,
+    alt,
+  };
 }

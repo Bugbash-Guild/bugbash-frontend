@@ -173,6 +173,8 @@ function MonsterStageCell({
         }}
       >
         <MonsterVisual
+          artworkByStage={monster.artworkByStage}
+          assetUrl={monster.assetUrl}
           className="size-full"
           emoji={monster.emoji}
           emojiClassName="text-[42px] opacity-75"

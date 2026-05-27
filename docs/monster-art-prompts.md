@@ -55,10 +55,35 @@ Lv 80〜100   BERSERK       => BERSERK_FINAL
 2. 採用する系統を選ぶ
 3. 採用系統だけ6形態を単体生成する
 4. 画質・進化感・IT感がOKならゲームに登録する
-5. `formStage` と画像パスを紐づける
+5. 画像をアセット置き場へアップロードする
+6. バックエンドの種族slugと `formStage` から画像URLを返す
 ```
 
 コンタクトシートからの切り出しは画質が落ちやすいため、本番用は最初から単体画像として生成する。
+
+## アセット登録方針
+
+新規アセットは、フロントエンドのリポジトリに直接増やすのではなく、オブジェクトストレージ/CDNに置く。
+
+```text
+monsters/{monster-slug}/{form-stage}.webp
+items/{item-id}.webp
+equipment/{equipment-id}.webp
+```
+
+例:
+
+```text
+monsters/token-mimic/base.webp
+monsters/token-mimic/berserk-final.webp
+items/evolution-stone.webp
+```
+
+バックエンドは `BUGBASH_ASSETS_BASE_URL` を元に `assetUrl` / `artworkByStage` を返す。
+フロントエンドは同じURLを `NEXT_PUBLIC_ASSETS_BASE_URL` に設定して、Next Image の許可ドメインとして扱う。
+フロントエンドはAPIから返ったURLを優先して表示し、URLがない場合だけ既存のローカル画像や絵文字にフォールバックする。
+
+この形にしておくと、画像差し替えだけでフロントエンドのコード変更が不要になる。モンスターだけでなく、アイテム・装備にも同じ流れを使う。
 
 ## 10系統バッチ運用フロー
 
@@ -69,10 +94,10 @@ Lv 80〜100   BERSERK       => BERSERK_FINAL
 2. 1系統ずつ、分岐コンタクトシートを生成する
 3. 採用する系統だけ、6形態を1枚ずつ単体生成する
 4. 単体画像は、モンスター内の色と被らない単色背景で生成する
-5. 背景を透過し、透明PNGをSVGコンテナに埋め込む
-6. `/public/monster-svgs/{slug}.svg` に置く
-7. `src/lib/monsterArtwork.ts` に base species + formStage の対応を追加する
-8. バックエンドの初期モンスターに base species だけ追加する
+5. 背景を透過し、透明PNG/WebPとして書き出す
+6. `monsters/{monster-slug}/{form-stage}.webp` としてアセット置き場にアップロードする
+7. バックエンドの初期モンスターに base species と安定slugを追加する
+8. 必要に応じて `BUGBASH_ASSETS_BASE_URL` を設定する
 9. フロントとバックエンドのテストを追加して通す
 ```
 
@@ -80,8 +105,8 @@ Lv 80〜100   BERSERK       => BERSERK_FINAL
 
 - ゲームDBに入れるのは系統の `BASE` 種族だけ。進化後の名前は画像表示用に扱う。
 - 表示の切り替えはバックエンドが返す `formStage` で行う。
-- 現在のSVGは、純粋なパスベクターではなく「透過PNGを埋め込んだSVG」。画質を保ちつつ `<img>` で扱いやすくするための形式。
-- 純粋なベクターSVGが必要になった場合は、別工程でトレースまたはベクター前提の生成を行う。
+- バックエンドが `artworkByStage` を返すため、フロントエンドに種族ごとの対応表を増やさない。
+- 既存のローカルPNG/SVGは移行までのフォールバックとして残す。
 
 ## 単体SVG化ワークフロー
 
@@ -106,7 +131,7 @@ Keep all monster parts away from the canvas edge.
 ```text
 1. 背景色は固定しない。生成前に、その系統のキャラ内にほぼ存在しない色を選ぶ
 2. 透過PNGを確認する。四隅のalphaが0であること
-3. SVGコンテナにbase64埋め込みする
+3. 透明PNG/WebPとして保存する
 4. ファイル名は kebab-case にする
 5. 必要ならローカル確認用ギャラリーを生成する。本番の `public` には入れない
 ```
@@ -575,8 +600,8 @@ Make the berserk route evil and desirable, not merely scary, glitchy, or red.
 - 生成時は単色背景を使い、後処理で背景透過する。
 - 透明化しやすいように、背景色をキャラ本体に使わない。
 - 背景透過は外周につながっている背景だけを対象にする。色が近いという理由だけで、キャラ内部の発光や装飾を消さない。
-- 現在の新規実装では `/public/monster-svgs/*.svg` に置く。
-- 既存PNGアセットは引き続き `/public/monsters/*.png` に置かれている。
+- 新規実装ではアセット置き場にアップロードし、バックエンドからURLを返す。
+- 既存PNG/SVGアセットは、移行完了まで `/public/monsters/*.png` と `/public/monster-svgs/*.svg` に残る。
 - 画像が未採用のモンスターは、既存の絵文字表示にフォールバックする。
 
 採用済みコンタクトシートから単体化する場合:

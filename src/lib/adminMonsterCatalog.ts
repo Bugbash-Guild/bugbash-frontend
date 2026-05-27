@@ -5,7 +5,8 @@ import type { Monster, MonsterFormStage } from "../types/monster";
 export type AdminMonsterInput = Pick<
   Monster,
   "emoji" | "id" | "name" | "rarity"
->;
+> &
+  Pick<Monster, "artworkByStage" | "assetUrl" | "slug">;
 
 export type AdminMonsterStagePreview = {
   formStage: MonsterFormStage;
@@ -38,6 +39,8 @@ export function getAdminMonsterStagePreviews(
     hasArtwork:
       getMonsterArtwork({
         formStage,
+        assetUrl: monster.assetUrl,
+        artworkByStage: monster.artworkByStage,
         id: monster.id,
         name: monster.name,
       }) !== null,

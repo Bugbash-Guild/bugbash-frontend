@@ -2,10 +2,13 @@ import Image from 'next/image';
 
 import { cn } from '@/lib/cn';
 import { getMonsterArtwork } from '@/lib/monsterArtwork';
+import type { MonsterFormStage } from '@/types/monster';
 
 type Props = {
     id?: string | null;
     name?: string | null;
+    assetUrl?: string | null;
+    artworkByStage?: Partial<Record<MonsterFormStage, string>>;
     formStage?: string | null;
     level?: number | null;
     awakeningState?: string | null;
@@ -21,6 +24,8 @@ type Props = {
 export function MonsterVisual({
     id,
     name,
+    assetUrl,
+    artworkByStage,
     formStage,
     level,
     awakeningState,
@@ -32,7 +37,15 @@ export function MonsterVisual({
     sizes = '80px',
     priority = false,
 }: Props) {
-    const artwork = getMonsterArtwork({ id, name, formStage, level, awakeningState });
+    const artwork = getMonsterArtwork({
+        id,
+        name,
+        assetUrl,
+        artworkByStage,
+        formStage,
+        level,
+        awakeningState,
+    });
     const label = alt ?? name ?? artwork?.alt ?? 'monster';
 
     if (!artwork) {

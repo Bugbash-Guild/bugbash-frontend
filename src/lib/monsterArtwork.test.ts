@@ -147,6 +147,31 @@ describe("monster artwork catalog", () => {
     }
   });
 
+  it("prefers API-provided monster asset URLs over the local fallback catalog", () => {
+    assert.equal(
+      getMonsterArtwork({
+        name: "Token Mimic",
+        formStage: "BASE",
+        assetUrl: "https://assets.example.test/monsters/token-mimic/base.webp",
+      })?.src,
+      "https://assets.example.test/monsters/token-mimic/base.webp",
+    );
+  });
+
+  it("selects API-provided artwork by form stage before the local fallback catalog", () => {
+    assert.equal(
+      getMonsterArtwork({
+        name: "Token Mimic",
+        formStage: "BERSERK_FINAL",
+        artworkByStage: {
+          BERSERK_FINAL:
+            "https://assets.example.test/monsters/token-mimic/berserk-final.webp",
+        },
+      })?.src,
+      "https://assets.example.test/monsters/token-mimic/berserk-final.webp",
+    );
+  });
+
   it("falls back when a monster has no adopted artwork yet", () => {
     assert.equal(
       getMonsterArtwork({ id: "unknown-slime", name: "Unknown Slime" }),
