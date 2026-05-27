@@ -206,6 +206,8 @@ export default function MonstersPage() {
                 PARTNER / パートナー
               </span>
               <MonsterVisual
+                artworkByStage={partnerMonster.artworkByStage}
+                assetUrl={partnerMonster.assetUrl}
                 className="size-8"
                 emoji={partnerMonster.emoji}
                 emojiClassName="text-[22px]"
@@ -313,6 +315,8 @@ export default function MonstersPage() {
                   }}
                 >
                   <MonsterVisual
+                    artworkByStage={m.artworkByStage}
+                    assetUrl={m.assetUrl}
                     className="size-full"
                     emoji={m.emoji}
                     emojiClassName={cn(

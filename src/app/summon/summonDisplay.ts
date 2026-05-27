@@ -8,6 +8,7 @@ export type SummonRate = {
 export type SummonItemDisplay = {
     name: string;
     emoji: string;
+    assetUrl?: string;
 };
 
 export const NORMAL_SUMMON_COST = {
@@ -68,6 +69,8 @@ export function formatGuildCoinCost(cost: number): string {
     return cost.toLocaleString('en-US');
 }
 
-export function getSummonItemDisplay(itemId: string): SummonItemDisplay {
-    return SUMMON_ITEM_DISPLAY[itemId] ?? { name: itemId, emoji: '❓' };
+export function getSummonItemDisplay(itemId: string, assetUrl?: string | null): SummonItemDisplay {
+    const display = SUMMON_ITEM_DISPLAY[itemId] ?? { name: itemId, emoji: '❓' };
+    if (!assetUrl) return display;
+    return { ...display, assetUrl };
 }

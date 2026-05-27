@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useShop } from "@/hooks/useShop";
 import { useInventory } from "@/hooks/useInventory";
 import { usePurchase } from "@/hooks/usePurchase";
+import { ItemVisual } from "@/components/ItemVisual";
 import { MainWrapper } from "@/components/MainWrapper";
 import type { ShopItem } from "@/types/shop";
 
@@ -110,7 +111,14 @@ export default function ShopPage() {
                   className="text-left bg-bg-elev border border-line rounded-lg p-4 hover:bg-bg-elev-2 transition-colors"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="text-3xl">{item.iconEmoji}</div>
+                    <ItemVisual
+                      alt={item.name}
+                      assetUrl={item.assetUrl}
+                      className="size-9"
+                      emoji={item.iconEmoji}
+                      emojiClassName="text-3xl"
+                      sizes="36px"
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="text-[14px] text-text font-semibold">
                         {item.name}
@@ -152,7 +160,14 @@ export default function ShopPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 mb-3">
-              <div className="text-2xl">{selected.iconEmoji}</div>
+              <ItemVisual
+                alt={selected.name}
+                assetUrl={selected.assetUrl}
+                className="size-8"
+                emoji={selected.iconEmoji}
+                emojiClassName="text-2xl"
+                sizes="32px"
+              />
               <div>
                 <div id="shop-purchase-title" className="text-[14px] text-text font-semibold">
                   {selected.name} を購入しますか?

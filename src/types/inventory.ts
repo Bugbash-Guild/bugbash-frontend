@@ -3,6 +3,7 @@ export type InventoryItem = {
     name: string;
     description: string;
     iconEmoji: string;
+    assetUrl?: string | null;
     category: 'EVOLUTION' | 'SOUL_PACK';
     quantity: number;
 };

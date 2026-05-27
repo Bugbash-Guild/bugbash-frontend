@@ -8,6 +8,7 @@ import { useHero } from "@/hooks/useHero";
 import { usePityCounter } from "@/hooks/usePityCounter";
 import { useSummon } from "@/hooks/useSummon";
 import { useSummonHistory } from "@/hooks/useSummonHistory";
+import { ItemVisual } from "@/components/ItemVisual";
 import { MainWrapper } from "@/components/MainWrapper";
 import {
   formatGuildCoinCost,
@@ -292,10 +293,17 @@ export default function SummonPage() {
 }
 
 function SingleResult({ data }: { data: SummonOnceResponse }) {
-  const display = getSummonItemDisplay(data.itemId);
+  const display = getSummonItemDisplay(data.itemId, data.assetUrl);
   return (
     <div className={`rounded-lg p-6 text-center ${RARITY_BG[data.rarity]}`}>
-      <div className="text-[48px] mb-2">{display.emoji}</div>
+      <ItemVisual
+        alt={display.name}
+        assetUrl={display.assetUrl}
+        className="mx-auto mb-2 size-14"
+        emoji={display.emoji}
+        emojiClassName="text-[48px]"
+        sizes="56px"
+      />
       <div className={`text-[20px] font-bold mb-1 ${RARITY_COLOR[data.rarity]}`}>
         {data.rarity}
       </div>
@@ -317,12 +325,19 @@ function TenResult({ data }: { data: SummonTenResponse }) {
 }
 
 function SummonCard({ item }: { item: SummonItem }) {
-  const display = getSummonItemDisplay(item.itemId);
+  const display = getSummonItemDisplay(item.itemId, item.assetUrl);
   return (
     <div
       className={`rounded p-2 text-center border border-line ${RARITY_BG[item.rarity]}`}
     >
-      <div className="text-[22px]">{display.emoji}</div>
+      <ItemVisual
+        alt={display.name}
+        assetUrl={display.assetUrl}
+        className="mx-auto size-7"
+        emoji={display.emoji}
+        emojiClassName="text-[22px]"
+        sizes="28px"
+      />
       <div className={`text-[10px] font-bold mt-0.5 ${RARITY_COLOR[item.rarity]}`}>
         {item.rarity}
       </div>
@@ -331,7 +346,7 @@ function SummonCard({ item }: { item: SummonItem }) {
 }
 
 function HistoryRow({ entry }: { entry: SummonHistoryEntry }) {
-  const display = getSummonItemDisplay(entry.itemId);
+  const display = getSummonItemDisplay(entry.itemId, entry.assetUrl);
   const dt = new Date(entry.pulledAt);
   const label = dt.toLocaleString("ja-JP", {
     month: "numeric",
@@ -342,9 +357,14 @@ function HistoryRow({ entry }: { entry: SummonHistoryEntry }) {
 
   return (
     <div className="flex items-center gap-3 py-1.5 border-b border-line last:border-0 text-[12px]">
-      <span className="text-[16px] w-5 text-center">
-        {display.emoji}
-      </span>
+      <ItemVisual
+        alt={display.name}
+        assetUrl={display.assetUrl}
+        className="size-5"
+        emoji={display.emoji}
+        emojiClassName="w-5 text-center text-[16px]"
+        sizes="20px"
+      />
       <span className={`w-8 text-center font-semibold ${RARITY_COLOR[entry.rarity]}`}>
         {entry.rarity}
       </span>

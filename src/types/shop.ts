@@ -6,6 +6,7 @@ export type ShopItem = {
     price: number;
     category: 'EVOLUTION' | 'SOUL_PACK';
     iconEmoji: string;
+    assetUrl?: string | null;
 };
 
 export type ListShopResponse = {

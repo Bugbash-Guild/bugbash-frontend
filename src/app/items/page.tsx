@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/hooks/useInventory";
 import { useUseItem } from "@/hooks/useUseItem";
+import { ItemVisual } from "@/components/ItemVisual";
 import { MainWrapper } from "@/components/MainWrapper";
 import type { InventoryItem, UseItemResponse } from "@/types/inventory";
 
@@ -170,7 +171,14 @@ export default function ItemsPage() {
                       "radial-gradient(circle at 50% 40%, rgba(126,231,135,0.1) 0%, transparent 70%), var(--bg-elev-2)",
                   }}
                 >
-                  {selectedItem.iconEmoji}
+                  <ItemVisual
+                    alt={selectedItem.name}
+                    assetUrl={selectedItem.assetUrl}
+                    className="size-full"
+                    emoji={selectedItem.iconEmoji}
+                    emojiClassName="text-[96px]"
+                    sizes="240px"
+                  />
                 </div>
 
                 <div className="flex items-center gap-2 mb-1.5">
@@ -287,7 +295,15 @@ function Cell({
     >
       {item && (
         <>
-          <span className="text-[28px] select-none leading-none">{item.iconEmoji}</span>
+          <ItemVisual
+            alt={item.name}
+            assetUrl={item.assetUrl}
+            className="size-full"
+            emoji={item.iconEmoji}
+            emojiClassName="text-[28px] select-none leading-none"
+            imageClassName="p-1"
+            sizes="48px"
+          />
           <span
             className="absolute bottom-0.5 right-1 text-[10px] font-bold leading-none"
             style={{ textShadow: "1px 1px 0 #000" }}
