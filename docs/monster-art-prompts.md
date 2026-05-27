@@ -60,6 +60,73 @@ Lv 80〜100   BERSERK       => BERSERK_FINAL
 
 コンタクトシートからの切り出しは画質が落ちやすいため、本番用は最初から単体画像として生成する。
 
+## 10系統バッチ運用フロー
+
+次回以降は、以下の順で進める。
+
+```text
+1. 10系統ぶんの候補名・テーマ・覚醒役割・暴走役割を決める
+2. 1系統ずつ、分岐コンタクトシートを生成する
+3. 採用する系統だけ、6形態を1枚ずつ単体生成する
+4. 単体画像は背景を抜きやすい単色背景で生成する
+5. 背景を透過し、透明PNGをSVGコンテナに埋め込む
+6. `/public/monster-svgs/{slug}.svg` に置く
+7. `src/lib/monsterArtwork.ts` に base species + formStage の対応を追加する
+8. バックエンドの初期モンスターに base species だけ追加する
+9. フロントとバックエンドのテストを追加して通す
+```
+
+重要:
+
+- ゲームDBに入れるのは系統の `BASE` 種族だけ。進化後の名前は画像表示用に扱う。
+- 表示の切り替えはバックエンドが返す `formStage` で行う。
+- 現在のSVGは、純粋なパスベクターではなく「透過PNGを埋め込んだSVG」。画質を保ちつつ `<img>` で扱いやすくするための形式。
+- 純粋なベクターSVGが必要になった場合は、別工程でトレースまたはベクター前提の生成を行う。
+
+## 単体SVG化ワークフロー
+
+採用済みコンタクトシートの方向性を維持して、1形態ずつ生成する。
+
+単体生成時に追加する指示:
+
+```text
+Create one isolated game asset of the same monster form from the approved contact sheet direction.
+Do not redesign the character. Preserve the same species identity, face, posture language, core motif, materials, technical labels, and role from the approved sheet.
+
+Single monster only. No name text, no arrows, no UI, no card frame, no extra characters.
+Full body centered with generous padding. Nothing cropped.
+Use a perfectly flat #ff00ff chroma-key background and no shadow so the background can be removed cleanly.
+Keep all monster parts away from the canvas edge.
+```
+
+後処理:
+
+```text
+1. #ff00ff 背景を透過する
+2. 透過PNGを確認する。四隅のalphaが0であること
+3. SVGコンテナにbase64埋め込みする
+4. ファイル名は kebab-case にする
+5. 必要ならローカル確認用ギャラリーを生成する。本番の `public` には入れない
+```
+
+SVGコンテナの前提:
+
+```text
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <image width="1024" height="1024" href="data:image/png;base64,..." />
+</svg>
+```
+
+本番登録時のチェック:
+
+- 6形態すべてが存在する。
+- 背景が透過されている。
+- `Base` と `Evo` が強すぎず、覚醒・暴走が明確に上位に見える。
+- 覚醒と暴走が色違いではなく、役割・姿勢・主要部位で別物になっている。
+- 最終形態でもエンジニアリング、IT、コーディングの要素が薄れていない。
+- 画像パスが `src/lib/monsterArtwork.ts` の `formStage` マッピングと一致している。
+- バックエンドに追加するのは `BASE` 種族名だけ。
+
 ## 全系統共通: 分岐コンタクトシート用プロンプト
 
 このテンプレートは、すべてのモンスター系統の6形態コンタクトシート生成に使う。`{...}` を対象モンスターの内容に置き換える。
@@ -134,14 +201,49 @@ Avoid: 3x2 equal grid, generic fantasy dragon/demon/angel, simple scale-up evolu
 
 ## 採用済み: Null Pointer Axolotl
 
-| formStage | 表示名 | 画像 |
-|-----------|--------|------|
-| `BASE` | Null Pointer Axolotl | `/monsters/null-pointer-axolotl.png` |
-| `EVO` | Dereference Newt | `/monsters/dereference-newt.png` |
-| `AWAKENED` | Optional Guardian | `/monsters/optional-guardian.png` |
-| `AWAKENED_FINAL` | Safe Memory Oracle | `/monsters/safe-memory-oracle.png` |
-| `BERSERK` | Void Leech Axolotl | `/monsters/void-leech-axolotl.png` |
-| `BERSERK_FINAL` | Null Abyss Devourer | `/monsters/null-abyss-devourer.png` |
+| formStage        | 表示名               | 画像                                 |
+| ---------------- | -------------------- | ------------------------------------ |
+| `BASE`           | Null Pointer Axolotl | `/monsters/null-pointer-axolotl.png` |
+| `EVO`            | Dereference Newt     | `/monsters/dereference-newt.png`     |
+| `AWAKENED`       | Optional Guardian    | `/monsters/optional-guardian.png`    |
+| `AWAKENED_FINAL` | Safe Memory Oracle   | `/monsters/safe-memory-oracle.png`   |
+| `BERSERK`        | Void Leech Axolotl   | `/monsters/void-leech-axolotl.png`   |
+| `BERSERK_FINAL`  | Null Abyss Devourer  | `/monsters/null-abyss-devourer.png`  |
+
+## 採用済み: Batch 1 Engineering SVG Families
+
+### Token Mimic
+
+| formStage        | 表示名            | 画像                                  |
+| ---------------- | ----------------- | ------------------------------------- |
+| `BASE`           | Token Mimic       | `/monster-svgs/token-mimic.svg`       |
+| `EVO`            | Session Mimic     | `/monster-svgs/session-mimic.svg`     |
+| `AWAKENED`       | Vault Agent       | `/monster-svgs/vault-agent.svg`       |
+| `AWAKENED_FINAL` | OAuth Gateway     | `/monster-svgs/oauth-gateway.svg`     |
+| `BERSERK`        | Token Exfiltrator | `/monster-svgs/token-exfiltrator.svg` |
+| `BERSERK_FINAL`  | Shadow IAM Proxy  | `/monster-svgs/shadow-iam-proxy.svg`  |
+
+### Cache Turtle
+
+| formStage        | 表示名             | 画像                                   |
+| ---------------- | ------------------ | -------------------------------------- |
+| `BASE`           | Cache Turtle       | `/monster-svgs/cache-turtle.svg`       |
+| `EVO`            | Cache Runner       | `/monster-svgs/cache-runner.svg`       |
+| `AWAKENED`       | Hot Cache Courier  | `/monster-svgs/hot-cache-courier.svg`  |
+| `AWAKENED_FINAL` | Edge Cache Monarch | `/monster-svgs/edge-cache-monarch.svg` |
+| `BERSERK`        | Stale Cache Polyp  | `/monster-svgs/stale-cache-polyp.svg`  |
+| `BERSERK_FINAL`  | Invalidation Maw   | `/monster-svgs/invalidation-maw.svg`   |
+
+### Race Condition Twins
+
+| formStage        | 表示名                 | 画像                                       |
+| ---------------- | ---------------------- | ------------------------------------------ |
+| `BASE`           | Race Condition Twins   | `/monster-svgs/race-condition-twins.svg`   |
+| `EVO`            | Thread Sprinters       | `/monster-svgs/thread-sprinters.svg`       |
+| `AWAKENED`       | Sync Mediators         | `/monster-svgs/sync-mediators.svg`         |
+| `AWAKENED_FINAL` | Deterministic Arbiters | `/monster-svgs/deterministic-arbiters.svg` |
+| `BERSERK`        | Deadlock Knot          | `/monster-svgs/deadlock-knot.svg`          |
+| `BERSERK_FINAL`  | Starvation Hydra       | `/monster-svgs/starvation-hydra.svg`       |
 
 ### Null Pointer Axolotl 分岐コンタクトシート用プロンプト
 
@@ -461,13 +563,15 @@ Make the berserk route evil and desirable, not merely scary, glitchy, or red.
 - `JWT`、`OAuth`、`IAM`、`scope`、`session` などの技術ラベルは、IT感を強める場合のみ使う。
 - 技術ラベルは体の大きな部位に1〜2個だけ入れる。細かい文字模様や大量の英字は避ける。
 - 全身がキャンバス内に収まるようにする。
-- 後で背景透過・サイズ統一しやすいように、暖かい白背景と薄い影にする。
+- 透過SVG化する場合は、後処理しやすいように `#ff00ff` の完全な単色背景にして、影を入れない。
+- 確認用やコンタクトシートでは、暖かい白背景と薄い影を使ってよい。
 
 実装用の透過PNGを作る場合:
 
 - 生成時は単色背景を使い、後処理で背景透過する。
 - 透明化しやすいように、背景色をキャラ本体に使わない。
-- ゲーム内では `/public/monsters/*.png` に置く。
+- 現在の新規実装では `/public/monster-svgs/*.svg` に置く。
+- 既存PNGアセットは引き続き `/public/monsters/*.png` に置かれている。
 - 画像が未採用のモンスターは、既存の絵文字表示にフォールバックする。
 
 採用済みコンタクトシートから単体化する場合:
@@ -480,11 +584,11 @@ Make the berserk route evil and desirable, not merely scary, glitchy, or red.
 
 ## 採用済み単体アセット
 
-| 表示名        | 系統                         | 用途     | ファイル                         |
-| ------------- | ---------------------------- | -------- | -------------------------------- |
-| Branch Pup    | Git Branch Kitsune           | Base形態 | `/monsters/branch-pup.png`       |
-| Latency Polyp | Timeout Jellyfish            | Base形態 | `/monsters/latency-polyp.png`    |
-| Flag Gecko    | Feature Flag Chameleon       | Base形態 | `/monsters/flag-gecko.png`       |
+| 表示名        | 系統                   | 用途     | ファイル                      |
+| ------------- | ---------------------- | -------- | ----------------------------- |
+| Branch Pup    | Git Branch Kitsune     | Base形態 | `/monsters/branch-pup.png`    |
+| Latency Polyp | Timeout Jellyfish      | Base形態 | `/monsters/latency-polyp.png` |
+| Flag Gecko    | Feature Flag Chameleon | Base形態 | `/monsters/flag-gecko.png`    |
 
 実装上の別名:
 
