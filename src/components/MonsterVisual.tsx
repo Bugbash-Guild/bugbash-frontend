@@ -1,6 +1,10 @@
+'use client';
+
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/cn';
+import { shouldUseUnoptimizedGameImage } from '@/lib/gameImageOptimization';
 import { getMonsterArtwork } from '@/lib/monsterArtwork';
 import type { MonsterFormStage } from '@/types/monster';
 
@@ -19,6 +23,7 @@ type Props = {
     emojiClassName?: string;
     sizes?: string;
     priority?: boolean;
+    unoptimized?: boolean;
 };
 
 export function MonsterVisual({
@@ -36,6 +41,7 @@ export function MonsterVisual({
     emojiClassName,
     sizes = '80px',
     priority = false,
+    unoptimized,
 }: Props) {
     const artwork = getMonsterArtwork({
         id,
@@ -47,8 +53,14 @@ export function MonsterVisual({
         awakeningState,
     });
     const label = alt ?? name ?? artwork?.alt ?? 'monster';
+    const [failedSrc, setFailedSrc] = useState<string | null>(null);
+    const src = artwork?.src;
 
-    if (!artwork) {
+    useEffect(() => {
+        setFailedSrc(null);
+    }, [src]);
+
+    if (!artwork || src === failedSrc) {
         return (
             <span
                 aria-label={label}
@@ -68,8 +80,10 @@ export function MonsterVisual({
                 alt={label}
                 className={cn('object-contain', imageClassName)}
                 fill
+                onError={() => setFailedSrc(artwork.src)}
                 priority={priority}
                 sizes={sizes}
+                unoptimized={shouldUseUnoptimizedGameImage({ src: artwork.src, sizes, unoptimized })}
                 src={artwork.src}
             />
         </span>

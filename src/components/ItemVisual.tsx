@@ -1,6 +1,10 @@
+'use client';
+
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/cn';
+import { shouldUseUnoptimizedGameImage } from '@/lib/gameImageOptimization';
 
 type Props = {
     assetUrl?: string | null;
@@ -11,6 +15,7 @@ type Props = {
     emojiClassName?: string;
     sizes?: string;
     priority?: boolean;
+    unoptimized?: boolean;
 };
 
 export function ItemVisual({
@@ -22,8 +27,15 @@ export function ItemVisual({
     emojiClassName,
     sizes = '48px',
     priority = false,
+    unoptimized,
 }: Props) {
-    if (!assetUrl) {
+    const [failedSrc, setFailedSrc] = useState<string | null>(null);
+
+    useEffect(() => {
+        setFailedSrc(null);
+    }, [assetUrl]);
+
+    if (!assetUrl || assetUrl === failedSrc) {
         return (
             <span
                 aria-label={alt}
@@ -41,8 +53,10 @@ export function ItemVisual({
                 alt={alt}
                 className={cn('object-contain', imageClassName)}
                 fill
+                onError={() => setFailedSrc(assetUrl)}
                 priority={priority}
                 sizes={sizes}
+                unoptimized={shouldUseUnoptimizedGameImage({ src: assetUrl, sizes, unoptimized })}
                 src={assetUrl}
             />
         </span>
