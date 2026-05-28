@@ -215,7 +215,7 @@ Use the same camera distance. Do not let Base fill its cell.
 Evo must be visibly smaller than both route forms. Awakened and Berserk must be equal size. Both final forms must be equal size and largest.
 
 True evolution rule:
-Do not evolve by simply scaling up the same silhouette. Each evolved form must change at least three of these: body posture, limb structure, core placement, armor shape, tail shape, back structure, role silhouette. Keep family identity through shared species anatomy, shared materials, shared core motif, and shared engineering motif, but change the body plan enough that each form feels like a true evolution.
+Do not evolve by simply scaling up the same silhouette. Each evolved form must change at least three of these: body posture, limb structure, core placement, armor shape, tail shape, back structure, role silhouette. Keep family identity through the shared engineering theme, shared core motif, shared materials, and recognizable motifs from the base form. Base and Evo should feel like the same species. After Evo, Awakened and Berserk may diverge strongly in body plan or species silhouette when that better expresses each route role.
 
 Functional role rule:
 Awakened and Berserk must not be defined by color. They must be defined by different functional roles.
@@ -225,6 +225,22 @@ Berserk role: {berserk_role}.
 The awakened form's silhouette, posture, protected core, and major body parts must express {awakened_role}.
 The berserk form's silhouette, posture, exposed core, and major body parts must express {berserk_role}.
 Do not create light/dark recolors of the same body.
+
+Route divergence rule:
+After Evo, the Awakened route and Berserk route must diverge into different outcomes of the same technical idea.
+Awakened route should express the concept working correctly: controlled, reliable, protected, organized, supportive, or operational.
+Berserk route should express the concept failing or being abused: broken, overloaded, unsafe, parasitic, trapped, corrupted, exploitative, or dangerous.
+The Awakened and Berserk forms must differ in at least four of these: posture, body-height distribution, limb/body structure, core protection versus exposure, back or main structure, transformation of the shared motif, facial expression, armor rhythm.
+Do not use the same base creature pose for both routes.
+Do not make Berserk a dark recolor of Awakened.
+Do not make Awakened a clean recolor of Berserk.
+It is acceptable for Awakened or Berserk to no longer look like the base animal/species if the IT theme, core motif, and evolution logic remain clear. The result should feel like a different technical outcome, not a random different monster.
+
+Route silhouette lock:
+Awakened route silhouette: {awakened_silhouette_lock}.
+Berserk route silhouette: {berserk_silhouette_lock}.
+These two silhouettes are mutually exclusive. Do not let both routes share the same main outline, main structure, stance, dominant mass, or dominant transformed motif. If the family has a signature motif, each route must transform that motif into a different dominant structure.
+Do not hard-code one family's example into the shared template. Fill the two silhouette locks for each family from its own engineering theme and failure mode.
 
 Technical label rule:
 Use 1-2 large readable technical labels per form, integrated into major body parts only. Labels should be on cores, armor plates, badges, small tags, rings, shells, tails, or other anatomy. Good labels for this family: {technical_labels}. Avoid dense tiny text, repeated code strings, decorative text noise, or text covering faces/silhouettes.
@@ -430,7 +446,7 @@ Berserk Final: セル高さの70〜78%
 - `Awakened Final` と `Berserk Final` も同じ体高・同じ存在感にする。
 - 進化後が進化前より小さく見える構図を避ける。
 - 進化後のシルエットは、体格・姿勢・部位数・オーラのどれかで必ず上位感を出す。
-- 進化途中で別種族に見える変化を避ける。猫、鳥、竜などへ急に変えず、同じコア生物が成長したように見せる。
+- `Base` と `Evo` は同じ系統の生物として見せる。分岐後は、同じ生物種であることよりもITテーマ・役割・コアモチーフの連続性を優先し、必要なら別物のシルエットになってよい。
 - 同一シート内では全フォームを同じカメラ距離・同じ床位置で描く。サイズ差は実際の体格差として見せる。
 - `Base` から `Berserk Final` まで、体格・重心・存在感が段階的に増えるようにする。
 - `Evo` はBaseより少し成長しただけの小さめの通過点にする。
