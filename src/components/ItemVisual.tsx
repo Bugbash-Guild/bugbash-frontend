@@ -3,16 +3,15 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
+import { GameAssetFallback } from '@/components/GameAssetFallback';
 import { cn } from '@/lib/cn';
 import { shouldUseUnoptimizedGameImage } from '@/lib/gameImageOptimization';
 
 type Props = {
     assetUrl?: string | null;
-    emoji: string;
     alt: string;
     className?: string;
     imageClassName?: string;
-    emojiClassName?: string;
     sizes?: string;
     priority?: boolean;
     unoptimized?: boolean;
@@ -20,11 +19,9 @@ type Props = {
 
 export function ItemVisual({
     assetUrl,
-    emoji,
     alt,
     className,
     imageClassName,
-    emojiClassName,
     sizes = '48px',
     priority = false,
     unoptimized,
@@ -36,15 +33,7 @@ export function ItemVisual({
     }, [assetUrl]);
 
     if (!assetUrl || assetUrl === failedSrc) {
-        return (
-            <span
-                aria-label={alt}
-                className={cn('inline-flex shrink-0 items-center justify-center', className, emojiClassName)}
-                role="img"
-            >
-                {emoji}
-            </span>
-        );
+        return <GameAssetFallback alt={alt} className={className} kind="item" />;
     }
 
     return (

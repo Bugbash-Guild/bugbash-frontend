@@ -58,7 +58,7 @@ function GithubAppCallbackInner() {
                 )}
                 {status === "done" && (
                     <div className="text-[13px] text-accent">
-                        ✓ GitHub App の連携が完了しました。ホームへ移動します…
+                        GitHub App の連携が完了しました。ホームへ移動します…
                     </div>
                 )}
                 {status === "error" && (

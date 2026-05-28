@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
 import { useRewardNotification } from "@/hooks/useRewardNotification";
+import { GameAssetFallback } from "@/components/GameAssetFallback";
 import { MainWrapper } from "@/components/MainWrapper";
 import { MonsterVisual } from "@/components/MonsterVisual";
 import { RewardModal } from "@/components/RewardModal";
@@ -29,7 +30,7 @@ const HERO_ASCII = [
   "    ║ ◆ ║    ",
   "    ╚═══╝    ",
   "   /|   |\\   ",
-  "  / | ⚔ | \\  ",
+  "  / | <> | \\ ",
   " /  |   |  \\ ",
   "    |   |    ",
   "   /     \\   ",
@@ -76,7 +77,7 @@ function DevPanel({ onSuccess }: { onSuccess: () => void }) {
       if (res.ok) {
         const coins = typeof data.guildCoinGranted === "number" ? data.guildCoinGranted : "?";
         const souls = typeof data.soulsGrantedPerAttribute === "number" ? data.soulsGrantedPerAttribute : "?";
-        setMsg(`✓ +${coins} GUILD_COIN · +${souls} souls/attr · items added`);
+        setMsg(`+${coins} GUILD_COIN · +${souls} souls/attr · items added`);
         onSuccess();
       } else {
         setMsg(`Error: ${String(data.error ?? res.status)}`);
@@ -288,7 +289,7 @@ export default function Home() {
                   { label: "PRs merged",      value: String(hero.totalPrsMerged),  delta: "lifetime",                          color: "var(--accent)" },
                   { label: "monsters caught",  value: String(monsters.length || 0), delta: `${monsters.length || 0}/20 dex`,    color: "var(--purple)" },
                   { label: "SSR rate",         value: "4.2%",                       delta: "lifetime",                           color: "var(--gold)" },
-                  { label: "streak",           value: `${hero.streakDays}d`,         delta: hero.streakDays > 1 ? "🔥 on fire" : "keep it up!", color: "var(--accent-2)" },
+                  { label: "streak",           value: `${hero.streakDays}d`,         delta: hero.streakDays > 1 ? "active" : "keep it up!", color: "var(--accent-2)" },
                 ].map((s) => (
                   <div key={s.label} className="bg-bg-elev border border-line rounded-[6px] px-3.5 py-3">
                     <div className="text-[11px] text-text-faint tracking-[0.1em] mb-2">{s.label.toUpperCase()}</div>
@@ -327,13 +328,11 @@ export default function Home() {
                         {monster ? (
                           <MonsterVisual
                             className="size-full"
-                            emoji={monster.emoji}
-                            emojiClassName="text-base"
                             name={monster.name}
                             sizes="32px"
                           />
                         ) : (
-                          "⚔️"
+                          <GameAssetFallback alt="activity" className="size-full" kind="activity" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">

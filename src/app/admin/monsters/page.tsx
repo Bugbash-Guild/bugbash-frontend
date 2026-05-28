@@ -111,13 +111,21 @@ function MonsterCatalogRow({ monster }: { monster: AdminMonsterCatalogItem }) {
     <div className="grid grid-cols-[210px_repeat(6,minmax(108px,1fr))] border-b border-line last:border-b-0">
       <div className="flex min-w-0 gap-3 border-r border-line px-3 py-3">
         <div
-          className="flex size-11 shrink-0 items-center justify-center rounded-[4px] border text-[24px]"
+          className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-[4px] border"
           style={{
             borderColor: `${rarityColor}55`,
             background: `${rarityColor}10`,
           }}
         >
-          {monster.emoji}
+          <MonsterVisual
+            artworkByStage={monster.artworkByStage}
+            assetUrl={monster.assetUrl}
+            className="size-full"
+            formStage="BASE"
+            id={monster.id}
+            name={monster.name}
+            sizes="44px"
+          />
         </div>
         <div className="min-w-0">
           <div className="truncate text-[13px] font-semibold">
@@ -176,8 +184,6 @@ function MonsterStageCell({
           artworkByStage={monster.artworkByStage}
           assetUrl={monster.assetUrl}
           className="size-full"
-          emoji={monster.emoji}
-          emojiClassName="text-[42px] opacity-75"
           formStage={preview.formStage}
           id={monster.id}
           name={monster.name}
@@ -191,7 +197,7 @@ function MonsterStageCell({
         {preview.label}
       </div>
       <div className="mt-0.5 text-center text-[9px] text-text-faint">
-        {preview.hasArtwork ? "asset" : "emoji"}
+        {preview.hasArtwork ? "asset" : "placeholder"}
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ describe("admin monster catalog", () => {
     const previews = getAdminMonsterStagePreviews({
       id: "null-pointer-axolotl",
       name: "Null Pointer Axolotl",
-      emoji: "🫧",
+      emoji: "N",
       rarity: "SR",
     });
 
@@ -29,7 +29,7 @@ describe("admin monster catalog", () => {
     const previews = getAdminMonsterStagePreviews({
       id: "unknown-monster",
       name: "Unknown Monster",
-      emoji: "❔",
+      emoji: "?",
       rarity: "N",
     });
 
@@ -62,10 +62,10 @@ describe("admin monster catalog", () => {
 
   it("sorts monsters by rarity and name for scan-friendly review", () => {
     const catalog = buildAdminMonsterCatalog([
-      { id: "n-2", name: "Zeta Slime", emoji: "🟢", rarity: "N" },
-      { id: "ssr-1", name: "Alpha Dragon", emoji: "🐉", rarity: "SSR" },
-      { id: "sr-1", name: "Beta Mage", emoji: "🧙", rarity: "SR" },
-      { id: "n-1", name: "Alpha Slime", emoji: "🟢", rarity: "N" },
+      { id: "n-2", name: "Zeta Slime", emoji: "N2", rarity: "N" },
+      { id: "ssr-1", name: "Alpha Dragon", emoji: "SSR", rarity: "SSR" },
+      { id: "sr-1", name: "Beta Mage", emoji: "SR", rarity: "SR" },
+      { id: "n-1", name: "Alpha Slime", emoji: "N1", rarity: "N" },
     ]);
 
     assert.deepEqual(
