@@ -1,0 +1,72 @@
+name: Upload Game Assets to R2
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_dir:
+        description: Directory that contains source PNG/SVG/WebP assets
+        required: true
+        default: game-assets/source
+      output_dir:
+        description: Temporary directory for generated WebP assets and manifest
+        required: true
+        default: dist/game-assets
+      r2_bucket:
+        description: Cloudflare R2 bucket name
+        required: true
+        default: bugbash-assets-prod
+      r2_prefix:
+        description: Optional object key prefix
+        required: false
+        default: ""
+      webp_quality:
+        description: WebP quality from 1 to 100
+        required: true
+        default: "82"
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      R2_BUCKET: ${{ inputs.r2_bucket }}
+      R2_PREFIX: ${{ inputs.r2_prefix }}
+      SOURCE_DIR: ${{ inputs.source_dir }}
+      OUTPUT_DIR: ${{ inputs.output_dir }}
+      WEBP_QUALITY: ${{ inputs.webp_quality }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify Cloudflare secrets
+        run: |
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          test -n "$CLOUDFLARE_API_TOKEN"
+
+      - name: Build optimized assets
+        run: |
+          npm run assets:build -- \
+            --source "$SOURCE_DIR" \
+            --out "$OUTPUT_DIR" \
+            --quality "$WEBP_QUALITY"
+
+      - name: Upload assets to R2
+        run: |
+          npm run assets:upload:r2 -- \
+            --dist "$OUTPUT_DIR" \
+            --bucket "$R2_BUCKET" \
+            --prefix "$R2_PREFIX"
