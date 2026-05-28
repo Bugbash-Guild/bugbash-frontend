@@ -175,8 +175,6 @@ export default function ItemsPage() {
                     alt={selectedItem.name}
                     assetUrl={selectedItem.assetUrl}
                     className="size-full"
-                    emoji={selectedItem.iconEmoji}
-                    emojiClassName="text-[96px]"
                     sizes="240px"
                   />
                 </div>
@@ -232,7 +230,7 @@ export default function ItemsPage() {
                         className="rounded-[4px] p-2.5 text-[11px] space-y-1"
                         style={{ background: 'rgba(126,231,135,0.06)', border: '1px solid rgba(126,231,135,0.2)' }}
                       >
-                        <div className="text-accent font-bold">✓ 使用しました</div>
+                        <div className="text-accent font-bold">使用しました</div>
                         <div className="text-text-faint">
                           <span className="capitalize">{useResult.attribute}</span> 属性に{' '}
                           <span className="text-accent">+{useResult.soulsAdded}</span> ソウル付与
@@ -299,8 +297,6 @@ function Cell({
             alt={item.name}
             assetUrl={item.assetUrl}
             className="size-full"
-            emoji={item.iconEmoji}
-            emojiClassName="text-[28px] select-none leading-none"
             imageClassName="p-1"
             sizes="48px"
           />

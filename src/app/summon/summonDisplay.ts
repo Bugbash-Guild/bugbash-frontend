@@ -7,7 +7,6 @@ export type SummonRate = {
 
 export type SummonItemDisplay = {
     name: string;
-    emoji: string;
     assetUrl?: string;
 };
 
@@ -41,27 +40,21 @@ export const NORMAL_SUMMON_RATES: SummonRate[] = NORMAL_SUMMON_RATE_WEIGHTS.map(
 const SUMMON_ITEM_DISPLAY: Record<string, SummonItemDisplay> = {
     'soul-pack-s': {
         name: '魂パック・小',
-        emoji: '💠',
     },
     'soul-pack-m': {
         name: '魂パック・中',
-        emoji: '💙',
     },
     'soul-pack-l': {
         name: '魂パック・大',
-        emoji: '💜',
     },
     'evolution-stone': {
         name: '進化の輝石',
-        emoji: '💎',
     },
     'purification-proof': {
         name: '浄化の証',
-        emoji: '🌟',
     },
     'abyss-proof': {
         name: '深淵の証',
-        emoji: '⭐',
     },
 };
 
@@ -70,7 +63,7 @@ export function formatGuildCoinCost(cost: number): string {
 }
 
 export function getSummonItemDisplay(itemId: string, assetUrl?: string | null): SummonItemDisplay {
-    const display = SUMMON_ITEM_DISPLAY[itemId] ?? { name: itemId, emoji: '❓' };
+    const display = SUMMON_ITEM_DISPLAY[itemId] ?? { name: itemId };
     if (!assetUrl) return display;
     return { ...display, assetUrl };
 }

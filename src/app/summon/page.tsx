@@ -300,8 +300,6 @@ function SingleResult({ data }: { data: SummonOnceResponse }) {
         alt={display.name}
         assetUrl={display.assetUrl}
         className="mx-auto mb-2 size-14"
-        emoji={display.emoji}
-        emojiClassName="text-[48px]"
         sizes="56px"
       />
       <div className={`text-[20px] font-bold mb-1 ${RARITY_COLOR[data.rarity]}`}>
@@ -334,8 +332,6 @@ function SummonCard({ item }: { item: SummonItem }) {
         alt={display.name}
         assetUrl={display.assetUrl}
         className="mx-auto size-7"
-        emoji={display.emoji}
-        emojiClassName="text-[22px]"
         sizes="28px"
       />
       <div className={`text-[10px] font-bold mt-0.5 ${RARITY_COLOR[item.rarity]}`}>
@@ -361,8 +357,6 @@ function HistoryRow({ entry }: { entry: SummonHistoryEntry }) {
         alt={display.name}
         assetUrl={display.assetUrl}
         className="size-5"
-        emoji={display.emoji}
-        emojiClassName="w-5 text-center text-[16px]"
         sizes="20px"
       />
       <span className={`w-8 text-center font-semibold ${RARITY_COLOR[entry.rarity]}`}>

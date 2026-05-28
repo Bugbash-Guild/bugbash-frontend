@@ -87,7 +87,7 @@ export default function ShopPage() {
         {/* balance bar */}
         <div className="mb-5 flex items-center gap-3 text-[12px] text-text-dim">
           <span className="text-text-faint uppercase tracking-[0.12em]">balance</span>
-          <span className="text-gold font-semibold">🪙 {guildCoinBalance.toLocaleString()}</span>
+          <span className="text-gold font-semibold">GC {guildCoinBalance.toLocaleString()}</span>
         </div>
 
         {successFlash && (
@@ -115,8 +115,6 @@ export default function ShopPage() {
                       alt={item.name}
                       assetUrl={item.assetUrl}
                       className="size-9"
-                      emoji={item.iconEmoji}
-                      emojiClassName="text-3xl"
                       sizes="36px"
                     />
                     <div className="flex-1 min-w-0">
@@ -127,7 +125,7 @@ export default function ShopPage() {
                         {item.description}
                       </div>
                       <div className="mt-3 flex items-center gap-1.5">
-                        <span className="text-[12px] text-gold">🪙</span>
+                        <span className="text-[12px] text-gold">GC</span>
                         <span
                           className={[
                             "text-[13px] font-semibold",
@@ -164,8 +162,6 @@ export default function ShopPage() {
                 alt={selected.name}
                 assetUrl={selected.assetUrl}
                 className="size-8"
-                emoji={selected.iconEmoji}
-                emojiClassName="text-2xl"
                 sizes="32px"
               />
               <div>
@@ -173,7 +169,7 @@ export default function ShopPage() {
                   {selected.name} を購入しますか?
                 </div>
                 <div className="text-[11px] text-text-faint">
-                  🪙 {selected.price.toLocaleString()} を消費します
+                  GC {selected.price.toLocaleString()} を消費します
                 </div>
               </div>
             </div>

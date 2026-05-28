@@ -11,7 +11,7 @@ const NAV_ITEMS = [
   { glyph: "◆", label: "~/monsters", href: "/monsters" },
   { glyph: "▣", label: "~/items", href: "/items" },
   { glyph: "$", label: "~/shop", href: "/shop" },
-  { glyph: "✦", label: "~/summon", href: "/summon" },
+  { glyph: "*", label: "~/summon", href: "/summon" },
   { glyph: "▲", label: "~/leaderboard", href: "/leaderboard" },
 ] as const;
 

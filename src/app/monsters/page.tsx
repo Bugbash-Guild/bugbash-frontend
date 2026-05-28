@@ -9,7 +9,6 @@ import { usePartner } from "@/hooks/usePartner";
 import { MainWrapper } from "@/components/MainWrapper";
 import { MonsterVisual } from "@/components/MonsterVisual";
 import { RARITY_COLOR, RARITY_ORDER } from "@/constants/rarity";
-import { cn } from "@/lib/cn";
 import {
   canEvolveMonster,
   canLevelUpMonster,
@@ -22,8 +21,8 @@ import {
 const AWAKENING_LABEL: Partial<
   Record<import("@/types/monster").AwakeningState, string>
 > = {
-  AWAKENED: "✨覚醒",
-  BERSERK: "🔥暴走",
+  AWAKENED: "覚醒",
+  BERSERK: "暴走",
 };
 
 export default function MonstersPage() {
@@ -156,7 +155,7 @@ export default function MonstersPage() {
           <div className="flex items-center gap-4">
             {hero && (
               <div className="text-[13px] text-text-dim">
-                🪙{" "}
+                GC{" "}
                 <span className="text-accent font-semibold">
                   {hero.guildCoinBalance}
                 </span>{" "}
@@ -179,7 +178,7 @@ export default function MonstersPage() {
         )}
         {successMsg && (
           <div className="text-accent text-[13px] mb-4 px-3 py-2 rounded border border-accent/30 bg-accent/10">
-            ✓ {successMsg}
+            {successMsg}
           </div>
         )}
         {actionError && (
@@ -209,8 +208,6 @@ export default function MonstersPage() {
                 artworkByStage={partnerMonster.artworkByStage}
                 assetUrl={partnerMonster.assetUrl}
                 className="size-8"
-                emoji={partnerMonster.emoji}
-                emojiClassName="text-[22px]"
                 formStage={partnerMonster.formStage}
                 id={partnerMonster.id}
                 awakeningState={partnerMonster.awakeningState}
@@ -226,13 +223,12 @@ export default function MonstersPage() {
                   {partnerMonster.name}
                 </div>
                 <div className="text-xs opacity-60 mt-0.5">
-                  {partnerMonster.attributeEmoji ?? ""}{" "}
                   {partnerMonster.soulCount}{" "}
                   {partnerMonster.attributeName ?? ""}ソウル
                 </div>
               </div>
               <span className="text-xs text-yellow-400 border border-yellow-400 px-2 py-0.5 rounded">
-                ✨ パートナー中
+                パートナー中
               </span>
               <span className="text-[11px] text-text-faint">
                 {discoveredCount} / {dex.length} discovered
@@ -284,7 +280,7 @@ export default function MonstersPage() {
                     className="absolute -top-2 right-2.5 text-[9px] font-bold px-2 py-0.5 rounded-[2px] tracking-[0.1em]"
                     style={{ background: c, color: "var(--bg)" }}
                   >
-                    ★ PARTNER
+                    PARTNER
                   </div>
                 )}
 
@@ -318,11 +314,6 @@ export default function MonstersPage() {
                     artworkByStage={m.artworkByStage}
                     assetUrl={m.assetUrl}
                     className="size-full"
-                    emoji={m.emoji}
-                    emojiClassName={cn(
-                      "text-[64px] select-none",
-                      !m.isOwned && "brightness-0 opacity-35",
-                    )}
                     formStage={m.formStage}
                     id={m.id}
                     imageClassName={
@@ -368,7 +359,7 @@ export default function MonstersPage() {
                       {m.attributeName && (
                         <div className="mt-1">
                           <span className="text-[9px] px-1 py-0.5 rounded opacity-60 bg-white/5">
-                            {m.attributeEmoji} {m.attributeName}
+                            {m.attributeName}
                           </span>
                         </div>
                       )}
@@ -417,7 +408,7 @@ export default function MonstersPage() {
                                 : "#f97316",
                           }}
                         >
-                          {changingPath === m.id ? "…" : "🔄 路線変更"}
+                          {changingPath === m.id ? "…" : "路線変更"}
                         </button>
                       </>
                     )}
@@ -434,7 +425,7 @@ export default function MonstersPage() {
                       >
                         {evolving === m.id
                           ? "…"
-                          : `💎 進化 (Lv${MONSTER_EVOLUTION_LEVEL}+)`}
+                          : `進化 (Lv${MONSTER_EVOLUTION_LEVEL}+)`}
                       </button>
                     )}
 
@@ -452,7 +443,7 @@ export default function MonstersPage() {
                       >
                         {levelingUp === m.id
                           ? "…"
-                          : `Lv UP (${levelUpCost} ${m.attributeEmoji || ""})`}
+                          : `Lv UP (${levelUpCost} ${m.attributeName ?? "soul"})`}
                       </button>
                     ) : !canEvolve ? (
                       <div className="text-[10px] text-center font-bold tracking-widest rounded py-0.5 border border-line text-text-faint">
@@ -465,7 +456,7 @@ export default function MonstersPage() {
                 {/* パートナー設定ボタン / バッジ */}
                 {m.isOwned && isComp && (
                   <div className="mt-1 text-xs text-yellow-400 text-center">
-                    ✨ パートナー中
+                    パートナー中
                   </div>
                 )}
                 {m.isOwned && !isComp && (

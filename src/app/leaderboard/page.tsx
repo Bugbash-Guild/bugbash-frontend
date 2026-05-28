@@ -114,7 +114,7 @@ export default function LeaderboardPage() {
                   {/* streak */}
                   <div className="text-right text-[12px] text-text-faint">
                     {entry.streakDays > 1 ? (
-                      <span className="text-gold">{entry.streakDays}d 🔥</span>
+                      <span className="text-gold">{entry.streakDays}d active</span>
                     ) : (
                       <span>{entry.streakDays}d</span>
                     )}

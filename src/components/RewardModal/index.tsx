@@ -44,8 +44,6 @@ function RewardLine({ reward }: { reward: ActivityReward }) {
             <div className="flex items-center gap-2 text-[13px]">
                 <MonsterVisual
                     className="size-7"
-                    emoji={detail.emoji}
-                    emojiClassName="text-[20px]"
                     name={detail.name}
                     sizes="28px"
                 />
@@ -128,7 +126,7 @@ export function RewardModal({ activities, onClose }: Props) {
                     <div className="px-4 pt-3 pb-1 space-y-0.5">
                         {sources.slice(0, 3).map((s) => (
                             <div key={s} className="text-[11px] text-text-faint font-mono truncate">
-                                <span className="text-accent">✓ merged</span> {s}
+                                <span className="text-accent">merged</span> {s}
                             </div>
                         ))}
                         {sources.length > 3 && (
@@ -152,7 +150,7 @@ export function RewardModal({ activities, onClose }: Props) {
                         className="w-full py-2.5 rounded-[4px] text-[13px] font-semibold tracking-[0.05em] transition-opacity hover:opacity-80"
                         style={{ background: 'var(--accent)', color: 'var(--bg)' }}
                     >
-                        {hasLevelUp ? '🎉 CLAIM & LEVEL UP' : 'CLAIM'}
+                        {hasLevelUp ? 'CLAIM & LEVEL UP' : 'CLAIM'}
                     </button>
                 </div>
             </div>

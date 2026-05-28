@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
+import { GameAssetFallback } from '@/components/GameAssetFallback';
 import { cn } from '@/lib/cn';
 import { shouldUseUnoptimizedGameImage } from '@/lib/gameImageOptimization';
 import { getMonsterArtwork } from '@/lib/monsterArtwork';
@@ -16,11 +17,9 @@ type Props = {
     formStage?: string | null;
     level?: number | null;
     awakeningState?: string | null;
-    emoji: string;
     alt?: string;
     className?: string;
     imageClassName?: string;
-    emojiClassName?: string;
     sizes?: string;
     priority?: boolean;
     unoptimized?: boolean;
@@ -34,11 +33,9 @@ export function MonsterVisual({
     formStage,
     level,
     awakeningState,
-    emoji,
     alt,
     className,
     imageClassName,
-    emojiClassName,
     sizes = '80px',
     priority = false,
     unoptimized,
@@ -61,15 +58,7 @@ export function MonsterVisual({
     }, [src]);
 
     if (!artwork || src === failedSrc) {
-        return (
-            <span
-                aria-label={label}
-                className={cn('inline-flex shrink-0 items-center justify-center', className, emojiClassName)}
-                role="img"
-            >
-                {emoji}
-            </span>
-        );
+        return <GameAssetFallback alt={label} className={className} kind="monster" />;
     }
 
     return (

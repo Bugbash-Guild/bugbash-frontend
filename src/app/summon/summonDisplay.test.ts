@@ -32,27 +32,21 @@ describe('summon display catalog', () => {
     it('knows all backend-seeded normal summon items', () => {
         assert.deepEqual(getSummonItemDisplay('soul-pack-s'), {
             name: '魂パック・小',
-            emoji: '💠',
         });
         assert.deepEqual(getSummonItemDisplay('soul-pack-m'), {
             name: '魂パック・中',
-            emoji: '💙',
         });
         assert.deepEqual(getSummonItemDisplay('soul-pack-l'), {
             name: '魂パック・大',
-            emoji: '💜',
         });
         assert.deepEqual(getSummonItemDisplay('evolution-stone'), {
             name: '進化の輝石',
-            emoji: '💎',
         });
         assert.deepEqual(getSummonItemDisplay('purification-proof'), {
             name: '浄化の証',
-            emoji: '🌟',
         });
         assert.deepEqual(getSummonItemDisplay('abyss-proof'), {
             name: '深淵の証',
-            emoji: '⭐',
         });
     });
 
@@ -64,7 +58,6 @@ describe('summon display catalog', () => {
             ),
             {
                 name: '進化の輝石',
-                emoji: '💎',
                 assetUrl: 'https://assets.example.test/items/evolution-stone.webp',
             },
         );
