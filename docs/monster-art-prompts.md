@@ -79,9 +79,23 @@ monsters/token-mimic/berserk-final.webp
 items/evolution-stone.webp
 ```
 
-バックエンドは `BUGBASH_ASSETS_BASE_URL` を元に `assetUrl` / `artworkByStage` を返す。
+同じアセット置き場に `asset-manifest.json` を置く。
+
+```json
+{
+  "assets": [
+    "monsters/token-mimic/base.webp",
+    "monsters/token-mimic/berserk-final.webp",
+    "items/evolution-stone.webp"
+  ]
+}
+```
+
+バックエンドは `BUGBASH_ASSETS_BASE_URL` と `asset-manifest.json` を元に `assetUrl` / `artworkByStage` を返す。
+manifestにないパスはURLを返さない。これにより、未アップロード画像の404表示を避ける。
 フロントエンドは同じURLを `NEXT_PUBLIC_ASSETS_BASE_URL` に設定して、Next Image の許可ドメインとして扱う。
-フロントエンドはAPIから返ったURLを優先して表示し、URLがない場合だけ既存のローカル画像や絵文字にフォールバックする。
+フロントエンドはAPIから返ったURLを優先して表示し、URLがない場合や画像読み込みに失敗した場合だけ既存のローカル画像や絵文字にフォールバックする。
+小さい固定サイズのゲームアイコンは事前最適化済みWebPをそのまま配信し、大きい表示やレスポンシブ表示ではNext Imageの最適化を残す。
 
 この形にしておくと、画像差し替えだけでフロントエンドのコード変更が不要になる。モンスターだけでなく、アイテム・装備にも同じ流れを使う。
 
@@ -96,9 +110,10 @@ items/evolution-stone.webp
 4. 単体画像は、モンスター内の色と被らない単色背景で生成する
 5. 背景を透過し、透明PNG/WebPとして書き出す
 6. `monsters/{monster-slug}/{form-stage}.webp` としてアセット置き場にアップロードする
-7. バックエンドの初期モンスターに base species と安定slugを追加する
-8. 必要に応じて `BUGBASH_ASSETS_BASE_URL` を設定する
-9. フロントとバックエンドのテストを追加して通す
+7. `asset-manifest.json` にアップロード済みパスを追加する
+8. バックエンドの初期モンスターに base species と安定slugを追加する
+9. 必要に応じて `BUGBASH_ASSETS_BASE_URL` / `BUGBASH_ASSETS_MANIFEST_URL` を設定する
+10. フロントとバックエンドのテストを追加して通す
 ```
 
 重要:
@@ -106,6 +121,7 @@ items/evolution-stone.webp
 - ゲームDBに入れるのは系統の `BASE` 種族だけ。進化後の名前は画像表示用に扱う。
 - 表示の切り替えはバックエンドが返す `formStage` で行う。
 - バックエンドが `artworkByStage` を返すため、フロントエンドに種族ごとの対応表を増やさない。
+- バックエンドはmanifestにある画像だけURLを返す。
 - 既存のローカルPNG/SVGは移行までのフォールバックとして残す。
 
 ## 単体SVG化ワークフロー
