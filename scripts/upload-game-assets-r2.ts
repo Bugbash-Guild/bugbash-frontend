@@ -8,6 +8,7 @@ import {
   getAssetContentType,
   getR2ObjectName,
   getR2UploadKeys,
+  getWranglerR2ObjectPutArgs,
   isBuiltGameAssetKey,
 } from "../src/lib/gameAssetManifest";
 
@@ -105,18 +106,14 @@ async function uploadObject(options: Options, assetKey: string) {
     return;
   }
 
-  await runWrangler([
-    "r2",
-    "object",
-    "put",
-    objectName,
-    "--file",
-    filePath,
-    "--content-type",
-    getAssetContentType(assetKey),
-    "--cache-control",
-    cacheControl,
-  ]);
+  await runWrangler(
+    getWranglerR2ObjectPutArgs({
+      cacheControl,
+      contentType: getAssetContentType(assetKey),
+      filePath,
+      objectName,
+    }),
+  );
 }
 
 async function main() {
