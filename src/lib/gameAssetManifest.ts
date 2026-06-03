@@ -104,3 +104,31 @@ export function getR2ObjectName(
 export function getR2UploadKeys(manifest: GameAssetManifest): string[] {
   return [...manifest.assets, GAME_ASSET_MANIFEST_FILE];
 }
+
+type WranglerR2ObjectPutOptions = {
+  cacheControl: string;
+  contentType: string;
+  filePath: string;
+  objectName: string;
+};
+
+export function getWranglerR2ObjectPutArgs({
+  cacheControl,
+  contentType,
+  filePath,
+  objectName,
+}: WranglerR2ObjectPutOptions): string[] {
+  return [
+    "r2",
+    "object",
+    "put",
+    objectName,
+    "--file",
+    filePath,
+    "--content-type",
+    contentType,
+    "--cache-control",
+    cacheControl,
+    "--remote",
+  ];
+}

@@ -5,6 +5,7 @@ import {
   createGameAssetManifest,
   getAssetContentType,
   getR2UploadKeys,
+  getWranglerR2ObjectPutArgs,
   getR2ObjectName,
   isBuiltGameAssetKey,
   isSupportedGameAssetInput,
@@ -106,6 +107,30 @@ describe("game asset manifest helpers", () => {
         "items/evolution-stone.webp",
         "monsters/token-mimic/base.webp",
         "asset-manifest.json",
+      ],
+    );
+  });
+
+  it("targets the remote R2 bucket when building wrangler upload args", () => {
+    assert.deepEqual(
+      getWranglerR2ObjectPutArgs({
+        cacheControl: "public, max-age=300",
+        contentType: "image/webp",
+        filePath: "dist/game-assets/monsters/token-mimic/base.webp",
+        objectName: "bugbash-assets-prod/monsters/token-mimic/base.webp",
+      }),
+      [
+        "r2",
+        "object",
+        "put",
+        "bugbash-assets-prod/monsters/token-mimic/base.webp",
+        "--file",
+        "dist/game-assets/monsters/token-mimic/base.webp",
+        "--content-type",
+        "image/webp",
+        "--cache-control",
+        "public, max-age=300",
+        "--remote",
       ],
     );
   });
