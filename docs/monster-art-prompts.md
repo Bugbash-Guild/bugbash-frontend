@@ -109,11 +109,11 @@ manifestにないパスはURLを返さない。これにより、未アップロ
 3. 採用する系統だけ、6形態を1枚ずつ単体生成する
 4. 単体画像は、モンスター内の色と被らない単色背景で生成する
 5. 背景を透過し、透明PNG/WebPとして書き出す
-6. `monsters/{monster-slug}/{form-stage}.webp` としてアセット置き場にアップロードする
-7. `asset-manifest.json` にアップロード済みパスを追加する
-8. バックエンドの初期モンスターに base species と安定slugを追加する
-9. 必要に応じて `BUGBASH_ASSETS_BASE_URL` / `BUGBASH_ASSETS_MANIFEST_URL` を設定する
-10. フロントとバックエンドのテストを追加して通す
+6. 生成した18枚などの本番画像をユーザーにすべて見せる
+7. OKが出た画像だけ `game-assets/source/monsters/{monster-slug}/{form-stage}.png` に置く
+8. `npm run assets:build` でWebP化とmanifest生成を確認する
+9. PRを作成してmergeし、GitHub Actions の `Upload Game Assets to R2` workflowを実行する
+10. R2のmanifestと代表画像URLが200で返ることを確認する
 ```
 
 重要:
@@ -123,6 +123,37 @@ manifestにないパスはURLを返さない。これにより、未アップロ
 - バックエンドが `artworkByStage` を返すため、フロントエンドに種族ごとの対応表を増やさない。
 - バックエンドはmanifestにある画像だけURLを返す。
 - 既存のローカルPNG/SVGは移行までのフォールバックとして残す。
+
+## 画像完成後の短縮投入ルール
+
+画像生成が終わっていて、やることが既存と同じアセット追加だけの場合は、時間を優先して短縮フローにする。
+
+やること:
+
+```text
+1. 最終候補の画像をすべてユーザーに見せる
+2. 承認された画像を `game-assets/source/monsters/{slug}/` に置く
+3. `npm run assets:build` を実行し、manifestに新規画像が入ったことを確認する
+4. frontend PRを作成・mergeする
+5. `Upload Game Assets to R2` workflowを実行する
+6. R2の `asset-manifest.json` と代表画像URLが200で返ることを確認する
+7. 新slugがbackend未登録なら、base speciesだけを追加してdeployする
+```
+
+やらないこと:
+
+- 毎回TDDのRED/GREENをしない。
+- 既存と同じ画像投入だけなら、新しいテストを増やさない。
+- frontendに種族ごとの画像対応表を増やさない。
+- manifestを手で編集しない。`npm run assets:build` とworkflowに任せる。
+- 画像承認後に長い設計・計画フェーズを挟まない。
+
+最低限の確認:
+
+- `npm run assets:build` が成功する。
+- manifestに新規アセットが含まれる。
+- R2アップロード後、代表URLが200で返る。
+- backendに新slugを追加した場合は、既存CIまたはdeploy workflowが成功する。
 
 ## 単体SVG化ワークフロー
 

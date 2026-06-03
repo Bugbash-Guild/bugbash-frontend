@@ -172,6 +172,22 @@ describe("monster artwork catalog", () => {
     );
   });
 
+  it("selects API-provided stage artwork before the base asset URL", () => {
+    assert.equal(
+      getMonsterArtwork({
+        name: "Branch Pup",
+        formStage: "BERSERK_FINAL",
+        assetUrl:
+          "https://assets.example.test/monsters/git-branch-kitsune/base.webp",
+        artworkByStage: {
+          BERSERK_FINAL:
+            "https://assets.example.test/monsters/git-branch-kitsune/berserk-final.webp",
+        },
+      })?.src,
+      "https://assets.example.test/monsters/git-branch-kitsune/berserk-final.webp",
+    );
+  });
+
   it("falls back when a monster has no adopted artwork yet", () => {
     assert.equal(
       getMonsterArtwork({ id: "unknown-slime", name: "Unknown Slime" }),
