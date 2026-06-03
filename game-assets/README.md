@@ -44,12 +44,15 @@ dist/game-assets/
 2. 承認された透過PNGを `game-assets/source/monsters/{slug}/` に置く
 3. `npm run assets:build` を実行する
 4. manifestに新規WebPが含まれることを確認する
-5. PRをmergeしたあと、GitHub Actions の `Upload Game Assets to R2` workflowを実行する
-6. R2のmanifestと代表画像URLが200で返ることを確認する
+5. frontend PRを作成する
+6. 純粋なモンスターアセット追加だけは、画像承認済みであればmergeしてよい
+7. merge後、GitHub Actions の `Upload Game Assets to R2` workflowを実行する
+8. R2のmanifestと代表画像URLが200で返ることを確認する
 ```
 
 新しいslugを追加した場合だけ、backend側のbase species登録も行います。
 その場合もRED/GREENのTDDではなく、登録追加後に既存CIまたはdeploy workflowの成功を確認します。
+バグ修正・ドキュメント・表示ロジック変更など、モンスターアセット追加以外のPRは勝手にmergeしません。
 
 ## R2へアップロード
 
