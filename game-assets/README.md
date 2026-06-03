@@ -34,6 +34,23 @@ dist/game-assets/
 
 `dist/game-assets` はアップロード用の一時生成物なのでGitには入れません。
 
+## モンスター画像の通常追加フロー
+
+画像生成が終わっていて、既存と同じモンスターアセット追加だけを行う場合は、TDDや新規テスト追加は不要です。
+時間を優先して、以下の最小フローで進めます。
+
+```text
+1. 最終画像をすべてユーザーに見せる
+2. 承認された透過PNGを `game-assets/source/monsters/{slug}/` に置く
+3. `npm run assets:build` を実行する
+4. manifestに新規WebPが含まれることを確認する
+5. PRをmergeしたあと、GitHub Actions の `Upload Game Assets to R2` workflowを実行する
+6. R2のmanifestと代表画像URLが200で返ることを確認する
+```
+
+新しいslugを追加した場合だけ、backend側のbase species登録も行います。
+その場合もRED/GREENのTDDではなく、登録追加後に既存CIまたはdeploy workflowの成功を確認します。
+
 ## R2へアップロード
 
 Cloudflare側で `bugbash-assets-prod` bucket と `assets.bugbashguild.com` のカスタムドメインを作ったあと、以下の環境変数を設定して実行します。

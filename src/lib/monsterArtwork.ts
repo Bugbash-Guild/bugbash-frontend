@@ -278,19 +278,19 @@ export function getMonsterArtwork(
 
 function getApiMonsterArtwork(input: MonsterArtworkInput): MonsterArtwork | null {
   const alt = input.name ?? "monster";
-  if (input.assetUrl) {
+  const formStage = resolveFormStage(input);
+  const stageUrl = input.artworkByStage?.[formStage];
+  if (stageUrl) {
     return {
-      src: input.assetUrl,
+      src: stageUrl,
       alt,
     };
   }
 
-  const formStage = resolveFormStage(input);
-  const stageUrl = input.artworkByStage?.[formStage];
-  if (!stageUrl) return null;
+  if (!input.assetUrl) return null;
 
   return {
-    src: stageUrl,
+    src: input.assetUrl,
     alt,
   };
 }
