@@ -112,7 +112,7 @@ manifestにないパスはURLを返さない。これにより、未アップロ
 6. 生成した18枚などの本番画像をユーザーにすべて見せる
 7. OKが出た画像だけ `game-assets/source/monsters/{monster-slug}/{form-stage}.png` に置く
 8. `npm run assets:build` でWebP化とmanifest生成を確認する
-9. PRを作成してmergeし、GitHub Actions の `Upload Game Assets to R2` workflowを実行する
+9. PRを作成する。純粋なモンスターアセット追加だけは承認済み画像であればmergeしてよい
 10. R2のmanifestと代表画像URLが200で返ることを確認する
 ```
 
@@ -123,6 +123,7 @@ manifestにないパスはURLを返さない。これにより、未アップロ
 - バックエンドが `artworkByStage` を返すため、フロントエンドに種族ごとの対応表を増やさない。
 - バックエンドはmanifestにある画像だけURLを返す。
 - 既存のローカルPNG/SVGは移行までのフォールバックとして残す。
+- モンスターアセット追加以外のPRは勝手にmergeしない。バグ修正・ドキュメント・表示ロジック変更はPR作成までで止め、ユーザーの明示確認を待つ。
 
 ## 画像完成後の短縮投入ルール
 
@@ -134,10 +135,11 @@ manifestにないパスはURLを返さない。これにより、未アップロ
 1. 最終候補の画像をすべてユーザーに見せる
 2. 承認された画像を `game-assets/source/monsters/{slug}/` に置く
 3. `npm run assets:build` を実行し、manifestに新規画像が入ったことを確認する
-4. frontend PRを作成・mergeする
-5. `Upload Game Assets to R2` workflowを実行する
-6. R2の `asset-manifest.json` と代表画像URLが200で返ることを確認する
-7. 新slugがbackend未登録なら、base speciesだけを追加してdeployする
+4. frontend PRを作成する
+5. 純粋なモンスターアセット追加だけは、画像承認済みであればmergeしてよい
+6. `Upload Game Assets to R2` workflowを実行する
+7. R2の `asset-manifest.json` と代表画像URLが200で返ることを確認する
+8. 新slugがbackend未登録なら、base speciesだけを追加してdeployする
 ```
 
 やらないこと:
