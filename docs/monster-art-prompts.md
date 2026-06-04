@@ -12,6 +12,9 @@ BugBash Guild のモンスター画像を生成するときの方針と、再利
 - 本番用の単体画像だけ、名前・矢印・UI文字なしで再生成する。
 - 進化後もIT感・エンジニアリング感・コーディング感を薄めない。
 - `Awakened` と `Awakened Final` は装飾差ではなく、シルエット・構造・役割が明確に違うようにする。
+- 進化トポロジーは必ず `Base -> Evo -> Awakened/Berserk` として扱う。`Awakened` と `Berserk` はどちらも `Evo` から派生した姿にする。
+- `Evo -> Berserk` は色違い禁止。Evoのbody-plan nounを再利用せず、姿勢・脚数・主構造・コア位置・重心を変える。
+- IT感はラベルだけに頼らず、terminal tail、YAML armor、runner badge、queue capsule、deploy gate、commit node、log cable、API plate、lock、schema、trace、branch、check/fail core などの身体構造に入れる。
 
 ## 基本方針
 
@@ -29,11 +32,15 @@ BugBash Guild のモンスター画像を生成するときの方針と、再利
 
 ```text
 Base
+  ↓
 Evo
-Awakened
-Awakened Final
-Berserk
-Berserk Final
+  ├─ Awakened
+  │    ↓
+  │  Awakened Final
+  │
+  └─ Berserk
+       ↓
+     Berserk Final
 ```
 
 最初の一覧確認では6形態を1枚に並べる。採用後は1体ずつ単体生成する。
@@ -250,6 +257,13 @@ Layout structure:
 
 Base and Evo are pre-branch forms and should be vertically centered between the two route rows. Awakened route is the top row. Berserk route is the bottom row. No arrows if possible; if guides are needed, use very faint thin lines that do not touch monsters or names.
 
+Mandatory evolution topology:
+Base evolves into Evo.
+Only Evo branches into two routes:
+Evo -> Awakened -> Awakened Final
+Evo -> Berserk -> Berserk Final
+Awakened and Berserk must both visibly inherit from Evo, not directly from Base. Final forms must visibly inherit from their route parent. Do not make the six forms look like six unrelated alternatives, and do not make Awakened or Berserk appear as replacements for Base/Evo.
+
 Strict size rule:
 Use the same camera distance. Do not let Base fill its cell.
 - {base_name} body height: 35-40% of its cell height
@@ -262,6 +276,10 @@ Evo must be visibly smaller than both route forms. Awakened and Berserk must be 
 
 True evolution rule:
 Do not evolve by simply scaling up the same silhouette. Each evolved form must change at least three of these: body posture, limb structure, core placement, armor shape, tail shape, back structure, role silhouette. Keep family identity through the shared engineering theme, shared core motif, shared materials, and recognizable motifs from the base form. Base and Evo should feel like the same species. After Evo, Awakened and Berserk may diverge strongly in body plan or species silhouette when that better expresses each route role.
+Each form must have a distinct body-plan noun. Examples: capsule larva -> runner mantis -> gate guardian -> release train fortress -> crash loop crusher -> queue leviathan. The exact nouns must come from the family theme.
+Evo -> Berserk must not reuse Evo's body-plan noun. If Evo is a runner, mantis, bird, turtle, fox, golem, jellyfish, or similar body plan, Berserk must become a different failure-shaped body plan such as crusher, crawler, maw, knot, swarm, parasite, loop, wreck, furnace, prison, or leviathan.
+Evo and Berserk must differ in at least five of these: posture, limb count, silhouette, dominant mass, core placement, tail/body plan, armor rhythm, facial structure, or movement logic.
+Color-only berserk is forbidden. Berserk must look like the technical concept failed structurally, not like Evo with red, purple, or black paint.
 
 Functional role rule:
 Awakened and Berserk must not be defined by color. They must be defined by different functional roles.
@@ -277,6 +295,7 @@ After Evo, the Awakened route and Berserk route must diverge into different outc
 Awakened route should express the concept working correctly: controlled, reliable, protected, organized, supportive, or operational.
 Berserk route should express the concept failing or being abused: broken, overloaded, unsafe, parasitic, trapped, corrupted, exploitative, or dangerous.
 The Awakened and Berserk forms must differ in at least four of these: posture, body-height distribution, limb/body structure, core protection versus exposure, back or main structure, transformation of the shared motif, facial expression, armor rhythm.
+Evo -> Awakened and Evo -> Berserk must both be visually traceable to Evo, but the two routes must transform different aspects of Evo. Awakened should stabilize, organize, armor, route, protect, or orchestrate Evo's motif. Berserk should collapse, jam, corrupt, expose, overload, consume, trap, or loop Evo's motif.
 Do not use the same base creature pose for both routes.
 Do not make Berserk a dark recolor of Awakened.
 Do not make Awakened a clean recolor of Berserk.
@@ -290,6 +309,7 @@ Do not hard-code one family's example into the shared template. Fill the two sil
 
 Technical label rule:
 Use 1-2 large readable technical labels per form, integrated into major body parts only. Labels should be on cores, armor plates, badges, small tags, rings, shells, tails, or other anatomy. Good labels for this family: {technical_labels}. Avoid dense tiny text, repeated code strings, decorative text noise, or text covering faces/silhouettes.
+Coding / IT / software-engineering identity must appear in anatomy, not only labels. Use theme-appropriate body structures such as terminal tails, YAML plates, CI runner badges, queue capsules, deploy gates, commit nodes, build logs, API badges, locks, schemas, traces, branches, checks, fail cores, sockets, shards, config scrolls, or circuit paths.
 
 Evolution forms:
 1. {base_name} — smallest form. {base_description}
@@ -301,9 +321,13 @@ Evolution forms:
 
 Critical evolution rules:
 - Coding / IT / software-engineering identity must become stronger as it evolves.
+- The evolution topology is Base -> Evo, then Evo branches into Awakened and Berserk. Do not route Awakened or Berserk directly from Base.
 - Evo is only a small waypoint, not the finished form.
+- Evo and Berserk must not share the same body-plan noun or the same main posture.
+- Evo -> Berserk must be a structural failure transformation, not a color-only corruption.
 - Awakened and Berserk must be visibly larger and stronger than Evo.
 - Final forms must be the largest and most dominant silhouettes.
+- Final forms may become vehicles, fortresses, gates, towers, serpents, swarms, prisons, machines, or other non-base body plans if the engineering concept remains clear.
 - Awakened route changes into {awakened_route_summary}.
 - Berserk route changes into {berserk_route_summary}.
 
@@ -313,7 +337,7 @@ Premium collectible mascot illustration, high-end designer toy blended with poli
 Layout and crop rules:
 16:9 landscape, warm-white studio background, subtle soft shadow under each monster, generous empty margin around every character. Place each monster name centered below its monster and separated from the silhouette. Add a small family title at the top: {family_title}. Add a small theme subtitle below the title: {theme_subtitle}. No large card frames, no UI clutter, no decorative background, no labels like Base/Evo/Awk.
 
-Avoid: 3x2 equal grid, generic fantasy dragon/demon/angel, simple scale-up evolution, weak-looking evolved forms, later forms smaller than earlier forms, dense terminal text, random pasted symbols, insect complexity, messy effects, cheap emoji style, pixel art, horror gore, human characters, text overlapping characters.
+Avoid: 3x2 equal grid, generic fantasy dragon/demon/angel, simple scale-up evolution, color-only berserk, Evo/Berserk sharing the same body plan, weak-looking evolved forms, later forms smaller than earlier forms, dense terminal text, random pasted symbols, insect complexity, messy effects, cheap emoji style, pixel art, horror gore, human characters, text overlapping characters.
 ```
 
 ## 採用済み: Null Pointer Axolotl
