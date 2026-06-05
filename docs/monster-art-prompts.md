@@ -251,6 +251,11 @@ Keep every form appealing as a collectible game monster. Avoid photorealism, hyp
 Living creature appeal should remain central. Tech motifs should read as wing patterns, shell badges, glowing cores, cursor antennae, YAML plates, queue beads, log scrolls, schema markings, branch horns, or other clean anatomy-integrated details.
 Dark-but-cute is allowed and often desirable. Small fangs, mischievous eyes, shadowy colors, edgy markings, and rival energy are fine when the monster remains appealing, cute-cool, and collectible.
 
+Attribute palette rule:
+Give this family a distinct color identity based on its engineering theme.
+Family palette: {family_palette}.
+Use 2-3 dominant hues plus one accent color. Keep the palette consistent across all six forms, but let Awakened and Berserk emphasize different parts of it. Do not default every family to green/teal/purple. When generating several families, deliberately vary the palette by theme: memory can be lime/mint, async can be cyan/amber, containers can be coral/blue, tests can be gold/indigo, dependency graphs can be rose/teal, security can be emerald/black, deploy/build can be green/gold, data can be blue/silver, and feature flags can be yellow/violet.
+
 Use a branching evolution layout, not a 3x2 equal grid.
 Layout structure:
 - Column 1 center: {base_name}
