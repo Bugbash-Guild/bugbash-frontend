@@ -244,7 +244,11 @@ Create a crop-friendly named branching evolution contact sheet for BugBash Guild
 
 Monster family: {family_name}.
 Theme: {engineering_theme}.
-Art direction target: cute-to-cool premium collectible mascot quality, clearly monster-like, strongly software-engineering themed, clean readable silhouettes. Controlled readable technical labels are allowed and encouraged when they strengthen the engineering theme.
+Art direction target: cute-cool simplified mobile RPG mascot quality, clearly monster-like, strongly software-engineering themed, clean readable silhouettes. Use big expressive eyes, rounded appealing shapes, soft cel-shaded 2.5D rendering, toy-like charm, and fewer details than realistic concept art. Controlled readable technical labels are allowed and encouraged when they strengthen the engineering theme.
+
+Style and charm rule:
+Keep every form appealing as a collectible game monster. Avoid photorealism, hyper-detail, gritty texture, realistic insect/animal anatomy, horror, gore, gross slime, excessive teeth, body horror, tentacle clutter, and heavy metallic/mechanical bodies. Complexity should come from silhouette and theme clarity, not dense surface noise.
+Living creature appeal should remain central. Tech motifs should read as wing patterns, shell badges, glowing cores, cursor antennae, YAML plates, queue beads, log scrolls, schema markings, branch horns, or other clean anatomy-integrated details.
 
 Use a branching evolution layout, not a 3x2 equal grid.
 Layout structure:
@@ -276,10 +280,13 @@ Evo must be visibly smaller than both route forms. Awakened and Berserk must be 
 
 True evolution rule:
 Do not evolve by simply scaling up the same silhouette. Each evolved form must change at least three of these: body posture, limb structure, core placement, armor shape, tail shape, back structure, role silhouette. Keep family identity through the shared engineering theme, shared core motif, shared materials, and recognizable motifs from the base form. Base and Evo should feel like the same species. After Evo, Awakened and Berserk may diverge strongly in body plan or species silhouette when that better expresses each route role.
-Each form must have a distinct body-plan noun. Examples: capsule larva -> runner mantis -> gate guardian -> release train fortress -> crash loop crusher -> queue leviathan. The exact nouns must come from the family theme.
-Evo -> Berserk must not reuse Evo's body-plan noun. If Evo is a runner, mantis, bird, turtle, fox, golem, jellyfish, or similar body plan, Berserk must become a different failure-shaped body plan such as crusher, crawler, maw, knot, swarm, parasite, loop, wreck, furnace, prison, or leviathan.
+Each form must have a distinct body-plan noun. Examples: capsule larva -> runner mantis -> gate guardian -> release crown centipede -> cross join prowler -> full scan basilisk. The exact nouns must come from the family theme.
+Evo -> Berserk must not reuse Evo's body-plan noun. If Evo is a runner, mantis, bird, turtle, fox, golem, jellyfish, or similar body plan, Berserk must become a different cool failure-shaped body plan such as prowler, basilisk, rogue serpent, shadow runner, overload lancer, fault raptor, rival guardian, sleek crawler, or dark leviathan.
 Evo and Berserk must differ in at least five of these: posture, limb count, silhouette, dominant mass, core placement, tail/body plan, armor rhythm, facial structure, or movement logic.
 Color-only berserk is forbidden. Berserk must look like the technical concept failed structurally, not like Evo with red, purple, or black paint.
+
+Berserk taste rule:
+Berserk means a dark, cool, dangerous alternate evolution, not a disgusting monster. The berserk route should feel like a rival form that players still want to collect: confident, sleek, powerful, sharp, shadowy, or unstable in a stylish way. Avoid making Berserk a gross maw, slime blob, parasite pile, tentacle mass, body-horror failure, or excessive-tooth creature unless the user explicitly asks for that tone.
 
 Functional role rule:
 Awakened and Berserk must not be defined by color. They must be defined by different functional roles.
@@ -293,7 +300,7 @@ Do not create light/dark recolors of the same body.
 Route divergence rule:
 After Evo, the Awakened route and Berserk route must diverge into different outcomes of the same technical idea.
 Awakened route should express the concept working correctly: controlled, reliable, protected, organized, supportive, or operational.
-Berserk route should express the concept failing or being abused: broken, overloaded, unsafe, parasitic, trapped, corrupted, exploitative, or dangerous.
+Berserk route should express the concept failing or being abused in a stylish way: rogue, overloaded, unsafe, corrupted, exploitative, dangerous, or rival-like, while staying visually appealing and not gross.
 The Awakened and Berserk forms must differ in at least four of these: posture, body-height distribution, limb/body structure, core protection versus exposure, back or main structure, transformation of the shared motif, facial expression, armor rhythm.
 Evo -> Awakened and Evo -> Berserk must both be visually traceable to Evo, but the two routes must transform different aspects of Evo. Awakened should stabilize, organize, armor, route, protect, or orchestrate Evo's motif. Berserk should collapse, jam, corrupt, expose, overload, consume, trap, or loop Evo's motif.
 Do not use the same base creature pose for both routes.
@@ -325,19 +332,20 @@ Critical evolution rules:
 - Evo is only a small waypoint, not the finished form.
 - Evo and Berserk must not share the same body-plan noun or the same main posture.
 - Evo -> Berserk must be a structural failure transformation, not a color-only corruption.
+- Berserk should be dark, cool, stylish, and collectible, never gross, slimy, grotesque, or horror-like by default.
 - Awakened and Berserk must be visibly larger and stronger than Evo.
 - Final forms must be the largest and most dominant silhouettes.
-- Final forms may become vehicles, fortresses, gates, towers, serpents, swarms, prisons, machines, or other non-base body plans if the engineering concept remains clear.
+- Final forms may become serpents, basilisks, prowlers, mantises, guardians, runners, leviathans, or other non-base creature body plans if the engineering concept remains clear. Avoid making final forms primarily vehicles, fortresses, gates, towers, buildings, tanks, engines, or machines unless specifically requested.
 - Awakened route changes into {awakened_route_summary}.
 - Berserk route changes into {berserk_route_summary}.
 
 Art direction:
-Premium collectible mascot illustration, high-end designer toy blended with polished fantasy game character art. Glossy enamel, translucent resin, metallic accents, crystal cores, expressive faces, clean professional rendering, strong thumbnail readability, commercially desirable.
+Cute-cool simplified collectible mascot illustration for a mobile RPG. High-end designer toy feel, polished fantasy game character art, soft cel-shaded 2.5D rendering, glossy enamel accents, translucent resin cores, expressive faces, clean professional rendering, strong thumbnail readability, commercially desirable. Keep forms simpler and more charming than realistic concept art.
 
 Layout and crop rules:
 16:9 landscape, warm-white studio background, subtle soft shadow under each monster, generous empty margin around every character. Place each monster name centered below its monster and separated from the silhouette. Add a small family title at the top: {family_title}. Add a small theme subtitle below the title: {theme_subtitle}. No large card frames, no UI clutter, no decorative background, no labels like Base/Evo/Awk.
 
-Avoid: 3x2 equal grid, generic fantasy dragon/demon/angel, simple scale-up evolution, color-only berserk, Evo/Berserk sharing the same body plan, weak-looking evolved forms, later forms smaller than earlier forms, dense terminal text, random pasted symbols, insect complexity, messy effects, cheap emoji style, pixel art, horror gore, human characters, text overlapping characters.
+Avoid: 3x2 equal grid, generic fantasy dragon/demon/angel, simple scale-up evolution, color-only berserk, Evo/Berserk sharing the same body plan, weak-looking evolved forms, later forms smaller than earlier forms, dense terminal text, random pasted symbols, insect complexity, messy effects, photorealism, hyper-detail, gritty texture, gross slime, grotesque mouths, excessive teeth, tentacle clutter, body horror, cheap emoji style, pixel art, horror gore, human characters, text overlapping characters.
 ```
 
 ## 採用済み: Null Pointer Axolotl
