@@ -249,6 +249,7 @@ Art direction target: cute-cool simplified mobile RPG mascot quality, clearly mo
 Style and charm rule:
 Keep every form appealing as a collectible game monster. Avoid photorealism, hyper-detail, gritty texture, realistic insect/animal anatomy, horror, gore, gross slime, excessive teeth, body horror, tentacle clutter, and heavy metallic/mechanical bodies. Complexity should come from silhouette and theme clarity, not dense surface noise.
 Living creature appeal should remain central. Tech motifs should read as wing patterns, shell badges, glowing cores, cursor antennae, YAML plates, queue beads, log scrolls, schema markings, branch horns, or other clean anatomy-integrated details.
+Dark-but-cute is allowed and often desirable. Small fangs, mischievous eyes, shadowy colors, edgy markings, and rival energy are fine when the monster remains appealing, cute-cool, and collectible.
 
 Use a branching evolution layout, not a 3x2 equal grid.
 Layout structure:
@@ -287,6 +288,7 @@ Color-only berserk is forbidden. Berserk must look like the technical concept fa
 
 Berserk taste rule:
 Berserk means a dark, cool, dangerous alternate evolution, not a disgusting monster. The berserk route should feel like a rival form that players still want to collect: confident, sleek, powerful, sharp, shadowy, or unstable in a stylish way. Avoid making Berserk a gross maw, slime blob, parasite pile, tentacle mass, body-horror failure, or excessive-tooth creature unless the user explicitly asks for that tone.
+Dark-cute berserk is allowed: the route may be mischievous, edgy, shadowy, or villain-like while still having big readable eyes, clean shapes, mascot appeal, and toy-like charm.
 
 Functional role rule:
 Awakened and Berserk must not be defined by color. They must be defined by different functional roles.
@@ -333,6 +335,7 @@ Critical evolution rules:
 - Evo and Berserk must not share the same body-plan noun or the same main posture.
 - Evo -> Berserk must be a structural failure transformation, not a color-only corruption.
 - Berserk should be dark, cool, stylish, and collectible, never gross, slimy, grotesque, or horror-like by default.
+- Dark-but-cute Berserk is valid when it remains appealing, readable, and collectible.
 - Awakened and Berserk must be visibly larger and stronger than Evo.
 - Final forms must be the largest and most dominant silhouettes.
 - Final forms may become serpents, basilisks, prowlers, mantises, guardians, runners, leviathans, or other non-base creature body plans if the engineering concept remains clear. Avoid making final forms primarily vehicles, fortresses, gates, towers, buildings, tanks, engines, or machines unless specifically requested.
