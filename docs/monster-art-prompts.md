@@ -6,6 +6,8 @@ BugBash Guild のモンスター画像を生成するときの方針と、再利
 
 モンスター画像を生成・レビュー・本番アセット化する前に、AIエージェントは必ずこのファイルを読む。
 過去の会話や記憶だけでプロンプトを書かない。
+新しいモンスター案を出す前に、`docs/monster-catalog.md` も読み、既存のITテーマ・動物モチーフ・計画中モンスターと被らないことを確認する。
+新しいチャットでも絵柄がぶれないように、`docs/monster-style-guide.md` も読み、`BugBash House Style Lock` を画像生成プロンプトの先頭付近に必ず入れる。
 
 - コンタクトシートは、このファイルの「全系統共通: 分岐コンタクトシート用プロンプト」を使う。
 - コンタクトシートは名前ありの分岐レイアウトにする。3x2等分グリッドや名前なしシートにしない。
@@ -276,6 +278,14 @@ Create a crop-friendly named branching evolution contact sheet for BugBash Guild
 
 Monster family: {family_name}.
 Theme: {engineering_theme}.
+BugBash House Style Lock:
+Create cute-cool simplified collectible monster art for a mobile web RPG made for software engineers.
+The character should feel like a premium designer-toy mascot crossed with polished fantasy game character art: big expressive eyes, rounded readable forms, clean silhouette, soft cel-shaded 2.5D rendering, glossy enamel or translucent resin accents, crisp edge highlights, and strong thumbnail readability.
+Keep the monster appealing, collectible, and easy to like. Prefer cute, cool, mischievous, heroic, rival-like, or dark-cute energy. Avoid photorealism, gritty realism, horror, gore, gross slime, body horror, excessive teeth, realistic insect anatomy, creepy parasite shapes, dense tentacles, and heavy machine-only designs.
+The monster must stay living-creature first. Software engineering identity must be integrated into anatomy and equipment, not pasted as random symbols: readable badges, cores, shells, fins, wings, tails, horns, rings, plates, charms, lanterns, capsules, scrolls, locks, traces, branches, queue beads, YAML plates, terminal tails, schema marks, check/fail cores, API tags, or log ribbons.
+Use a simple but distinctive palette per family. Do not default every family to teal, purple, or dark blue. Use 2-3 dominant hues and one accent, consistent across the lineage.
+Evolution should change silhouette and role, not just scale or color. Base is small and charming, Evo is a clear waypoint, Awakened is controlled/heroic/solved, Berserk is a stylish failed evolution of the same species. Berserk can be dark-cute or dark-cool, but must not be gross and must not become a different animal.
+
 Art direction target: cute-cool simplified mobile RPG mascot quality, clearly monster-like, strongly software-engineering themed, clean readable silhouettes. Use big expressive eyes, rounded appealing shapes, soft cel-shaded 2.5D rendering, toy-like charm, and fewer details than realistic concept art. Controlled readable technical labels are allowed and encouraged when they strengthen the engineering theme.
 
 Style and charm rule:
