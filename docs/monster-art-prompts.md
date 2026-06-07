@@ -145,35 +145,61 @@ manifestにないパスはURLを返さない。これにより、未アップロ
 
 ## 画像完成後の短縮投入ルール
 
-画像生成が終わっていて、やることが既存と同じアセット追加だけの場合は、時間を優先して短縮フローにする。
+画像生成が終わっていて、やることが既存と同じモンスターアセット追加だけの場合は、時間を優先して短縮フローにする。
+このケースでは、テスト・ビルド・デプロイ監視を毎回フルで行わない。画像投入は定型作業なので、下記の最低限だけ確認する。
 
 やること:
 
 ```text
 1. 最終候補の画像をすべてユーザーに見せる
-2. 承認された画像を `game-assets/source/monsters/{slug}/` に置く
-3. `npm run assets:build` を実行し、manifestに新規画像が入ったことを確認する
-4. frontend PRを作成する
-5. 純粋なモンスターアセット追加だけは、画像承認済みであればmergeしてよい
-6. `Upload Game Assets to R2` workflowを実行する
-7. R2の `asset-manifest.json` と代表画像URLが200で返ることを確認する
-8. 新slugがbackend未登録なら、base speciesだけを追加してdeployする
+2. OKが出た画像だけ単体化・透過する
+3. `game-assets/source/monsters/{slug}/` に置く
+4. 18枚など、期待枚数が存在することを確認する
+5. 透過PNGの最低限確認をする
+6. `npm run assets:build` を実行し、manifestに新規slugが入ったことだけ確認する
+7. frontend PRを作成する
+8. 純粋なモンスターアセット追加だけは、画像承認済みであればmergeしてよい
+9. `Upload Game Assets to R2` workflowを実行する
+10. R2の代表URLだけ確認する
+11. 新slugがbackend未登録なら、base speciesだけを追加する
+12. backend PRを作成する
+13. 純粋なbase species追加だけはmergeしてよい
 ```
 
 やらないこと:
 
 - 毎回TDDのRED/GREENをしない。
 - 既存と同じ画像投入だけなら、新しいテストを増やさない。
+- `npm run test` を実行しない。
+- `npm run build` を実行しない。
+- backendの `./gradlew test` を毎回実行しない。
+- GitHub Actionsの完了を毎回待たない。
+- Cloud RunやVercelのdeploy完了を毎回待たない。
+- backend APIを外部curlで確認しようとしない。
+- R2の全URLを確認しない。
 - frontendに種族ごとの画像対応表を増やさない。
 - manifestを手で編集しない。`npm run assets:build` とworkflowに任せる。
 - 画像承認後に長い設計・計画フェーズを挟まない。
+- PR本文に長い説明や確認ログを書かない。
 
 最低限の確認:
 
+- 期待するファイル数が揃っている。
+- 透過PNGにalphaがある。
+- 透過PNGの四隅alphaが0である。
 - `npm run assets:build` が成功する。
 - manifestに新規アセットが含まれる。
-- R2アップロード後、代表URLが200で返る。
-- backendに新slugを追加した場合は、既存CIまたはdeploy workflowが成功する。
+- R2アップロード後、代表1〜3 URLが200で返る。
+
+省かないこと:
+
+- 画像生成前にこのファイルを読む。
+- 生成した候補画像をすべてユーザーに見せ、OKをもらう。
+- 画像がプロンプト・進化ルール・IT感から明らかにズレている場合の再生成。
+- 透過が怪しい場合の目視確認と修正。
+- manifestに新規slugが出ない場合の原因調査。
+- 純粋なモンスターアセット追加ではない変更のレビュー・検証。
+- ユーザーが「マージしないで」と言っているPRのmerge停止。
 
 ## 単体SVG化ワークフロー
 
