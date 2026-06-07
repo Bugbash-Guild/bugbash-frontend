@@ -24,14 +24,17 @@ AIエージェントが新しいモンスターを提案・生成する前に、
 | `deploy-canary-finch` | Deploy Canary Finch | デプロイ、canary release、rollback、health check | カナリア/finch | deploy, canary, rollout, rollback, health check |
 | `feature-flag-chameleon` | Feature Flag Chameleon | feature flag、段階公開、toggle、variant | カメレオン | feature flag, toggle, variant, rollout, hidden state |
 | `git-branch-kitsune` | Git Branch Kitsune | Git branch、merge、fork、commit graph | キツネ/kitsune | git, branch, merge, fork, commit, rebase |
+| `observability-owl` | Observability Lantern Owl | observability、logs、metrics、traces、alerts | フクロウ/owl | observability, log, metric, trace, alert, SLO |
 | `queue-worker-hedgehog` | Queue Worker Hedgehog | queue worker、job processing、backpressure | ハリネズミ | queue, worker, job, retry, backpressure, throughput |
 | `race-condition-twins` | Race Condition Twins | race condition、thread sync、deadlock、starvation | 双子/twins | race condition, thread, lock, deadlock, starvation, scheduler |
 | `rate-limit-djinn` | Rate Limit Djinn | rate limit、quota、throttle、burst control | ジン/djinn | rate limit, quota, throttle, burst, 429 |
+| `regex-ferret` | Regex Capture Ferret | regex、pattern matching、capture group、backtracking | フェレット/ferret | regex, pattern, capture group, backtracking, parser |
 | `schema-migration-golem` | Schema Migration Golem | DB schema migration、versioned schema、rollback | ゴーレム | migration, database, schema version, rollback, DDL |
 | `schema-validator-lynx` | Schema Validator Lynx | schema validation、contract check、型検証 | リンクス/lynx | validation, schema, contract, type check, JSON schema |
 | `serialization-kraken` | Serialization Kraken | serialization、deserialization、encoding、payload shape | クラーケン | serialization, deserialization, JSON, payload, encoding |
 | `timeout-jellyfish` | Timeout Jellyfish | timeout、latency、retry、slow response | クラゲ/jellyfish | timeout, latency, retry, slow request, deadline |
 | `token-mimic` | Token Mimic | authentication token、session、OAuth、権限 | ミミック | token, session, OAuth, auth, scope, exfiltration |
+| `webhook-bat` | Webhook Signal Bat | webhook、event delivery、signature verification、dead-letter queue | コウモリ/bat | webhook, event, delivery, signature, callback, DLQ |
 
 ## 旧ローカルフォールバック
 
@@ -52,9 +55,6 @@ R2移行前のローカル画像やSVGとして残っている系統。今後の
 
 | slug / 仮名 | 状態 | ITテーマ | 動物/生物モチーフ | 主要キーワード |
 | --- | --- | --- | --- | --- |
-| `webhook-bat` | 計画中 | webhook、event delivery、signature verification | コウモリ | webhook, event, delivery, signature, callback |
-| `regex-ferret` | 計画中 | regex、pattern matching、backtracking | フェレット | regex, pattern, backtracking, capture group |
-| `observability-owl` | 計画中 | observability、logs、metrics、traces、alerts | フクロウ | observability, log, metric, trace, alert |
 | `circuit-breaker-armadillo` | 提案中 | circuit breaker、fallback、half-open、service protection | アルマジロ | circuit breaker, fallback, half-open, isolation |
 | `cron-scheduler-ram` | 提案中 | cron、scheduled job、missed run、clock drift | 牡羊/ram | cron, scheduler, clock drift, missed run |
 | `sandbox-hermit` | 提案中 | sandbox、isolation、permission、escape attempt | ヤドカリ/hermit crab | sandbox, isolation, permissions, escape |
