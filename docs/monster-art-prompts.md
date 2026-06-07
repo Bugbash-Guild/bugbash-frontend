@@ -15,6 +15,7 @@ BugBash Guild のモンスター画像を生成するときの方針と、再利
 - 進化トポロジーは必ず `Base -> Evo -> Awakened/Berserk` として扱う。`Awakened` と `Berserk` はどちらも `Evo` から派生した姿にする。
 - `Evo -> Berserk` は色違い禁止。Evoのbody-plan nounを再利用せず、姿勢・脚数・主構造・コア位置・重心を変える。
 - IT感はラベルだけに頼らず、terminal tail、YAML armor、runner badge、queue capsule、deploy gate、commit node、log cable、API plate、lock、schema、trace、branch、check/fail core などの身体構造に入れる。
+- 本番用単体画像は、全形態で同じキャンバス・同じ安全余白・同じ接地位置を保つ。進化による大きさの差は、画像内の余白を変えすぎず、将来の詳細画面や演出側の表示倍率で表現する。
 
 ## 基本方針
 
@@ -25,6 +26,7 @@ BugBash Guild のモンスター画像を生成するときの方針と、再利
 - 覚醒は「概念を制御・解決した姿」。
 - 暴走は「邪悪でかっこいい闇ルート」。エラー画面や単なるグリッチではなく、魅力的な敵役にする。
 - ゲーム本番用は、名前・矢印・UI文字なしの単体画像で再生成する。技術ラベルは必要な場合だけ制御して使う。
+- 一覧や管理画面の小さい枠で見やすくするため、単体画像の実寸占有率は形態間で大きく変えない。巨大感・上位感は、シルエット、姿勢、装備量、翼・尾・コア・エフェクトの広がりで出し、表示上の拡大率はアプリ側で扱う。
 
 ## 進化構造
 
@@ -213,6 +215,9 @@ Do not redesign the character. Preserve the same species identity, face, posture
 
 Single monster only. No name text, no arrows, no UI, no card frame, no extra characters.
 Full body centered with generous padding. Nothing cropped.
+Use the same square canvas, same safe padding, same visual baseline, and same overall framing policy as the other forms in this lineage.
+Do not make later evolution forms tiny inside the canvas by adding excessive empty space. Do not make early forms oversized by filling the canvas.
+Express evolution size and power mostly through silhouette, posture, anatomy, equipment, wings, tails, cores, and presence. The app may apply display scale later for detail pages or battle scenes.
 Use a perfectly flat {background_key_color} chroma-key background and no shadow so the background can be removed cleanly.
 Choose {background_key_color} so it is as far as possible from every important monster color, glow color, crystal color, label color, and edge highlight.
 Do not use magenta or hot pink for monsters with purple/violet glow. Do not use green/cyan for monsters with green, teal, cache, nature, or blue energy. Do not use a key color that appears in the subject.
@@ -255,6 +260,7 @@ SVGコンテナの前提:
 
 - 6形態すべてが存在する。
 - 背景が透過されている。
+- 全形態でキャンバス・余白・接地位置が安定しており、小さい一覧枠でどれかだけ極端に小さく見えない。
 - `Base` と `Evo` が強すぎず、覚醒・暴走が明確に上位に見える。
 - 覚醒と暴走が色違いではなく、役割・姿勢・主要部位で別物になっている。
 - 最終形態でもエンジニアリング、IT、コーディングの要素が薄れていない。
