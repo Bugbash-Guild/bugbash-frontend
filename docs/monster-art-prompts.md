@@ -13,7 +13,7 @@ BugBash Guild のモンスター画像を生成するときの方針と、再利
 - 進化後もIT感・エンジニアリング感・コーディング感を薄めない。
 - `Awakened` と `Awakened Final` は装飾差ではなく、シルエット・構造・役割が明確に違うようにする。
 - 進化トポロジーは必ず `Base -> Evo -> Awakened/Berserk` として扱う。`Awakened` と `Berserk` はどちらも `Evo` から派生した姿にする。
-- `Evo -> Berserk` は色違い禁止。Evoのbody-plan nounを再利用せず、姿勢・脚数・主構造・コア位置・重心を変える。
+- `Evo -> Berserk` は色違い禁止。ただし別動物・別種族にはしない。Evoと同じ生物種・顔つき・主要モチーフを保ち、姿勢・脚数・主構造・コア位置・重心・故障表現を変える。
 - IT感はラベルだけに頼らず、terminal tail、YAML armor、runner badge、queue capsule、deploy gate、commit node、log cable、API plate、lock、schema、trace、branch、check/fail core などの身体構造に入れる。
 
 ## 基本方針
@@ -23,7 +23,7 @@ BugBash Guild のモンスター画像を生成するときの方針と、再利
 - 進化するほど、IT感・エンジニア感・コーディング感を強くする。
 - 低レアは最後まで愛着とネタの強さを残し、高レアほど素材感・シルエット・演出を強くする。
 - 覚醒は「概念を制御・解決した姿」。
-- 暴走は「邪悪でかっこいい闇ルート」。エラー画面や単なるグリッチではなく、魅力的な敵役にする。
+- 暴走は「同じ種族が破綻・過負荷・悪用で歪んだ闇ルート」。エラー画面や単なるグリッチではなく、魅力的な敵役にする。ただし進化なので、別動物への変身ではなく、Evoから見て同じ系統の生き物だと分かる姿にする。
 - ゲーム本番用は、名前・矢印・UI文字なしの単体画像で再生成する。技術ラベルは必要な場合だけ制御して使う。
 
 ## 進化構造
@@ -230,7 +230,7 @@ SVGコンテナの前提:
 - 6形態すべてが存在する。
 - 背景が透過されている。
 - `Base` と `Evo` が強すぎず、覚醒・暴走が明確に上位に見える。
-- 覚醒と暴走が色違いではなく、役割・姿勢・主要部位で別物になっている。
+- 覚醒と暴走が色違いではなく、同じ種族のまま役割・姿勢・主要部位で別ルートになっている。
 - 最終形態でもエンジニアリング、IT、コーディングの要素が薄れていない。
 - 画像パスが `src/lib/monsterArtwork.ts` の `formStage` マッピングと一致している。
 - バックエンドに追加するのは `BASE` 種族名だけ。
@@ -285,10 +285,11 @@ Use the same camera distance. Do not let Base fill its cell.
 Evo must be visibly smaller than both route forms. Awakened and Berserk must be equal size. Both final forms must be equal size and largest.
 
 True evolution rule:
-Do not evolve by simply scaling up the same silhouette. Each evolved form must change at least three of these: body posture, limb structure, core placement, armor shape, tail shape, back structure, role silhouette. Keep family identity through the shared engineering theme, shared core motif, shared materials, and recognizable motifs from the base form. Base and Evo should feel like the same species. After Evo, Awakened and Berserk may diverge strongly in body plan or species silhouette when that better expresses each route role.
-Each form must have a distinct body-plan noun. Examples: capsule larva -> runner mantis -> gate guardian -> release crown centipede -> cross join prowler -> full scan basilisk. The exact nouns must come from the family theme.
-Evo -> Berserk must not reuse Evo's body-plan noun. If Evo is a runner, mantis, bird, turtle, fox, golem, jellyfish, or similar body plan, Berserk must become a different cool failure-shaped body plan such as prowler, basilisk, rogue serpent, shadow runner, overload lancer, fault raptor, rival guardian, sleek crawler, or dark leviathan.
-Evo and Berserk must differ in at least five of these: posture, limb count, silhouette, dominant mass, core placement, tail/body plan, armor rhythm, facial structure, or movement logic.
+Do not evolve by simply scaling up the same silhouette. Each evolved form must change at least three of these: body posture, limb structure, core placement, armor shape, tail shape, back structure, role silhouette. Keep family identity through the shared engineering theme, shared core motif, shared materials, recognizable motifs from the base form, and the same species lineage. Base, Evo, Awakened, Berserk, and both finals should all feel like the same species evolving through different technical outcomes.
+Species continuity rule:
+Evolution must not turn a monster into an unrelated animal or unrelated creature class. Base, Evo, Awakened, Berserk, and both finals must remain visibly the same species lineage. If the line starts as a crab/hermit, it remains crab/hermit. If it starts as a firefly/moth, it remains firefly/moth. If it starts as a pangolin, it remains pangolin. Berserk can be corrupted, overloaded, armored, split, swollen, scarred, shadowy, or unstable, but it cannot become an owl, turtle, serpent, dragon, basilisk, wolf, fortress, vehicle, or other unrelated archetype unless the base lineage already contains that animal/structure.
+Each form should have a distinct route descriptor, not a different species noun. Examples: package pup -> semver pangolin -> lockfile guardian pangolin -> resolver oracle pangolin -> conflict pangolin -> dependency hell pangolin. Good Berserk descriptors include overloaded, jammed, fragmented, rogue, shadow, crash-loop, deadlock, unstable, corrupted, forked, split, or lockjaw, while keeping the same species noun.
+Evo -> Berserk must not be a color-only corruption or a species swap. Keep Evo's recognizable face shape, core motif, main anatomy, and family silhouette, then change at least five of these: posture, limb emphasis, silhouette proportions, dominant mass, core placement, armor rhythm, facial expression, failure marks, or movement logic.
 Color-only berserk is forbidden. Berserk must look like the technical concept failed structurally, not like Evo with red, purple, or black paint.
 
 Berserk taste rule:
@@ -296,9 +297,9 @@ Berserk means a dark, cool, dangerous alternate evolution, not a disgusting mons
 Dark-cute berserk is allowed: the route may be mischievous, edgy, shadowy, or villain-like while still having big readable eyes, clean shapes, mascot appeal, and toy-like charm.
 
 Berserk silhouette variety rule:
-Do not let every Berserk route become the same dark quadruped, prowler, basilisk, eel, serpent, or shadow lizard. Each family needs its own failure silhouette and movement logic.
-Berserk silhouette archetype for this family: {berserk_silhouette_archetype}.
-When generating several families, choose a different Berserk silhouette archetype for each family before writing prompts. Examples: winged rogue, shell brute, coiled trickster, split twin, floating wisp, thorny sprinter, armored crab, shadow moth, lock-jawed turtle, glitch bird, rogue fox, overclocked beetle, cursed otter, packet-ray, timeout owl. Reuse neither the same body-plan noun nor the same stance across the batch.
+Do not let every Berserk route become the same dark quadruped, prowler, basilisk, eel, serpent, or shadow lizard. Each family needs its own failure silhouette and movement logic, but that variation must happen inside the same species lineage.
+Berserk silhouette treatment for this family: {berserk_silhouette_archetype}.
+When generating several families, choose a different Berserk treatment for each family before writing prompts. Examples: same-species armored brute, same-species cracked-shell rogue, same-species glitch-wing variant, same-species split-twin conflict, same-species overloaded crawler, same-species shadow moth, same-species overclocked beetle, same-species forked-tail fox. Reuse neither the same stance nor the same failure anatomy across the batch, but do not swap the animal family.
 
 Functional role rule:
 Awakened and Berserk must not be defined by color. They must be defined by different functional roles.
@@ -318,13 +319,13 @@ Evo -> Awakened and Evo -> Berserk must both be visually traceable to Evo, but t
 Do not use the same base creature pose for both routes.
 Do not make Berserk a dark recolor of Awakened.
 Do not make Awakened a clean recolor of Berserk.
-It is acceptable for Awakened or Berserk to no longer look like the base animal/species if the IT theme, core motif, and evolution logic remain clear. The result should feel like a different technical outcome, not a random different monster.
+It is not acceptable for Awakened or Berserk to become a different animal/species. The result should feel like a different technical outcome inside the same monster lineage, not a random different monster.
 
 Route silhouette lock:
 Awakened route silhouette: {awakened_silhouette_lock}.
 Berserk route silhouette: {berserk_silhouette_lock}.
-These two silhouettes are mutually exclusive. Do not let both routes share the same main outline, main structure, stance, dominant mass, or dominant transformed motif. If the family has a signature motif, each route must transform that motif into a different dominant structure.
-When generating multiple families, Berserk route silhouettes must also be mutually distinct from each other. Avoid repeating dark quadruped, long serpent/eel, basilisk, or prowler as the default answer.
+These two silhouettes are mutually exclusive as route treatments, but both must stay inside the same species lineage. Do not let both routes share the same main outline, stance, dominant mass, or dominant transformed motif. If the family has a signature motif, each route must transform that motif into a different dominant structure without changing the animal family.
+When generating multiple families, Berserk route silhouettes must also be mutually distinct from each other. Avoid repeating dark quadruped, long serpent/eel, basilisk, prowler, or unrelated species swaps as the default answer.
 Do not hard-code one family's example into the shared template. Fill the two silhouette locks for each family from its own engineering theme and failure mode.
 
 Technical label rule:
@@ -336,20 +337,20 @@ Evolution forms:
 2. {evo_name} — small waypoint form, not just bigger. {evo_description}
 3. {awakened_name} — awakened form, clearly bigger and structurally different. {awakened_description}
 4. {awakened_final_name} — awakened final. {awakened_final_description}
-5. {berserk_name} — berserk form, same size as {awakened_name} but different body plan. {berserk_description}
+5. {berserk_name} — berserk form, same size as {awakened_name}; same species lineage as {evo_name}, but with a different failure posture, exposed core, and corrupted structure. {berserk_description}
 6. {berserk_final_name} — berserk final, same size as {awakened_final_name}. {berserk_final_description}
 
 Critical evolution rules:
 - Coding / IT / software-engineering identity must become stronger as it evolves.
 - The evolution topology is Base -> Evo, then Evo branches into Awakened and Berserk. Do not route Awakened or Berserk directly from Base.
 - Evo is only a small waypoint, not the finished form.
-- Evo and Berserk must not share the same body-plan noun or the same main posture.
+- Evo and Berserk must share the same species lineage, but must not share the same main posture, core exposure, armor rhythm, or failure structure.
 - Evo -> Berserk must be a structural failure transformation, not a color-only corruption.
 - Berserk should be dark, cool, stylish, and collectible, never gross, slimy, grotesque, or horror-like by default.
 - Dark-but-cute Berserk is valid when it remains appealing, readable, and collectible.
 - Awakened and Berserk must be visibly larger and stronger than Evo.
 - Final forms must be the largest and most dominant silhouettes.
-- Final forms may become serpents, basilisks, prowlers, mantises, guardians, runners, leviathans, or other non-base creature body plans if the engineering concept remains clear. Avoid making final forms primarily vehicles, fortresses, gates, towers, buildings, tanks, engines, or machines unless specifically requested.
+- Final forms must remain the same species lineage as Base/Evo. They may become more armored, more upright, lower, wider, wing-expanded, split, crowned, shell-expanded, or overloaded, but they must not become unrelated animals such as serpents, basilisks, dragons, owls, turtles, wolves, or generic prowlers unless the base lineage already is that animal. Avoid making final forms primarily vehicles, fortresses, gates, towers, buildings, tanks, engines, or machines unless specifically requested.
 - Awakened route changes into {awakened_route_summary}.
 - Berserk route changes into {berserk_route_summary}.
 
@@ -538,7 +539,7 @@ Berserk Final: セル高さの70〜78%
 - `Awakened Final` と `Berserk Final` も同じ体高・同じ存在感にする。
 - 進化後が進化前より小さく見える構図を避ける。
 - 進化後のシルエットは、体格・姿勢・部位数・オーラのどれかで必ず上位感を出す。
-- `Base` と `Evo` は同じ系統の生物として見せる。分岐後は、同じ生物種であることよりもITテーマ・役割・コアモチーフの連続性を優先し、必要なら別物のシルエットになってよい。
+- `Base` から `Berserk Final` まで、同じ系統の生物として見せる。分岐後も、ITテーマ・役割・コアモチーフだけでなく、生物種・顔つき・主要な身体特徴の連続性を必ず残す。別動物や別種族への変身は失敗。
 - 同一シート内では全フォームを同じカメラ距離・同じ床位置で描く。サイズ差は実際の体格差として見せる。
 - `Base` から `Berserk Final` まで、体格・重心・存在感が段階的に増えるようにする。
 - `Evo` はBaseより少し成長しただけの小さめの通過点にする。
@@ -560,12 +561,13 @@ Berserk Final: セル高さの70〜78%
 - `Awakened` は `Evo` より「守れる・制御できる」姿勢にする。
 - `Berserk` は `Evo` より「攻める・支配する」姿勢にする。
 - 覚醒・暴走の名前だけ変えて、体型が同じなら失敗。
+- ただし、暴走で別動物になるのも失敗。暴走は `Evo` と同じ種族のまま、壊れた外装、露出コア、低い構え、荒い装甲、過負荷パーツ、分裂/ひび割れ/鎖/故障モチーフなどで差を出す。
 
 プロンプトには必要に応じて以下を入れる。
 
 ```text
 Awakened must be at least 30% larger in apparent body volume than Evo, with two new major anatomical features and a clearly upgraded guardian role. It must not share the same pose or silhouette as Evo.
-Berserk must match Awakened in apparent body height and volume, with two new major anatomical features and a clearly stronger predatory/dominating role. It must not share the same pose or silhouette as Evo.
+Berserk must match Awakened in apparent body height and volume, with two new major anatomical features and a clearly stronger predatory/dominating role. It must remain the same species lineage as Evo, keeping the recognizable face, core motif, and main anatomy, but it must not share the same pose, protected-core structure, armor rhythm, or failure silhouette as Evo.
 ```
 
 ## シルエット変化の必須ルール
@@ -584,6 +586,7 @@ Berserk must match Awakened in apparent body height and volume, with two new maj
   - 背面構造
   - 役割のシルエット
 - ファミリーらしさは、共通素材・共通コア・共通モチーフで残す。
+- ファミリーらしさは、共通素材・共通コア・共通モチーフに加えて、同じ生物種・顔つき・主要な身体特徴で残す。
 - `Awakened` は、守護者・制御者・安定運用者に見える身体構造にする。
 - `Berserk` は、捕食者・侵入者・支配者に見える身体構造にする。
 
@@ -601,12 +604,12 @@ Berserk must match Awakened in apparent body height and volume, with two new maj
 ```text
 Do not evolve by simply scaling up the same silhouette.
 Each evolved form must change at least three of these: body posture, limb structure, core placement, armor shape, tail shape, back structure, role silhouette.
-Keep family identity through shared core materials and motifs, but change the body plan enough that each form feels like a true evolution.
+Keep family identity through the same species lineage, recognizable face, main anatomy, shared core materials, and shared motifs. Change the posture, proportions, armor, core exposure, and failure anatomy enough that each form feels like a true evolution, not a recolor and not an unrelated animal swap.
 ```
 
 ## 覚醒・暴走の役割分離
 
-覚醒と暴走は、色や明暗だけで分けない。各モンスターごとに、覚醒ルートと暴走ルートの「役割」を別物として定義する。
+覚醒と暴走は、色や明暗だけで分けない。各モンスターごとに、同じ種族のまま覚醒ルートと暴走ルートの「役割」を別ルートとして定義する。
 
 基本ルール:
 
