@@ -295,6 +295,11 @@ Berserk taste rule:
 Berserk means a dark, cool, dangerous alternate evolution, not a disgusting monster. The berserk route should feel like a rival form that players still want to collect: confident, sleek, powerful, sharp, shadowy, or unstable in a stylish way. Avoid making Berserk a gross maw, slime blob, parasite pile, tentacle mass, body-horror failure, or excessive-tooth creature unless the user explicitly asks for that tone.
 Dark-cute berserk is allowed: the route may be mischievous, edgy, shadowy, or villain-like while still having big readable eyes, clean shapes, mascot appeal, and toy-like charm.
 
+Berserk silhouette variety rule:
+Do not let every Berserk route become the same dark quadruped, prowler, basilisk, eel, serpent, or shadow lizard. Each family needs its own failure silhouette and movement logic.
+Berserk silhouette archetype for this family: {berserk_silhouette_archetype}.
+When generating several families, choose a different Berserk silhouette archetype for each family before writing prompts. Examples: winged rogue, shell brute, coiled trickster, split twin, floating wisp, thorny sprinter, armored crab, shadow moth, lock-jawed turtle, glitch bird, rogue fox, overclocked beetle, cursed otter, packet-ray, timeout owl. Reuse neither the same body-plan noun nor the same stance across the batch.
+
 Functional role rule:
 Awakened and Berserk must not be defined by color. They must be defined by different functional roles.
 For this family:
@@ -319,6 +324,7 @@ Route silhouette lock:
 Awakened route silhouette: {awakened_silhouette_lock}.
 Berserk route silhouette: {berserk_silhouette_lock}.
 These two silhouettes are mutually exclusive. Do not let both routes share the same main outline, main structure, stance, dominant mass, or dominant transformed motif. If the family has a signature motif, each route must transform that motif into a different dominant structure.
+When generating multiple families, Berserk route silhouettes must also be mutually distinct from each other. Avoid repeating dark quadruped, long serpent/eel, basilisk, or prowler as the default answer.
 Do not hard-code one family's example into the shared template. Fill the two silhouette locks for each family from its own engineering theme and failure mode.
 
 Technical label rule:
