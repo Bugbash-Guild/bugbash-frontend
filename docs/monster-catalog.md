@@ -17,21 +17,21 @@ AIエージェントが新しいモンスターを提案・生成する前に、
 
 `game-assets/source/monsters/{slug}/` に6形態の画像が揃っている系統。
 
-| slug | 系統名 | ITテーマ | 動物/生物モチーフ | 主要キーワード | 被りやすい案・避ける方向 |
-| --- | --- | --- | --- | --- | --- |
-| `cache-phantom` | Cache Phantom | キャッシュ、stale data、invalidation、TTL | 幽霊/phantom | cache, stale, invalidation, TTL, ghost data | cache turtle、edge cache、CDN cache などキャッシュ主題の別名案 |
-| `dependency-hydra` | Dependency Hydra | 依存関係、package graph、version conflict | ヒドラ | dependencies, package lock, transitive dependency, version conflict | package lock pangolin、dependency graph beast、library serpent |
-| `deploy-canary-finch` | Deploy Canary Finch | デプロイ、canary release、rollback、health check | カナリア/finch | deploy, canary, rollout, rollback, health check | release bird、rollback raven、CI deploy canary |
-| `feature-flag-chameleon` | Feature Flag Chameleon | feature flag、段階公開、toggle、variant | カメレオン | feature flag, toggle, variant, rollout, hidden state | flag gecko、toggle lizard、variant chameleon |
-| `git-branch-kitsune` | Git Branch Kitsune | Git branch、merge、fork、commit graph | キツネ/kitsune | git, branch, merge, fork, commit, rebase | branch pup、merge conflict creature、commit fox |
-| `queue-worker-hedgehog` | Queue Worker Hedgehog | queue worker、job processing、backpressure | ハリネズミ | queue, worker, job, retry, backpressure, throughput | job queue animal、worker bee、retry hedgehog |
-| `race-condition-twins` | Race Condition Twins | race condition、thread sync、deadlock、starvation | 双子/twins | race condition, thread, lock, deadlock, starvation, scheduler | merge conflict crab、thread sprinter、deadlock monster |
-| `rate-limit-djinn` | Rate Limit Djinn | rate limit、quota、throttle、burst control | ジン/djinn | rate limit, quota, throttle, burst, 429 | quota genie、throttle spirit、API limit creature |
-| `schema-migration-golem` | Schema Migration Golem | DB schema migration、versioned schema、rollback | ゴーレム | migration, database, schema version, rollback, DDL | migration mole、DB golem、schema change beast |
-| `schema-validator-lynx` | Schema Validator Lynx | schema validation、contract check、型検証 | リンクス/lynx | validation, schema, contract, type check, JSON schema | validator cat、contract lynx、type-check creature |
-| `serialization-kraken` | Serialization Kraken | serialization、deserialization、encoding、payload shape | クラーケン | serialization, deserialization, JSON, payload, encoding | JSON octopus、payload squid、codec kraken |
-| `timeout-jellyfish` | Timeout Jellyfish | timeout、latency、retry、slow response | クラゲ/jellyfish | timeout, latency, retry, slow request, deadline | latency polyp、slow API jellyfish、deadline creature |
-| `token-mimic` | Token Mimic | authentication token、session、OAuth、権限 | ミミック | token, session, OAuth, auth, scope, exfiltration | auth mimic、JWT monster、session chest、token exfiltrator |
+| slug | 系統名 | ITテーマ | 動物/生物モチーフ | 主要キーワード |
+| --- | --- | --- | --- | --- |
+| `cache-phantom` | Cache Phantom | キャッシュ、stale data、invalidation、TTL | 幽霊/phantom | cache, stale, invalidation, TTL, ghost data |
+| `dependency-hydra` | Dependency Hydra | 依存関係、package graph、version conflict | ヒドラ | dependencies, package lock, transitive dependency, version conflict |
+| `deploy-canary-finch` | Deploy Canary Finch | デプロイ、canary release、rollback、health check | カナリア/finch | deploy, canary, rollout, rollback, health check |
+| `feature-flag-chameleon` | Feature Flag Chameleon | feature flag、段階公開、toggle、variant | カメレオン | feature flag, toggle, variant, rollout, hidden state |
+| `git-branch-kitsune` | Git Branch Kitsune | Git branch、merge、fork、commit graph | キツネ/kitsune | git, branch, merge, fork, commit, rebase |
+| `queue-worker-hedgehog` | Queue Worker Hedgehog | queue worker、job processing、backpressure | ハリネズミ | queue, worker, job, retry, backpressure, throughput |
+| `race-condition-twins` | Race Condition Twins | race condition、thread sync、deadlock、starvation | 双子/twins | race condition, thread, lock, deadlock, starvation, scheduler |
+| `rate-limit-djinn` | Rate Limit Djinn | rate limit、quota、throttle、burst control | ジン/djinn | rate limit, quota, throttle, burst, 429 |
+| `schema-migration-golem` | Schema Migration Golem | DB schema migration、versioned schema、rollback | ゴーレム | migration, database, schema version, rollback, DDL |
+| `schema-validator-lynx` | Schema Validator Lynx | schema validation、contract check、型検証 | リンクス/lynx | validation, schema, contract, type check, JSON schema |
+| `serialization-kraken` | Serialization Kraken | serialization、deserialization、encoding、payload shape | クラーケン | serialization, deserialization, JSON, payload, encoding |
+| `timeout-jellyfish` | Timeout Jellyfish | timeout、latency、retry、slow response | クラゲ/jellyfish | timeout, latency, retry, slow request, deadline |
+| `token-mimic` | Token Mimic | authentication token、session、OAuth、権限 | ミミック | token, session, OAuth, auth, scope, exfiltration |
 
 ## 旧ローカルフォールバック
 
@@ -50,14 +50,14 @@ R2移行前のローカル画像やSVGとして残っている系統。今後の
 
 まだ本番アセットが揃っていないが、過去に候補または計画として扱った系統。被り防止では既存扱いにする。
 
-| slug / 仮名 | 状態 | ITテーマ | 動物/生物モチーフ | 主要キーワード | 被りやすい案・避ける方向 |
-| --- | --- | --- | --- | --- | --- |
-| `webhook-bat` | 計画中 | webhook、event delivery、signature verification | コウモリ | webhook, event, delivery, signature, callback | event bat、callback bird、webhook owl |
-| `regex-ferret` | 計画中 | regex、pattern matching、backtracking | フェレット | regex, pattern, backtracking, capture group | pattern ferret、regex fox、parser weasel |
-| `observability-owl` | 計画中 | observability、logs、metrics、traces、alerts | フクロウ | observability, log, metric, trace, alert | logging owl、trace bird、monitoring hawk |
-| `circuit-breaker-armadillo` | 提案中 | circuit breaker、fallback、half-open、service protection | アルマジロ | circuit breaker, fallback, half-open, isolation | breaker turtle、fallback shield animal |
-| `cron-scheduler-ram` | 提案中 | cron、scheduled job、missed run、clock drift | 牡羊/ram | cron, scheduler, clock drift, missed run | scheduler goat、clock ram、time sheep |
-| `sandbox-hermit` | 提案中 | sandbox、isolation、permission、escape attempt | ヤドカリ/hermit crab | sandbox, isolation, permissions, escape | container crab、permission shell、sandbox turtle |
+| slug / 仮名 | 状態 | ITテーマ | 動物/生物モチーフ | 主要キーワード |
+| --- | --- | --- | --- | --- |
+| `webhook-bat` | 計画中 | webhook、event delivery、signature verification | コウモリ | webhook, event, delivery, signature, callback |
+| `regex-ferret` | 計画中 | regex、pattern matching、backtracking | フェレット | regex, pattern, backtracking, capture group |
+| `observability-owl` | 計画中 | observability、logs、metrics、traces、alerts | フクロウ | observability, log, metric, trace, alert |
+| `circuit-breaker-armadillo` | 提案中 | circuit breaker、fallback、half-open、service protection | アルマジロ | circuit breaker, fallback, half-open, isolation |
+| `cron-scheduler-ram` | 提案中 | cron、scheduled job、missed run、clock drift | 牡羊/ram | cron, scheduler, clock drift, missed run |
+| `sandbox-hermit` | 提案中 | sandbox、isolation、permission、escape attempt | ヤドカリ/hermit crab | sandbox, isolation, permissions, escape |
 
 ## テーマ領域マップ
 
