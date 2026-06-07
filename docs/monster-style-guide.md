@@ -4,6 +4,7 @@ BugBash Guild のモンスター画像を新しいチャットで生成しても
 
 AIエージェントは、モンスター画像を生成する前に必ずこのファイルを読み、下の `BugBash House Style Lock` を画像生成プロンプトの先頭付近に入れる。
 長い会話履歴や過去の記憶に頼らない。
+文章だけでは絵柄がぶれやすいため、`docs/monster-visual-references.md` の参照シートも見る。
 
 ## BugBash House Style Lock
 
@@ -25,9 +26,10 @@ Evolution should change silhouette and role, not just scale or color. Base is sm
 
 1. `docs/monster-art-prompts.md` を読む。
 2. `docs/monster-catalog.md` を読み、既存テーマ・動物モチーフと被らない案にする。
-3. このファイルの `BugBash House Style Lock` を生成プロンプトの先頭付近に入れる。
-4. その後に、系統固有のテーマ・名前・進化ルート・技術ラベル・色を入れる。
-5. 生成結果がこのスタイルから外れたら、本番投入せず再生成する。
+3. `docs/monster-visual-references.md` の3枚を見て、絵柄・IT感・暴走の温度感を合わせる。
+4. このファイルの `BugBash House Style Lock` を生成プロンプトの先頭付近に入れる。
+5. その後に、系統固有のテーマ・名前・進化ルート・技術ラベル・色を入れる。
+6. 生成結果がこのスタイルから外れたら、本番投入せず再生成する。
 
 ## 判定基準
 
