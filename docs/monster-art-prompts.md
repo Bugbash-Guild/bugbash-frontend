@@ -18,7 +18,7 @@ BugBash Guild のモンスター画像を生成するときの方針と、再利
 - 進化トポロジーは必ず `Base -> Evo -> Awakened/Berserk` として扱う。`Awakened` と `Berserk` はどちらも `Evo` から派生した姿にする。
 - `Evo -> Berserk` は色違い禁止。Evoのbody-plan nounを再利用せず、姿勢・脚数・主構造・コア位置・重心を変える。
 - IT感はラベルだけに頼らず、terminal tail、YAML armor、runner badge、queue capsule、deploy gate、commit node、log cable、API plate、lock、schema、trace、branch、check/fail core などの身体構造に入れる。
-- すべてのモンスターは必ず左向きにする。右向き・正面向き・同じ系統内で向きが混在した画像は採用しない。
+- すべてのモンスターは、自然な3/4角度を保ちつつ、どちらかというと左を向くようにする。真横の左向きに寄せすぎない。
 - 本番用単体画像は、全形態で同じキャンバス・同じ安全余白・同じ接地位置を保つ。進化による大きさの差は、画像内の余白を変えすぎず、将来の詳細画面や演出側の表示倍率で表現する。
 
 ## 基本方針
@@ -219,7 +219,7 @@ Do not redesign the character. Preserve the same species identity, face, posture
 
 Single monster only. No name text, no arrows, no UI, no card frame, no extra characters.
 Full body centered with generous padding. Nothing cropped.
-The monster must face left in a clear left-facing 3/4 side view, matching the approved lineage direction. Do not make it face right or front.
+The monster should keep the approved natural BugBash 3/4 mascot angle and look slightly toward the left. This is a gentle orientation bias, not a strict side-profile pose. Do not force a hard left-facing silhouette, and avoid strongly right-facing or straight front-facing poses.
 Use the same square canvas, same safe padding, same visual baseline, and same overall framing policy as the other forms in this lineage.
 Do not make later evolution forms tiny inside the canvas by adding excessive empty space. Do not make early forms oversized by filling the canvas.
 Express evolution size and power mostly through silhouette, posture, anatomy, equipment, wings, tails, cores, and presence. The app may apply display scale later for detail pages or battle scenes.
@@ -265,7 +265,7 @@ SVGコンテナの前提:
 
 - 6形態すべてが存在する。
 - 背景が透過されている。
-- 全形態が左向きの3/4サイドビューで統一されている。
+- 全形態が自然な3/4角度を保ちつつ、どちらかというと左を向いている。
 - 全形態でキャンバス・余白・接地位置が安定しており、小さい一覧枠でどれかだけ極端に小さく見えない。
 - `Base` と `Evo` が強すぎず、覚醒・暴走が明確に上位に見える。
 - 覚醒と暴走が色違いではなく、役割・姿勢・主要部位で別物になっている。
@@ -287,7 +287,7 @@ Create cute-cool simplified collectible monster art for a mobile web RPG made fo
 The character should feel like a premium designer-toy mascot crossed with polished fantasy game character art: big expressive eyes, rounded readable forms, clean silhouette, soft cel-shaded 2.5D rendering, glossy enamel or translucent resin accents, crisp edge highlights, and strong thumbnail readability.
 Keep the monster appealing, collectible, and easy to like. Prefer cute, cool, mischievous, heroic, rival-like, or dark-cute energy. Avoid photorealism, gritty realism, horror, gore, gross slime, body horror, excessive teeth, realistic insect anatomy, creepy parasite shapes, dense tentacles, and heavy machine-only designs.
 The monster must stay living-creature first. Software engineering identity must be integrated into anatomy and equipment, not pasted as random symbols: readable badges, cores, shells, fins, wings, tails, horns, rings, plates, charms, lanterns, capsules, scrolls, locks, traces, branches, queue beads, YAML plates, terminal tails, schema marks, check/fail cores, API tags, or log ribbons.
-Every monster must face left in a clear left-facing 3/4 side view. Do not make any form face right, face front, or alternate directions across the sheet.
+Every monster should keep the natural BugBash 3/4 mascot angle and look slightly toward the left. This is a gentle orientation bias, not a strict side-profile pose. Do not force hard left-facing silhouettes, and avoid strongly right-facing or straight front-facing poses across the sheet.
 Use a simple but distinctive palette per family. Do not default every family to teal, purple, or dark blue. Use 2-3 dominant hues and one accent, consistent across the lineage.
 Evolution should change silhouette and role, not just scale or color. Base is small and charming, Evo is a clear waypoint, Awakened is controlled/heroic/solved, Berserk is a stylish failed evolution of the same species. Berserk can be dark-cute or dark-cool, but must not be gross and must not become a different animal.
 
@@ -315,7 +315,7 @@ Layout structure:
 Base and Evo are pre-branch forms and should be vertically centered between the two route rows. Awakened route is the top row. Berserk route is the bottom row. No arrows if possible; if guides are needed, use very faint thin lines that do not touch monsters or names.
 
 Facing direction rule:
-All six forms must face left in the same clear left-facing 3/4 side view. Keep eyes, snout, horns, claws, tails, shells, wings, and body posture oriented left. Do not mirror some forms, do not use front-facing poses, and do not alternate left/right directions between branches.
+All six forms should keep the same natural 3/4 mascot angle and look slightly toward the left. Preserve the original BugBash pose language; the face and body can remain mostly three-quarter, with only a subtle leftward bias. Do not turn the monsters into strict side-profile silhouettes. Avoid strongly right-facing or straight front-facing poses, and do not alternate strongly different directions between branches.
 
 Mandatory evolution topology:
 Base evolves into Evo.
