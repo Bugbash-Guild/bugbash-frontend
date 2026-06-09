@@ -25,7 +25,9 @@ AIエージェントが新しいモンスターを提案・生成する前に、
 | `dependency-hydra` | Dependency Hydra | 依存関係、package graph、version conflict | ヒドラ | dependencies, package lock, transitive dependency, version conflict |
 | `deploy-canary-finch` | Deploy Canary Finch | デプロイ、canary release、rollback、health check | カナリア/finch | deploy, canary, rollout, rollback, health check |
 | `feature-flag-chameleon` | Feature Flag Chameleon | feature flag、段階公開、toggle、variant | カメレオン | feature flag, toggle, variant, rollout, hidden state |
+| `flaky-test-frog` | Flaky Test Frog | flaky test、unit test、assertion、stable CI | カエル/frog | flaky test, unit test, assertion, retry, CI |
 | `git-branch-kitsune` | Git Branch Kitsune | Git branch、merge、fork、commit graph | キツネ/kitsune | git, branch, merge, fork, commit, rebase |
+| `memory-leak-tarsier` | Memory Leak Tarsier | heap usage、retained object、garbage collection、leak detection | メガネザル/tarsier | memory leak, heap, retained object, garbage collection |
 | `observability-owl` | Observability Lantern Owl | observability、logs、metrics、traces、alerts | フクロウ/owl | observability, log, metric, trace, alert, SLO |
 | `queue-worker-hedgehog` | Queue Worker Hedgehog | queue worker、job processing、backpressure | ハリネズミ | queue, worker, job, retry, backpressure, throughput |
 | `race-condition-twins` | Race Condition Twins | race condition、thread sync、deadlock、starvation | 双子/twins | race condition, thread, lock, deadlock, starvation, scheduler |
@@ -34,6 +36,7 @@ AIエージェントが新しいモンスターを提案・生成する前に、
 | `schema-migration-golem` | Schema Migration Golem | DB schema migration、versioned schema、rollback | ゴーレム | migration, database, schema version, rollback, DDL |
 | `schema-validator-lynx` | Schema Validator Lynx | schema validation、contract check、型検証 | リンクス/lynx | validation, schema, contract, type check, JSON schema |
 | `sandbox-hermit` | Sandbox Hermit | sandbox、isolation、permission、escape attempt | ヤドカリ/hermit crab | sandbox, isolation, permissions, escape |
+| `secret-rotation-peacock` | Secret Rotation Peacock | secrets、key rotation、vault、expired credentials | クジャク/peacock | secret, key rotation, vault, expired credential |
 | `serialization-kraken` | Serialization Kraken | serialization、deserialization、encoding、payload shape | クラーケン | serialization, deserialization, JSON, payload, encoding |
 | `timeout-jellyfish` | Timeout Jellyfish | timeout、latency、retry、slow response | クラゲ/jellyfish | timeout, latency, retry, slow request, deadline |
 | `token-mimic` | Token Mimic | authentication token、session、OAuth、権限 | ミミック | token, session, OAuth, auth, scope, exfiltration |
@@ -83,6 +86,9 @@ R2移行前のローカル画像やSVGとして残っている系統。今後の
 - circuit breaker/fallback: `circuit-breaker-armadillo`
 - cron/scheduler: `cron-scheduler-ram`
 - sandbox/isolation/permissions: `sandbox-hermit`
+- flaky test/unit test/assertion: `flaky-test-frog`
+- memory leak/heap/garbage collection: `memory-leak-tarsier`
+- secrets/key rotation/vault: `secret-rotation-peacock`
 
 ## 新規提案時のチェックリスト
 
