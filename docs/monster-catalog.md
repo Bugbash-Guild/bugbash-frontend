@@ -21,12 +21,15 @@ AIエージェントが新しいモンスターを提案・生成する前に、
 | --- | --- | --- | --- | --- |
 | `cache-phantom` | Cache Phantom | キャッシュ、stale data、invalidation、TTL | 幽霊/phantom | cache, stale, invalidation, TTL, ghost data |
 | `circuit-breaker-armadillo` | Circuit Breaker Armadillo | circuit breaker、fallback、half-open、service protection | アルマジロ/armadillo | circuit breaker, fallback, half-open, isolation |
+| `cors-preflight-glider` | CORS Preflight Glider | CORS、preflight、allowed origins、credentials policy | フクロモモンガ/sugar glider | CORS, preflight, OPTIONS, origin, credentials |
 | `cron-scheduler-ram` | Cron Scheduler Ram | cron、scheduled job、missed run、clock drift | 牡羊/ram | cron, scheduler, clock drift, missed run |
 | `dependency-hydra` | Dependency Hydra | 依存関係、package graph、version conflict | ヒドラ | dependencies, package lock, transitive dependency, version conflict |
 | `deploy-canary-finch` | Deploy Canary Finch | デプロイ、canary release、rollback、health check | カナリア/finch | deploy, canary, rollout, rollback, health check |
 | `feature-flag-chameleon` | Feature Flag Chameleon | feature flag、段階公開、toggle、variant | カメレオン | feature flag, toggle, variant, rollout, hidden state |
 | `flaky-test-frog` | Flaky Test Frog | flaky test、unit test、assertion、stable CI | カエル/frog | flaky test, unit test, assertion, retry, CI |
 | `git-branch-kitsune` | Git Branch Kitsune | Git branch、merge、fork、commit graph | キツネ/kitsune | git, branch, merge, fork, commit, rebase |
+| `iac-drift-ibex` | IaC Drift Ibex | infrastructure as code、Terraform plan/apply、state drift | アイベックス/ibex | IaC, Terraform, plan, apply, state drift |
+| `load-balancer-manta` | Load Balancer Manta | load balancing、traffic routing、health checks、failover | マンタ/manta ray | load balancer, route, health check, failover, 503 |
 | `memory-leak-tarsier` | Memory Leak Tarsier | heap usage、retained object、garbage collection、leak detection | メガネザル/tarsier | memory leak, heap, retained object, garbage collection |
 | `observability-owl` | Observability Lantern Owl | observability、logs、metrics、traces、alerts | フクロウ/owl | observability, log, metric, trace, alert, SLO |
 | `queue-worker-hedgehog` | Queue Worker Hedgehog | queue worker、job processing、backpressure | ハリネズミ | queue, worker, job, retry, backpressure, throughput |
