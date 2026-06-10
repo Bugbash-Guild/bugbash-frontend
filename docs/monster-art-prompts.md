@@ -17,6 +17,9 @@ BugBash Guild のモンスター画像を生成するときの方針と、再利
 - `Awakened` と `Awakened Final` は装飾差ではなく、シルエット・構造・役割が明確に違うようにする。
 - 進化トポロジーは必ず `Base -> Evo -> Awakened/Berserk` として扱う。`Awakened` と `Berserk` はどちらも `Evo` から派生した姿にする。
 - `Evo -> Berserk` は色違い禁止。Evoのbody-plan nounを再利用せず、姿勢・脚数・主構造・コア位置・重心を変える。
+- 進化は「同じ種族のまま本体形状が変わる」こと。顔・目・コアモチーフ・主要素材・色系統・種族アンカーは残しつつ、外形・骨格・重心・姿勢・移動方法・主要部位を段階ごとに変える。
+- 角、羽、リング、棘、発光、ラベル、装甲、道具を外しても、本体だけで進化後だと分かること。装飾だけ増やした進化は失敗。
+- ポケモンのようなモンスター収集RPGにある「幼体から別の戦闘ロール・体型へ育つ」進化感を参考にする。ただし特定キャラ、具体的デザイン、絵柄は模倣しない。
 - IT感はラベルだけに頼らず、terminal tail、YAML armor、runner badge、queue capsule、deploy gate、commit node、log cable、API plate、lock、schema、trace、branch、check/fail core などの身体構造に入れる。
 - すべてのモンスターは、自然な3/4角度を保ちつつ、どちらかというと左を向くようにする。真横の左向きに寄せすぎない。
 - 本番用単体画像は、全形態で同じキャンバス・同じ安全余白・同じ接地位置を保つ。進化による大きさの差は、画像内の余白を変えすぎず、将来の詳細画面や演出側の表示倍率で表現する。
@@ -26,6 +29,7 @@ BugBash Guild のモンスター画像を生成するときの方針と、再利
 - メイン画風は「プレミアムなコレクタブルマスコット」。
 - エンジニアが見て意味を理解できる概念を、モンスターの体・素材・能力・進化に溶かす。
 - 進化するほど、IT感・エンジニア感・コーディング感を強くする。
+- 進化の主役はアクセサリではなく、体型・姿勢・移動方法・役割の変化。幼体、走者、飛行型、守護者、砲台型、殻型、低姿勢の捕食者など、段階ごとに読むべき本体シルエットを変える。
 - 低レアは最後まで愛着とネタの強さを残し、高レアほど素材感・シルエット・演出を強くする。
 - 覚醒は「概念を制御・解決した姿」。
 - 暴走は「邪悪でかっこいい闇ルート」。エラー画面や単なるグリッチではなく、魅力的な敵役にする。
@@ -223,6 +227,8 @@ The monster should keep the approved natural BugBash 3/4 mascot angle and look s
 Use the same square canvas, same safe padding, same visual baseline, and same overall framing policy as the other forms in this lineage.
 Do not make later evolution forms tiny inside the canvas by adding excessive empty space. Do not make early forms oversized by filling the canvas.
 Express evolution size and power mostly through silhouette, posture, anatomy, equipment, wings, tails, cores, and presence. The app may apply display scale later for detail pages or battle scenes.
+This must read as true monster evolution, not accessory accumulation. Before rendering, imagine removing all horns, rings, armor plates, glow, labels, and carried objects; the remaining naked body silhouette must still differ from the parent form through body architecture, head/torso ratio, limb emphasis, posture, locomotion, tail/wing/back structure, and core placement.
+Use broad monster-collecting RPG evolution logic: the creature matures into a new body type and battle role while keeping lineage identity. Do not copy any specific existing franchise character, pose, or art style.
 Use a perfectly flat {background_key_color} chroma-key background and no shadow so the background can be removed cleanly.
 Choose {background_key_color} so it is as far as possible from every important monster color, glow color, crystal color, label color, and edge highlight.
 Do not use magenta or hot pink for monsters with purple/violet glow. Do not use green/cyan for monsters with green, teal, cache, nature, or blue energy. Do not use a key color that appears in the subject.
@@ -289,7 +295,9 @@ Keep the monster appealing, collectible, and easy to like. Prefer cute, cool, mi
 The monster must stay living-creature first. Software engineering identity must be integrated into anatomy and equipment, not pasted as random symbols: readable badges, cores, shells, fins, wings, tails, horns, rings, plates, charms, lanterns, capsules, scrolls, locks, traces, branches, queue beads, YAML plates, terminal tails, schema marks, check/fail cores, API tags, or log ribbons.
 Every monster should keep the natural BugBash 3/4 mascot angle and look slightly toward the left. This is a gentle orientation bias, not a strict side-profile pose. Do not force hard left-facing silhouettes, and avoid strongly right-facing or straight front-facing poses across the sheet.
 Use a simple but distinctive palette per family. Do not default every family to teal, purple, or dark blue. Use 2-3 dominant hues and one accent, consistent across the lineage.
-Evolution should change silhouette and role, not just scale or color. Base is small and charming, Evo is a clear waypoint, Awakened is controlled/heroic/solved, Berserk is a stylish failed evolution of the same species. Berserk can be dark-cute or dark-cool, but must not be gross and must not become a different animal.
+Evolution should follow broad monster-collecting RPG evolution logic: a young creature matures into a new body architecture and battle role, not the same body with more accessories. Do not copy any specific existing franchise character or art style; use only the general principle of readable creature evolution.
+True evolution must change the naked body silhouette before accessories are considered. If all horns, badges, rings, glow, armor plates, and decorative effects were removed, the evolved form should still have a different body plan, posture, limb emphasis, head/torso ratio, tail/wing/back structure, locomotion, and role silhouette. Accessory-only evolution is a failed result.
+Keep the same lineage through recognizable face/eyes, core motif, materials, color family, and 1-2 species anchor traits, but allow the body architecture to mature strongly. Base is small and charming, Evo is a clear waypoint, Awakened is controlled/heroic/solved, Berserk is a stylish failed evolution of the same species. Berserk can be dark-cute or dark-cool, but must not be gross and must not become a random unrelated animal.
 
 Art direction target: cute-cool simplified mobile RPG mascot quality, clearly monster-like, strongly software-engineering themed, clean readable silhouettes. Use big expressive eyes, rounded appealing shapes, soft cel-shaded 2.5D rendering, toy-like charm, and fewer details than realistic concept art. Controlled readable technical labels are allowed and encouraged when they strengthen the engineering theme.
 
@@ -335,7 +343,11 @@ Use the same camera distance. Do not let Base fill its cell.
 Evo must be visibly smaller than both route forms. Awakened and Berserk must be equal size. Both final forms must be equal size and largest.
 
 True evolution rule:
-Do not evolve by simply scaling up the same silhouette. Each evolved form must change at least three of these: body posture, limb structure, core placement, armor shape, tail shape, back structure, role silhouette. Keep family identity through the shared engineering theme, shared core motif, shared materials, and recognizable motifs from the base form. Base and Evo should feel like the same species. After Evo, Awakened and Berserk may diverge strongly in body plan or species silhouette when that better expresses each route role.
+Do not evolve by simply scaling up the same silhouette, repainting it, or adding more decoration. Each evolved form must change the underlying creature body, not just the surface costume.
+Accessory-stripping test: if every horn, badge, ring, glow effect, armor plate, weapon, floating prop, and label were removed, the evolved form must still be recognizable as a different evolutionary stage from its parent.
+Each evolved form must change at least five of these: body posture, head/torso ratio, limb count or limb emphasis, locomotion, core placement, armor/body shell shape, tail shape, wing/back structure, dominant mass, role silhouette.
+Keep family identity through the shared engineering theme, shared core motif, shared materials, recognizable face/eyes, color family, and 1-2 species anchor traits from the base form. Base and Evo should feel like the same species. After Evo, Awakened and Berserk may diverge strongly in body architecture when that better expresses each route role.
+Use broad monster-collecting RPG evolution principles: baby mascot -> adolescent role form -> mature specialized battle form. Examples of acceptable body architecture shifts include round hatchling -> long-legged runner -> winged guardian, cub -> upright bruiser -> armored sentinel, larva -> winged caster, small crab -> shell fortress, or tadpole -> four-limbed caster. Do not copy specific existing franchise characters, silhouettes, poses, or art styles.
 Each form must have a distinct body-plan noun. Examples: capsule larva -> runner mantis -> gate guardian -> release crown centipede -> cross join prowler -> full scan basilisk. The exact nouns must come from the family theme.
 Evo -> Berserk must not reuse Evo's body-plan noun. If Evo is a runner, mantis, bird, turtle, fox, golem, jellyfish, or similar body plan, Berserk must become a different cool failure-shaped body plan such as prowler, basilisk, rogue serpent, shadow runner, overload lancer, fault raptor, rival guardian, sleek crawler, or dark leviathan.
 Evo and Berserk must differ in at least five of these: posture, limb count, silhouette, dominant mass, core placement, tail/body plan, armor rhythm, facial structure, or movement logic.
@@ -395,6 +407,8 @@ Critical evolution rules:
 - Evo is only a small waypoint, not the finished form.
 - Evo and Berserk must not share the same body-plan noun or the same main posture.
 - Evo -> Berserk must be a structural failure transformation, not a color-only corruption.
+- Every parent-child step must pass the accessory-stripping test: the body shape still changes after removing horns, rings, badges, glow, labels, extra armor, and props.
+- Do not solve evolution by adding more feathers, spikes, fins, shells, halos, cables, badges, or particles to an unchanged torso and stance.
 - Berserk should be dark, cool, stylish, and collectible, never gross, slimy, grotesque, or horror-like by default.
 - Dark-but-cute Berserk is valid when it remains appealing, readable, and collectible.
 - Awakened and Berserk must be visibly larger and stronger than Evo.

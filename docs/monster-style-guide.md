@@ -21,7 +21,11 @@ Every monster should keep the natural BugBash 3/4 mascot angle and look slightly
 
 Use a simple but distinctive palette per family. Do not default every family to teal, purple, or dark blue. Use 2-3 dominant hues and one accent, consistent across the lineage.
 
-Evolution should change silhouette and role, not just scale or color. Base is small and charming, Evo is a clear waypoint, Awakened is controlled/heroic/solved, Berserk is a stylish failed evolution of the same species. Berserk can be dark-cute or dark-cool, but must not be gross and must not become a different animal.
+Evolution should feel like broad monster-collecting RPG evolution logic: a young creature grows into a new battle role and body architecture, not the same body with more accessories. Do not copy any specific existing franchise character or art style; use only the general principle of readable creature evolution. Base is small and charming, Evo is a clear waypoint, Awakened is controlled/heroic/solved, Berserk is a stylish failed evolution of the same species.
+
+True evolution must change the monster's naked body silhouette before accessories are considered. If all horns, badges, rings, glow, armor plates, and decorative effects were removed, the evolved form should still have a different body plan, posture, limb emphasis, head/torso ratio, tail/wing/back structure, locomotion, and role silhouette. Accessory-only evolution is a failed result.
+
+Keep the same lineage through recognizable face/eyes, core motif, materials, color family, and 1-2 species anchor traits, but allow the body architecture to mature strongly: chick -> long-legged runner -> fan-wing guardian, cub -> upright bruiser -> armored sentinel, larva -> winged caster, crab -> shell fortress, etc. Berserk can be dark-cute or dark-cool, but must not be gross and must not become a random unrelated animal.
 ```
 
 ## 新チャットでの最短手順
@@ -43,6 +47,8 @@ OK:
 - ダーク表現でもプレイヤーが欲しくなる。
 - 技術要素が体の構造や装備として入っている。
 - 進化しても同じ種族の成長に見える。
+- 装飾を外して黒塗りにしても、体型・姿勢・移動方法・主構造が親形態と違う。
+- ポケモンのようなモンスター収集RPGの「幼体から別の戦闘ロールへ育つ」進化感がある。ただし特定キャラや絵柄は模倣しない。
 - 全形態が自然な3/4角度を保ちつつ、どちらかというと左を向いている。
 
 NG:
@@ -51,6 +57,7 @@ NG:
 - キモい、怖すぎる、グロい。
 - 無機物や機械だけに見える。
 - ただ大きくしただけ、または色を変えただけ。
+- 同じ胴体・同じ立ち姿・同じ手足に、角・羽・リング・棘・エフェクト・ラベルだけを足している。
 - ラベルだけITっぽく、体の形は普通の動物。
 - Berserkで別の動物や別カテゴリの生物になっている。
 - 真横の左向きに寄りすぎている、右向きが強い、正面向きが強い、または同じ系統内で向きが大きく混在している。
