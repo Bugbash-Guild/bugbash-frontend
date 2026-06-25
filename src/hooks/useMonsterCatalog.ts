@@ -40,6 +40,7 @@ const LOCAL_MONSTER_ASSET_SLUGS = [
   "api-gateway-manta",
   "build-cache-beaver",
   "cache-phantom",
+  "ci-matrix-bee",
   "circuit-breaker-armadillo",
   "config-drift-ibex",
   "cors-preflight-dragonfly",
@@ -53,6 +54,7 @@ const LOCAL_MONSTER_ASSET_SLUGS = [
   "dom-reflow-sloth",
   "feature-flag-chameleon",
   "flaky-test-frog",
+  "garbage-collector-moth",
   "git-branch-kitsune",
   "iac-drift-ibex",
   "idempotency-pangolin",
@@ -70,6 +72,7 @@ const LOCAL_MONSTER_ASSET_SLUGS = [
   "schema-migration-golem",
   "schema-validator-lynx",
   "secret-rotation-peacock",
+  "secret-rotation-seal",
   "serialization-kraken",
   "shard-partition-mantis",
   "snapshot-walrus",
@@ -85,6 +88,7 @@ const DISPLAY_NAME_OVERRIDES: Partial<
   Record<(typeof LOCAL_MONSTER_ASSET_SLUGS)[number], string>
 > = {
   "api-gateway-manta": "API Gateway Manta",
+  "ci-matrix-bee": "CI Matrix Bee",
   "cors-preflight-dragonfly": "CORS Preflight Dragonfly",
   "cors-preflight-glider": "CORS Preflight Glider",
   "csp-header-scorpion": "CSP Header Scorpion",
