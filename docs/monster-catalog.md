@@ -21,6 +21,7 @@ AIエージェントが新しいモンスターを提案・生成する前に、
 | ------------------------------ | ---------------------------- | ------------------------------------------------------------------ | --------------------------- | ------------------------------------------------------------------- |
 | `accessibility-landmark-lemur` | Accessibility Landmark Lemur | アクセシビリティ、landmark、ARIA、focus navigation                 | キツネザル/lemur            | accessibility, landmark, ARIA, focus, screen reader                 |
 | `api-gateway-manta`            | API Gateway Manta            | API gateway、routing、proxy、edge endpoint                         | マンタ/manta ray            | API gateway, route, proxy, endpoint, gateway error                  |
+| `bloom-filter-meerkat`         | Bloom Filter Meerkat         | Bloom filter、bit array、hash test、false positive                 | ミーアキャット/meerkat      | Bloom filter, bit array, hash, false positive, probability          |
 | `build-cache-beaver`           | Build Cache Beaver           | build cache、incremental build、artifact reuse                     | ビーバー/beaver             | build cache, artifact, incremental build, stale output              |
 | `cache-phantom`                | Cache Phantom                | キャッシュ、stale data、invalidation、TTL                          | 幽霊/phantom                | cache, stale, invalidation, TTL, ghost data                         |
 | `circuit-breaker-armadillo`    | Circuit Breaker Armadillo    | circuit breaker、fallback、half-open、service protection           | アルマジロ/armadillo        | circuit breaker, fallback, half-open, isolation                     |
@@ -45,6 +46,7 @@ AIエージェントが新しいモンスターを提案・生成する前に、
 | `memory-leak-tarsier`          | Memory Leak Tarsier          | heap usage、retained object、garbage collection、leak detection    | メガネザル/tarsier          | memory leak, heap, retained object, garbage collection              |
 | `observability-owl`            | Observability Lantern Owl    | observability、logs、metrics、traces、alerts                       | フクロウ/owl                | observability, log, metric, trace, alert, SLO                       |
 | `pagination-pelican`           | Pagination Pelican           | pagination、cursor、offset、page boundary                          | ペリカン/pelican            | pagination, cursor, offset, page boundary, duplicate item           |
+| `percent-encode-quokka`        | Percent Encode Quokka        | percent encoding、query normalization、double decode               | クオッカ/quokka             | percent encoding, URL, query, canonicalization, double decode       |
 | `queue-worker-hedgehog`        | Queue Worker Hedgehog        | queue worker、job processing、backpressure                         | ハリネズミ                  | queue, worker, job, retry, backpressure, throughput                 |
 | `race-condition-twins`         | Race Condition Twins         | race condition、thread sync、deadlock、starvation                  | 双子/twins                  | race condition, thread, lock, deadlock, starvation, scheduler       |
 | `rate-limit-djinn`             | Rate Limit Djinn             | rate limit、quota、throttle、burst control                         | ジン/djinn                  | rate limit, quota, throttle, burst, 429                             |
@@ -56,6 +58,7 @@ AIエージェントが新しいモンスターを提案・生成する前に、
 | `serialization-kraken`         | Serialization Kraken         | serialization、deserialization、encoding、payload shape            | クラーケン                  | serialization, deserialization, JSON, payload, encoding             |
 | `shard-partition-mantis`       | Shard Partition Mantis       | database shard、partition key、hot partition                       | カマキリ/mantis             | shard, partition, hot key, database, distribution                   |
 | `snapshot-walrus`              | Snapshot Walrus              | snapshot test、visual diff、baseline update                        | セイウチ/walrus             | snapshot, baseline, visual diff, approval, regression               |
+| `timezone-fold-kiwi`           | Timezone Fold Kiwi           | timezone offset、DST fold、ambiguous local time                    | キウイ鳥/kiwi bird          | timezone, UTC, DST, fold, offset                                    |
 | `timeout-jellyfish`            | Timeout Jellyfish            | timeout、latency、retry、slow response                             | クラゲ/jellyfish            | timeout, latency, retry, slow request, deadline                     |
 | `tls-handshake-narwhal`        | TLS Handshake Narwhal        | TLS handshake、certificate、cipher negotiation                     | イッカク/narwhal            | TLS, handshake, certificate, cipher, expiry                         |
 | `token-mimic`                  | Token Mimic                  | authentication token、session、OAuth、権限                         | ミミック                    | token, session, OAuth, auth, scope, exfiltration                    |
@@ -122,8 +125,11 @@ R2移行前のローカル画像やSVGとして残っている系統。今後の
 - idempotency/retry safety: `idempotency-pangolin`
 - locale/collation/i18n sort: `locale-collation-llama`
 - pagination/cursor boundary: `pagination-pelican`
+- percent encoding/query normalization: `percent-encode-quokka`
 - shard/partition/hot key: `shard-partition-mantis`
 - snapshot/visual diff: `snapshot-walrus`
+- probabilistic filter/false positives: `bloom-filter-meerkat`
+- timezone/DST fold: `timezone-fold-kiwi`
 - TLS/certificate handshake: `tls-handshake-narwhal`
 - WASM/runtime trap: `wasm-trap-kangaroo`
 - WebSocket/realtime connection: `websocket-seahorse`

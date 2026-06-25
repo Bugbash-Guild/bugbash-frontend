@@ -38,6 +38,7 @@ const FORM_STAGE_ASSET_NAME: Record<MonsterFormStage, string> = {
 const LOCAL_MONSTER_ASSET_SLUGS = [
   "accessibility-landmark-lemur",
   "api-gateway-manta",
+  "bloom-filter-meerkat",
   "build-cache-beaver",
   "cache-phantom",
   "ci-matrix-bee",
@@ -64,6 +65,7 @@ const LOCAL_MONSTER_ASSET_SLUGS = [
   "memory-leak-tarsier",
   "observability-owl",
   "pagination-pelican",
+  "percent-encode-quokka",
   "queue-worker-hedgehog",
   "race-condition-twins",
   "rate-limit-djinn",
@@ -76,6 +78,7 @@ const LOCAL_MONSTER_ASSET_SLUGS = [
   "serialization-kraken",
   "shard-partition-mantis",
   "snapshot-walrus",
+  "timezone-fold-kiwi",
   "timeout-jellyfish",
   "tls-handshake-narwhal",
   "token-mimic",
