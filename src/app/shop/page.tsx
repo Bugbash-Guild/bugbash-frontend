@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { mutate } from "swr";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useShop } from "@/hooks/useShop";
@@ -11,17 +13,31 @@ import { ItemVisual } from "@/components/ItemVisual";
 import { LegalFooter } from "@/components/LegalFooter";
 import { MainWrapper } from "@/components/MainWrapper";
 import { WalletBadge } from "@/components/WalletBadge";
+import {
+  buildShopPurchasePresentation,
+  formatShopCurrencyAmount,
+  mapShopPurchaseErrorMessage,
+} from "@/lib/shopPresentation";
 import type { ShopItem } from "@/types/shop";
 
 export default function ShopPage() {
   const router = useRouter();
   const { isAuthenticated, loading: authLoading } = useAuth();
-  const { items, guildCoinBalance, loading, refetch: refetchShop } = useShop(isAuthenticated);
+  const {
+    items,
+    guildCoinBalance,
+    runeBalance,
+    loading,
+    refetch: refetchShop,
+  } = useShop(isAuthenticated);
   const { refetch: refetchInventory } = useInventory(isAuthenticated);
   const { purchase, loading: purchasing, error: purchaseError, reset: resetPurchase } = usePurchase();
 
   const [selected, setSelected] = useState<ShopItem | null>(null);
   const [successFlash, setSuccessFlash] = useState<string | null>(null);
+  const selectedPresentation = selected
+    ? buildShopPurchasePresentation(selected, { guildCoinBalance, runeBalance })
+    : null;
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.replace("/login");
@@ -67,7 +83,7 @@ export default function ShopPage() {
       setSelected(null);
       resetPurchase();
       setSuccessFlash(`${res.itemName} を購入しました(所持: ${res.itemQuantity})`);
-      await Promise.all([refetchShop(), refetchInventory()]);
+      await Promise.all([refetchShop(), refetchInventory(), mutate("/api/billing/wallet")]);
     } catch {
       // エラーは usePurchase の error state からモーダル内に表示される
     }
@@ -82,7 +98,7 @@ export default function ShopPage() {
           <span className="text-text-faint">:</span>
           <span className="text-accent-2">~/shop</span>
           <span className="text-text-faint">$ </span>
-          <span>./browse --currency guild_coin</span>
+          <span>./browse --shop-items</span>
           <span className="inline-block w-2 h-[14px] ml-0.5 bg-accent align-middle animate-pulse" />
         </div>
 
@@ -101,7 +117,10 @@ export default function ShopPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {items.map((item) => {
-              const canAfford = guildCoinBalance >= item.price;
+              const presentation = buildShopPurchasePresentation(item, {
+                guildCoinBalance,
+                runeBalance,
+              });
               return (
                 <button
                   key={item.itemId}
@@ -123,14 +142,13 @@ export default function ShopPage() {
                         {item.description}
                       </div>
                       <div className="mt-3 flex items-center gap-1.5">
-                        <span className="text-[12px] text-gold">GC</span>
                         <span
                           className={[
                             "text-[13px] font-semibold",
-                            canAfford ? "text-text" : "text-pink",
+                            presentation.canAfford ? "text-text" : "text-pink",
                           ].join(" ")}
                         >
-                          {item.price.toLocaleString()}
+                          {presentation.priceLabel}
                         </span>
                       </div>
                     </div>
@@ -145,7 +163,7 @@ export default function ShopPage() {
       </div>
 
       {/* purchase confirm modal */}
-      {selected && (
+      {selected && selectedPresentation && (
         <div
           role="dialog"
           aria-modal="true"
@@ -169,15 +187,36 @@ export default function ShopPage() {
                   {selected.name} を購入しますか?
                 </div>
                 <div className="text-[11px] text-text-faint">
-                  GC {selected.price.toLocaleString()} を消費します
+                  {formatShopCurrencyAmount(selected.currency, selected.price)} を消費します
                 </div>
               </div>
             </div>
             <div className="text-[12px] text-text-dim mb-4">{selected.description}</div>
 
+            {selectedPresentation.cosmeticNotice && (
+              <div className="mb-3 border border-accent/30 bg-accent/10 px-3 py-2 text-[12px] leading-5 text-accent">
+                {selectedPresentation.cosmeticNotice}
+              </div>
+            )}
+
+            {selectedPresentation.insufficientMessage && (
+              <div className="mb-3 border border-pink/30 bg-pink/10 px-3 py-2 text-[12px] leading-5 text-pink">
+                {selectedPresentation.insufficientMessage}
+                {selectedPresentation.showRuneTopUpLink && (
+                  <Link className="ml-3 text-text underline-offset-4 hover:underline" href="/shop/runes">
+                    ルーンを購入する
+                  </Link>
+                )}
+              </div>
+            )}
+
             {purchaseError && (
               <div className="mb-3 px-3 py-2 bg-pink/10 border border-pink/30 rounded text-[12px] text-pink">
-                {purchaseError.message}
+                {mapShopPurchaseErrorMessage(
+                  selected,
+                  { guildCoinBalance, runeBalance },
+                  purchaseError.status,
+                )}
               </div>
             )}
 
@@ -191,7 +230,7 @@ export default function ShopPage() {
               </button>
               <button
                 onClick={handleConfirm}
-                disabled={purchasing || guildCoinBalance < selected.price}
+                disabled={purchasing || !selectedPresentation.canAfford}
                 className="px-3 py-1.5 text-[12px] text-bg bg-accent rounded hover:bg-accent/90 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {purchasing ? "購入中…" : "購入する"}

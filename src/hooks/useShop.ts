@@ -20,6 +20,7 @@ export function useShop(enabled: boolean) {
     return {
         items: data?.items ?? [],
         guildCoinBalance: data?.guildCoinBalance ?? 0,
+        runeBalance: data?.runeBalance ?? 0,
         loading: isLoading,
         error: error && !isUnauthorizedApiError(error) ? String(error.message ?? error) : null,
         refetch: () => mutate(),
