@@ -10,6 +10,7 @@ import { usePurchase } from "@/hooks/usePurchase";
 import { ItemVisual } from "@/components/ItemVisual";
 import { LegalFooter } from "@/components/LegalFooter";
 import { MainWrapper } from "@/components/MainWrapper";
+import { WalletBadge } from "@/components/WalletBadge";
 import type { ShopItem } from "@/types/shop";
 
 export default function ShopPage() {
@@ -85,11 +86,7 @@ export default function ShopPage() {
           <span className="inline-block w-2 h-[14px] ml-0.5 bg-accent align-middle animate-pulse" />
         </div>
 
-        {/* balance bar */}
-        <div className="mb-5 flex items-center gap-3 text-[12px] text-text-dim">
-          <span className="text-text-faint uppercase tracking-[0.12em]">balance</span>
-          <span className="text-gold font-semibold">GC {guildCoinBalance.toLocaleString()}</span>
-        </div>
+        <WalletBadge enabled={isAuthenticated} />
 
         {successFlash && (
           <div className="mb-4 px-3 py-2 bg-accent/10 border border-accent/40 rounded text-[12px] text-accent">
