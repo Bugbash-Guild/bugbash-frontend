@@ -1,0 +1,4 @@
+# Game assets are delivered via Cloudflare R2.
+# Keep raw sources and generated upload output out of Vercel serverless bundles.
+game-assets/source/**
+dist/game-assets/**

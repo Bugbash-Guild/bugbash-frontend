@@ -9,6 +9,10 @@ import {
   isSupportedGameAssetInput,
   toWebpAssetKey,
 } from "../src/lib/gameAssetManifest";
+import {
+  assertSkinAssetImageMetadata,
+  validateSkinAssetInputKeys,
+} from "../src/lib/gameAssetSkinValidation";
 
 type Options = {
   sourceDir: string;
@@ -101,6 +105,7 @@ async function main() {
   if (inputKeys.length === 0) {
     throw new Error(`No supported assets found in ${options.sourceDir}`);
   }
+  validateSkinAssetInputKeys(inputKeys);
 
   await rm(options.outDir, { recursive: true, force: true });
   await mkdir(options.outDir, { recursive: true });
@@ -110,9 +115,12 @@ async function main() {
     const outputKey = toWebpAssetKey(inputKey);
     const inputPath = path.join(options.sourceDir, inputKey);
     const outputPath = path.join(options.outDir, outputKey);
+    const image = sharp(inputPath);
+    const metadata = await image.metadata();
+    assertSkinAssetImageMetadata(inputKey, metadata);
 
     await mkdir(path.dirname(outputPath), { recursive: true });
-    await sharp(inputPath)
+    await image
       .webp({
         effort: 5,
         quality: options.quality,
