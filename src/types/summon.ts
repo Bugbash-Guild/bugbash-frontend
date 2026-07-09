@@ -37,3 +37,27 @@ export type SummonHistoryEntry = {
 export type SummonHistoryResponse = {
     entries: SummonHistoryEntry[];
 };
+
+export type SummonDisclosureItem = {
+    itemId: string;
+    rarity: ItemRarity;
+    weight: number;
+    probabilityPercent: number;
+    assetUrl?: string | null;
+};
+
+export type SummonDisclosureResponse = {
+    poolKey: string;
+    name: string;
+    description?: string | null;
+    currency: string;
+    singlePullCost: number;
+    tenPullCost?: number | null;
+    totalWeight: number;
+    hardPityPull: number;
+    adventurerPassHardPityPull?: number | null;
+    softPityPull?: number | null;
+    guaranteeType: string;
+    stockPolicy: string;
+    items: SummonDisclosureItem[];
+};
