@@ -8,6 +8,7 @@ import { useShop } from "@/hooks/useShop";
 import { useInventory } from "@/hooks/useInventory";
 import { usePurchase } from "@/hooks/usePurchase";
 import { ItemVisual } from "@/components/ItemVisual";
+import { LegalFooter } from "@/components/LegalFooter";
 import { MainWrapper } from "@/components/MainWrapper";
 import type { ShopItem } from "@/types/shop";
 
@@ -142,6 +143,8 @@ export default function ShopPage() {
             })}
           </div>
         )}
+
+        <LegalFooter />
       </div>
 
       {/* purchase confirm modal */}
