@@ -1,8 +1,10 @@
+export type ShopItemCurrency = 'GUILD_COIN' | 'RUNE';
+
 export type ShopItem = {
     itemId: string;
     name: string;
     description: string;
-    currency: 'GUILD_COIN' | 'RUNE';
+    currency: ShopItemCurrency;
     price: number;
     category: 'EVOLUTION' | 'SOUL_PACK';
     iconEmoji: string;
@@ -12,6 +14,7 @@ export type ShopItem = {
 export type ListShopResponse = {
     items: ShopItem[];
     guildCoinBalance: number;
+    runeBalance: number;
 };
 
 export type PurchaseRequest = {
@@ -23,4 +26,6 @@ export type PurchaseResponse = {
     itemName: string;
     itemQuantity: number;
     guildCoinBalance: number;
+    runeBalance: number;
+    acquiredSkinId?: string | null;
 };
