@@ -43,3 +43,13 @@ export type SubscriptionStatus = {
   cancelScheduled: boolean;
   entitled: boolean;
 };
+
+export type CreateSubscriptionCheckoutRequest = {
+  plan: "ADVENTURER_PASS";
+  idempotencyKey: string;
+};
+
+export type CreateSubscriptionCheckoutResponse = {
+  subscriptionId: string;
+  checkoutUrl: string;
+};
