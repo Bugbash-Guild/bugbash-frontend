@@ -10,12 +10,16 @@ const fetcher = async (url: string) => {
   return fetchJson<BillingWallet>(url, { cache: "no-store" }, "billing/wallet");
 };
 
-export function useWallet(enabled: boolean) {
+type UseWalletOptions = {
+  refreshIntervalMs?: number;
+};
+
+export function useWallet(enabled: boolean, options: UseWalletOptions = {}) {
   const { data, error, isLoading, mutate } = useSWR<BillingWallet>(
     enabled ? "/api/billing/wallet" : null,
     fetcher,
     {
-      refreshInterval: 60_000,
+      refreshInterval: options.refreshIntervalMs ?? 60_000,
       revalidateOnFocus: true,
       shouldRetryOnError: false,
     },

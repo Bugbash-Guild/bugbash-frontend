@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { PendingGrantBanner } from "@/components/billing/PendingGrantBanner";
 import { SideBar } from "@/components/SideBar";
 
 export function MainWrapper({ children }: { children: React.ReactNode }) {
@@ -14,7 +15,10 @@ export function MainWrapper({ children }: { children: React.ReactNode }) {
         }}
       >
         <SideBar />
-        <main className="flex-1 bg-bg overflow-y-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>{children}</main>
+        <main className="flex-1 bg-bg overflow-y-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+          <PendingGrantBanner />
+          {children}
+        </main>
       </div>
     </div>
   );
