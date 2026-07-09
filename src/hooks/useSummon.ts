@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { mapSummonPullErrorMessage } from '@/lib/summonPity';
 import type { SummonOnceResponse, SummonTenResponse } from '@/types/summon';
 
 type SummonError = {
@@ -17,15 +18,22 @@ export function useSummon() {
         setError(null);
     }
 
+    async function readError(res: Response): Promise<SummonError> {
+        const errBody = await res.json().catch(() => ({ error: `${res.status}` }));
+        const serverMessage = (errBody as { error?: string }).error ?? `HTTP ${res.status}`;
+        return {
+            status: res.status,
+            message: mapSummonPullErrorMessage(res.status, serverMessage),
+        };
+    }
+
     async function pullOnce(): Promise<SummonOnceResponse> {
         setLoading(true);
         setError(null);
         try {
             const res = await fetch('/api/summon/pull', { method: 'POST' });
             if (!res.ok) {
-                const errBody = await res.json().catch(() => ({ error: `${res.status}` }));
-                const errMsg = (errBody as { error?: string }).error ?? `HTTP ${res.status}`;
-                const err: SummonError = { status: res.status, message: errMsg };
+                const err = await readError(res);
                 setError(err);
                 throw err;
             }
@@ -41,9 +49,7 @@ export function useSummon() {
         try {
             const res = await fetch('/api/summon/pull10', { method: 'POST' });
             if (!res.ok) {
-                const errBody = await res.json().catch(() => ({ error: `${res.status}` }));
-                const errMsg = (errBody as { error?: string }).error ?? `HTTP ${res.status}`;
-                const err: SummonError = { status: res.status, message: errMsg };
+                const err = await readError(res);
                 setError(err);
                 throw err;
             }

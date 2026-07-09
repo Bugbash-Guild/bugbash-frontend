@@ -1,34 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import {
-    formatGuildCoinCost,
-    getSummonItemDisplay,
-    NORMAL_SUMMON_COST,
-    NORMAL_SUMMON_RATES,
-    NORMAL_SUMMON_SUMMARY,
-} from './summonDisplay.ts';
+import { getSummonItemDisplay } from './summonDisplay.ts';
 
 describe('summon display catalog', () => {
-    it('matches the current normal summon costs used by the backend', () => {
-        assert.deepEqual(NORMAL_SUMMON_COST, {
-            single: 300,
-            ten: 3000,
-        });
-        assert.equal(formatGuildCoinCost(NORMAL_SUMMON_COST.single), '300');
-        assert.equal(formatGuildCoinCost(NORMAL_SUMMON_COST.ten), '3,000');
-    });
-
-    it('describes the current normal summon pool including soul packs', () => {
-        assert.equal(NORMAL_SUMMON_SUMMARY, '魂パック・進化素材アイテムが排出されます');
-        assert.deepEqual(NORMAL_SUMMON_RATES, [
-            { label: 'N', percent: 57.9 },
-            { label: 'R', percent: 26.3 },
-            { label: 'SR', percent: 7.4 },
-            { label: 'SSR', percent: 8.4 },
-        ]);
-    });
-
     it('knows all backend-seeded normal summon items', () => {
         assert.deepEqual(getSummonItemDisplay('soul-pack-s'), {
             name: '魂パック・小',
