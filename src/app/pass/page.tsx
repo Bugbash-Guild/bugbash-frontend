@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { AgeVerificationModal } from "@/components/billing/AgeVerificationModal";
+import { SubscriptionStatusSummary } from "@/components/billing/SubscriptionStatusSummary";
 import { LegalFooter } from "@/components/LegalFooter";
 import { MainWrapper } from "@/components/MainWrapper";
 import { WalletBadge } from "@/components/WalletBadge";
@@ -14,7 +15,6 @@ import { clearAgeVerification } from "@/lib/billing/ageVerification";
 import { writePendingOrder } from "@/lib/billing/pendingGrant";
 import { readBillingErrorMessage } from "@/lib/billing/runeCheckout";
 import {
-  ADVENTURER_PASS_PLAN,
   buildSubscriptionCheckoutRequest,
   clearSubscriptionCheckoutIdempotencyKey,
   formatPassPrice,
@@ -271,38 +271,15 @@ export default function PassPage() {
             </div>
             <h2 className="text-[16px] font-semibold text-text">現在の状態</h2>
 
-            {subscriptionLoading ? (
-              <div className="mt-4 h-24 border border-line bg-bg" />
-            ) : (
-              <>
-                <dl className="mt-4 space-y-3 text-[12px]">
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-text-faint">プラン</dt>
-                    <dd className="text-text">
-                      {effectiveSubscription.plan ?? ADVENTURER_PASS_PLAN}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-text-faint">ステータス</dt>
-                    <dd className="text-text">{effectiveSubscription.status}</dd>
-                  </div>
-                  {presentation.periodEndText && (
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-text-faint">期間</dt>
-                      <dd className="max-w-56 text-right text-text">
-                        {presentation.periodEndText}
-                      </dd>
-                    </div>
-                  )}
-                </dl>
+            <SubscriptionStatusSummary
+              loading={subscriptionLoading}
+              subscription={effectiveSubscription}
+            />
 
+            {!subscriptionLoading && (
+              <>
                 {subscribed ? (
                   <div className="mt-5 space-y-3">
-                    {effectiveSubscription.cancelScheduled && (
-                      <div className="border border-gold/40 bg-gold/10 px-3 py-2 text-[12px] leading-5 text-gold">
-                        {presentation.periodEndText}
-                      </div>
-                    )}
                     {presentation.cancelButtonVisible && (
                       <button
                         className="w-full border border-pink/50 px-3 py-2 text-[12px] font-semibold text-pink hover:bg-pink hover:text-bg disabled:cursor-not-allowed disabled:opacity-40"
