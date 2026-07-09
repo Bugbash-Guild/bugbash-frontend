@@ -15,3 +15,31 @@ export type AgeVerificationResponse = {
   ageGroup: AgeGroup;
   monthlyLimitJpy: number;
 };
+
+export type RuneProduct = {
+  id: string;
+  sku: string;
+  priceJpyTaxIncluded: number;
+  runeAmount: number;
+  bonusRune: number;
+  totalRune: number;
+  firstPurchaseOnly: boolean;
+};
+
+export type CreateCheckoutRequest = {
+  runeProductId: string;
+  idempotencyKey: string;
+};
+
+export type CreateCheckoutResponse = {
+  orderId: string;
+  checkoutUrl: string;
+};
+
+export type SubscriptionStatus = {
+  plan: string | null;
+  status: string;
+  currentPeriodEnd: string | null;
+  cancelScheduled: boolean;
+  entitled: boolean;
+};
