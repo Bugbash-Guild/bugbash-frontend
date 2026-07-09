@@ -184,9 +184,9 @@ export default function BillingReturnPage() {
             <div className="mt-4">
               <Link
                 className="border border-accent px-3 py-1.5 text-[12px] text-accent hover:bg-accent hover:text-bg"
-                href="/shop"
+                href={confirmedType === "subscription" ? "/pass" : "/shop"}
               >
-                ショップへ戻る
+                {confirmedType === "subscription" ? "パス画面へ" : "ショップへ戻る"}
               </Link>
             </div>
           )}
