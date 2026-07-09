@@ -7,16 +7,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
 import { usePityCounter } from "@/hooks/usePityCounter";
 import { useSummon } from "@/hooks/useSummon";
+import { useSummonDisclosure } from "@/hooks/useSummonDisclosure";
 import { useSummonHistory } from "@/hooks/useSummonHistory";
+import { DisclosureModal } from "@/components/billing/DisclosureModal";
 import { ItemVisual } from "@/components/ItemVisual";
 import { MainWrapper } from "@/components/MainWrapper";
-import {
-  formatGuildCoinCost,
-  getSummonItemDisplay,
-  NORMAL_SUMMON_COST,
-  NORMAL_SUMMON_RATES,
-  NORMAL_SUMMON_SUMMARY,
-} from "./summonDisplay";
+import { PityMeter } from "@/components/summon/PityMeter";
+import { formatSummonCurrencyCost } from "@/lib/summonPity";
+import { getSummonItemDisplay } from "./summonDisplay";
 import type {
   ItemRarity,
   SummonHistoryEntry,
@@ -39,9 +37,6 @@ const RARITY_BG: Record<ItemRarity, string> = {
   SSR: "bg-[#2a1e06]",
 };
 
-const SOFT_PITY_THRESHOLD = 60;
-const HARD_PITY_LIMIT = 80;
-
 type SummonResult =
   | { type: "once"; data: SummonOnceResponse }
   | { type: "ten"; data: SummonTenResponse };
@@ -50,10 +45,16 @@ export default function SummonPage() {
   const router = useRouter();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const { hero, refetch: refetchHero } = useHero(isAuthenticated);
-  const { pity, refetch: refetchPity } = usePityCounter(isAuthenticated);
+  const { pity, error: pityError, refetch: refetchPity } = usePityCounter(isAuthenticated);
+  const {
+    disclosure,
+    error: disclosureError,
+    loading: disclosureLoading,
+  } = useSummonDisclosure(isAuthenticated, "normal");
   const { entries, refetch: refetchHistory } = useSummonHistory(isAuthenticated);
   const { pullOnce, pullTen, loading: summoning, error: summonError, reset } = useSummon();
 
+  const [disclosureOpen, setDisclosureOpen] = useState(false);
   const [result, setResult] = useState<SummonResult | null>(null);
 
   useEffect(() => {
@@ -104,9 +105,6 @@ export default function SummonPage() {
     }
   }
 
-  const pullCount = pity?.pullCount ?? 0;
-  const hardPityProgress = Math.min(100, (pullCount / HARD_PITY_LIMIT) * 100);
-
   return (
     <MainWrapper>
       <div className="px-9 py-6 min-h-screen">
@@ -127,61 +125,28 @@ export default function SummonPage() {
               <div className="text-[10px] uppercase tracking-[0.12em] text-text-faint mb-3">
                 GACHA POOL
               </div>
-              <div className="text-[15px] text-text font-semibold mb-1">通常召喚</div>
+              <div className="text-[15px] text-text font-semibold mb-1">
+                {disclosure?.name ?? "通常召喚"}
+              </div>
               <div className="text-[12px] text-text-dim mb-3">
-                {NORMAL_SUMMON_SUMMARY}
+                {disclosure?.description ?? "提供割合を確認しています。"}
               </div>
-              <div className="flex items-center gap-4 text-[12px]">
-                {NORMAL_SUMMON_RATES.map((rate) => (
-                  <span key={rate.label}>
-                    <span className={RARITY_COLOR[rate.label]}>{rate.label}</span>
-                    <span className="text-text-faint ml-1">{rate.percent}%</span>
-                  </span>
-                ))}
-              </div>
+              <button
+                className="border border-line px-3 py-1.5 text-[12px] text-accent hover:border-accent hover:bg-accent hover:text-bg"
+                onClick={() => setDisclosureOpen(true)}
+                type="button"
+              >
+                提供割合について
+              </button>
             </div>
 
             {/* pity counter */}
-            <div className="border border-line rounded p-4">
-              <div className="text-[10px] uppercase tracking-[0.12em] text-text-faint mb-3">
-                PITY COUNTER
-              </div>
-              <div className="flex items-baseline gap-2 mb-3">
-                <span className="text-[32px] text-text font-semibold tabular-nums">
-                  {pullCount}
-                </span>
-                <span className="text-[13px] text-text-dim">/ {HARD_PITY_LIMIT} pulls</span>
-              </div>
-              <div className="w-full h-1.5 bg-bg-elev-2 rounded-full overflow-hidden mb-2">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    pity?.isHardPity
-                      ? "bg-pink"
-                      : pity?.isSoftPity
-                        ? "bg-gold"
-                        : "bg-accent-dim"
-                  }`}
-                  style={{ width: `${hardPityProgress}%` }}
-                />
-              </div>
-              <div className="flex gap-2 text-[11px]">
-                {pity?.isHardPity && (
-                  <span className="px-2 py-0.5 rounded bg-[#2a1020] text-pink">
-                    HARD PITY
-                  </span>
-                )}
-                {pity?.isSoftPity && !pity.isHardPity && (
-                  <span className="px-2 py-0.5 rounded bg-[#2a2010] text-gold">
-                    SOFT PITY
-                  </span>
-                )}
-                {!pity?.isSoftPity && !pity?.isHardPity && (
-                  <span className="text-text-faint">
-                    soft pity at {SOFT_PITY_THRESHOLD} · hard pity at {HARD_PITY_LIMIT}
-                  </span>
-                )}
-              </div>
-            </div>
+            <PityMeter
+              disclosure={disclosure}
+              error={pityError ?? disclosureError}
+              loading={disclosureLoading}
+              pity={pity}
+            />
 
             {/* coin balance */}
             <div className="flex items-center gap-2 text-[13px] px-1">
@@ -196,14 +161,14 @@ export default function SummonPage() {
             <div className="flex gap-3">
               <button
                 onClick={handlePullOnce}
-                disabled={summoning}
+                disabled={summoning || !disclosure}
                 className="flex-1 py-3 rounded border border-accent text-accent text-[13px] hover:bg-accent hover:text-bg disabled:opacity-40 transition-colors"
               >
                 {summoning ? "召喚中…" : "[ 召喚 × 1 ]"}
               </button>
               <button
                 onClick={handlePullTen}
-                disabled={summoning}
+                disabled={summoning || !disclosure}
                 className="flex-1 py-3 rounded border border-gold text-gold text-[13px] hover:bg-gold hover:text-bg disabled:opacity-40 transition-colors"
               >
                 {summoning ? "召喚中…" : "[ 10連召喚 ]"}
@@ -211,8 +176,15 @@ export default function SummonPage() {
             </div>
 
             <div className="text-[11px] text-text-faint px-1">
-              1回: {formatGuildCoinCost(NORMAL_SUMMON_COST.single)} GUILD_COIN · 10連:{" "}
-              {formatGuildCoinCost(NORMAL_SUMMON_COST.ten)} GUILD_COIN
+              {disclosure
+                ? `1回: ${formatSummonCurrencyCost(
+                    disclosure.singlePullCost,
+                    disclosure.currency,
+                  )} · 10連: ${formatSummonCurrencyCost(
+                    disclosure.tenPullCost ?? disclosure.singlePullCost,
+                    disclosure.currency,
+                  )}${disclosure.tenPullCost == null ? "（未提供）" : ""}`
+                : "召喚コストを確認しています"}
             </div>
 
             {/* error */}
@@ -287,6 +259,14 @@ export default function SummonPage() {
             </div>
           </div>
         )}
+
+        <DisclosureModal
+          disclosure={disclosure}
+          error={disclosureError}
+          loading={disclosureLoading}
+          onClose={() => setDisclosureOpen(false)}
+          open={disclosureOpen}
+        />
       </div>
     </MainWrapper>
   );
