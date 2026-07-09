@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -9,11 +10,15 @@ import { usePityCounter } from "@/hooks/usePityCounter";
 import { useSummon } from "@/hooks/useSummon";
 import { useSummonDisclosure } from "@/hooks/useSummonDisclosure";
 import { useSummonHistory } from "@/hooks/useSummonHistory";
+import { useSubscription } from "@/hooks/useSubscription";
 import { DisclosureModal } from "@/components/billing/DisclosureModal";
 import { ItemVisual } from "@/components/ItemVisual";
 import { MainWrapper } from "@/components/MainWrapper";
 import { PityMeter } from "@/components/summon/PityMeter";
-import { formatSummonCurrencyCost } from "@/lib/summonPity";
+import {
+  formatSummonCurrencyCost,
+  selectEffectivePityDisclosure,
+} from "@/lib/summonPity";
 import { getSummonItemDisplay } from "./summonDisplay";
 import type {
   ItemRarity,
@@ -45,17 +50,37 @@ export default function SummonPage() {
   const router = useRouter();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const { hero, refetch: refetchHero } = useHero(isAuthenticated);
-  const { pity, error: pityError, refetch: refetchPity } = usePityCounter(isAuthenticated);
+  const {
+    pity,
+    error: pityError,
+    refetch: refetchPity,
+  } = usePityCounter(isAuthenticated);
   const {
     disclosure,
     error: disclosureError,
     loading: disclosureLoading,
   } = useSummonDisclosure(isAuthenticated, "normal");
-  const { entries, refetch: refetchHistory } = useSummonHistory(isAuthenticated);
-  const { pullOnce, pullTen, loading: summoning, error: summonError, reset } = useSummon();
+  const {
+    subscription,
+    error: subscriptionError,
+    loading: subscriptionLoading,
+  } = useSubscription(isAuthenticated);
+  const { entries, refetch: refetchHistory } =
+    useSummonHistory(isAuthenticated);
+  const {
+    pullOnce,
+    pullTen,
+    loading: summoning,
+    error: summonError,
+    reset,
+  } = useSummon();
 
   const [disclosureOpen, setDisclosureOpen] = useState(false);
   const [result, setResult] = useState<SummonResult | null>(null);
+  const effectiveDisclosure =
+    disclosure && subscription
+      ? selectEffectivePityDisclosure(disclosure, subscription.entitled)
+      : null;
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.replace("/login");
@@ -142,9 +167,9 @@ export default function SummonPage() {
 
             {/* pity counter */}
             <PityMeter
-              disclosure={disclosure}
-              error={pityError ?? disclosureError}
-              loading={disclosureLoading}
+              disclosure={effectiveDisclosure}
+              error={pityError ?? disclosureError ?? subscriptionError}
+              loading={disclosureLoading || subscriptionLoading}
               pity={pity}
             />
 
@@ -161,14 +186,14 @@ export default function SummonPage() {
             <div className="flex gap-3">
               <button
                 onClick={handlePullOnce}
-                disabled={summoning || !disclosure}
+                disabled={summoning || !effectiveDisclosure}
                 className="flex-1 py-3 rounded border border-accent text-accent text-[13px] hover:bg-accent hover:text-bg disabled:opacity-40 transition-colors"
               >
                 {summoning ? "召喚中…" : "[ 召喚 × 1 ]"}
               </button>
               <button
                 onClick={handlePullTen}
-                disabled={summoning || !disclosure}
+                disabled={summoning || !effectiveDisclosure}
                 className="flex-1 py-3 rounded border border-gold text-gold text-[13px] hover:bg-gold hover:text-bg disabled:opacity-40 transition-colors"
               >
                 {summoning ? "召喚中…" : "[ 10連召喚 ]"}
@@ -186,6 +211,13 @@ export default function SummonPage() {
                   )}${disclosure.tenPullCost == null ? "（未提供）" : ""}`
                 : "召喚コストを確認しています"}
             </div>
+
+            <Link
+              className="block border border-line px-3 py-2 text-center text-[12px] text-gold hover:border-gold"
+              href="/summon/limited"
+            >
+              限定召喚へ
+            </Link>
 
             {/* error */}
             {summonError && (
@@ -207,7 +239,10 @@ export default function SummonPage() {
             ) : (
               <div className="space-y-0">
                 {entries.slice(0, 20).map((entry) => (
-                  <HistoryRow key={`${entry.itemId}-${entry.pulledAt}`} entry={entry} />
+                  <HistoryRow
+                    key={`${entry.itemId}-${entry.pulledAt}`}
+                    entry={entry}
+                  />
                 ))}
               </div>
             )}
@@ -240,7 +275,9 @@ export default function SummonPage() {
               <div className="mt-4 text-[11px] text-text-dim space-y-0.5">
                 <div>
                   pity:{" "}
-                  <span className="text-text">{result.data.newPullCount} pulls</span>
+                  <span className="text-text">
+                    {result.data.newPullCount} pulls
+                  </span>
                 </div>
                 <div>
                   残高:{" "}
@@ -282,12 +319,12 @@ function SingleResult({ data }: { data: SummonOnceResponse }) {
         className="mx-auto mb-2 size-14"
         sizes="56px"
       />
-      <div className={`text-[20px] font-bold mb-1 ${RARITY_COLOR[data.rarity]}`}>
+      <div
+        className={`text-[20px] font-bold mb-1 ${RARITY_COLOR[data.rarity]}`}
+      >
         {data.rarity}
       </div>
-      <div className="text-[15px] text-text">
-        {display.name}
-      </div>
+      <div className="text-[15px] text-text">{display.name}</div>
     </div>
   );
 }
@@ -314,7 +351,9 @@ function SummonCard({ item }: { item: SummonItem }) {
         className="mx-auto size-7"
         sizes="28px"
       />
-      <div className={`text-[10px] font-bold mt-0.5 ${RARITY_COLOR[item.rarity]}`}>
+      <div
+        className={`text-[10px] font-bold mt-0.5 ${RARITY_COLOR[item.rarity]}`}
+      >
         {item.rarity}
       </div>
     </div>
@@ -339,12 +378,12 @@ function HistoryRow({ entry }: { entry: SummonHistoryEntry }) {
         className="size-5"
         sizes="20px"
       />
-      <span className={`w-8 text-center font-semibold ${RARITY_COLOR[entry.rarity]}`}>
+      <span
+        className={`w-8 text-center font-semibold ${RARITY_COLOR[entry.rarity]}`}
+      >
         {entry.rarity}
       </span>
-      <span className="text-text flex-1">
-        {display.name}
-      </span>
+      <span className="text-text flex-1">{display.name}</span>
       <span className="text-text-faint shrink-0">{label}</span>
     </div>
   );

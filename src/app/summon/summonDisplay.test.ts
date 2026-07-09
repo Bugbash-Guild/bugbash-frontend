@@ -37,4 +37,8 @@ describe('summon display catalog', () => {
             },
         );
     });
+
+    it('turns API-provided limited monster slugs into readable names', () => {
+        assert.equal(getSummonItemDisplay('monster:seasonal-debugger').name, 'Seasonal Debugger');
+    });
 });

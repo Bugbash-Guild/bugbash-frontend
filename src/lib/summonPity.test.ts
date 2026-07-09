@@ -5,8 +5,12 @@ import {
   buildPityMeterPresentation,
   formatSummonCurrencyCost,
   mapSummonPullErrorMessage,
+  selectEffectivePityDisclosure,
 } from "./summonPity";
-import type { PityCounterResponse, SummonDisclosureResponse } from "@/types/summon";
+import type {
+  PityCounterResponse,
+  SummonDisclosureResponse,
+} from "@/types/summon";
 
 const disclosure: SummonDisclosureResponse = {
   adventurerPassHardPityPull: 60,
@@ -42,6 +46,16 @@ describe("summon pity presentation", () => {
     });
   });
 
+  it("selects the API-provided pass pity for entitled subscribers", () => {
+    const effective = selectEffectivePityDisclosure(disclosure, true);
+
+    assert.equal(effective.hardPityPull, 60);
+    assert.equal(
+      selectEffectivePityDisclosure(disclosure, false).hardPityPull,
+      70,
+    );
+  });
+
   it("keeps pity copy factual without urgency wording", () => {
     const presentation = buildPityMeterPresentation(
       {
@@ -60,7 +74,10 @@ describe("summon pity presentation", () => {
 
   it("formats summon costs from disclosure currency values", () => {
     assert.equal(formatSummonCurrencyCost(300, "GUILD_COIN"), "300 GUILD_COIN");
-    assert.equal(formatSummonCurrencyCost(3000, "GUILD_COIN"), "3,000 GUILD_COIN");
+    assert.equal(
+      formatSummonCurrencyCost(3000, "GUILD_COIN"),
+      "3,000 GUILD_COIN",
+    );
     assert.equal(formatSummonCurrencyCost(30, "RUNE"), "30 RUNE");
   });
 

@@ -23,7 +23,7 @@ export type SummonTenResponse = {
 export type PityCounterResponse = {
     poolKey: string;
     pullCount: number;
-    isSoftPity: boolean;
+    isSoftPity?: boolean;
     isHardPity: boolean;
 };
 
@@ -36,6 +36,16 @@ export type SummonHistoryEntry = {
 
 export type SummonHistoryResponse = {
     entries: SummonHistoryEntry[];
+};
+
+export type LimitedSummonItem = SummonItem & {
+    isNew: boolean;
+};
+
+export type LimitedSummonResponse = {
+    results: LimitedSummonItem[];
+    newPullCount: number;
+    runesRemaining: number;
 };
 
 export type SummonDisclosureItem = {

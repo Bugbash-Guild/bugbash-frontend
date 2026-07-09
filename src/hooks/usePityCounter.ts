@@ -10,9 +10,12 @@ const fetcher = async (url: string): Promise<PityCounterResponse> => {
     return fetchJson<PityCounterResponse>(url, { cache: 'no-store' }, 'summon/pity');
 };
 
-export function usePityCounter(enabled: boolean) {
+type PityCounterScope = 'limited' | 'normal';
+
+export function usePityCounter(enabled: boolean, scope: PityCounterScope = 'normal') {
+    const url = scope === 'limited' ? '/api/summon/limited/pity' : '/api/summon/pity';
     const { data, error, isLoading, mutate } = useSWR<PityCounterResponse>(
-        enabled ? '/api/summon/pity' : null,
+        enabled ? url : null,
         fetcher,
         {
             revalidateOnFocus: false,

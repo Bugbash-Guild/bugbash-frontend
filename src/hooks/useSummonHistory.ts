@@ -10,9 +10,15 @@ const fetcher = async (url: string): Promise<SummonHistoryResponse> => {
     return fetchJson<SummonHistoryResponse>(url, { cache: 'no-store' }, 'summon/history');
 };
 
-export function useSummonHistory(enabled: boolean) {
+type SummonHistoryScope = 'limited' | 'normal';
+
+export function useSummonHistory(enabled: boolean, scope: SummonHistoryScope = 'normal') {
+    const url =
+        scope === 'limited'
+            ? '/api/summon/history?poolKey=LIMITED&limit=10'
+            : '/api/summon/history';
     const { data, error, isLoading, mutate } = useSWR<SummonHistoryResponse>(
-        enabled ? '/api/summon/history' : null,
+        enabled ? url : null,
         fetcher,
         {
             revalidateOnFocus: false,
@@ -26,6 +32,6 @@ export function useSummonHistory(enabled: boolean) {
         entries: data?.entries ?? [],
         loading: isLoading,
         error: error && !isUnauthorizedApiError(error) ? String(error.message ?? error) : null,
-        refetch: () => mutate(),
+        refetch: async () => (await mutate())?.entries ?? [],
     };
 }
