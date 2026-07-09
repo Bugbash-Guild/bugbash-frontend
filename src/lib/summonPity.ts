@@ -1,4 +1,7 @@
-import type { PityCounterResponse, SummonDisclosureResponse } from "@/types/summon";
+import type {
+  PityCounterResponse,
+  SummonDisclosureResponse,
+} from "@/types/summon";
 
 export type PityMeterTone = "hard" | "normal" | "soft";
 
@@ -10,8 +13,23 @@ export type PityMeterPresentation = {
   tone: PityMeterTone;
 };
 
-export function formatSummonCurrencyCost(cost: number, currency: string): string {
+export function formatSummonCurrencyCost(
+  cost: number,
+  currency: string,
+): string {
   return `${cost.toLocaleString("ja-JP")} ${currency}`;
+}
+
+export function selectEffectivePityDisclosure(
+  disclosure: SummonDisclosureResponse,
+  passEntitled: boolean,
+): SummonDisclosureResponse {
+  if (!passEntitled || disclosure.adventurerPassHardPityPull == null)
+    return disclosure;
+  return {
+    ...disclosure,
+    hardPityPull: disclosure.adventurerPassHardPityPull,
+  };
 }
 
 export function buildPityMeterPresentation(
@@ -40,7 +58,10 @@ export function buildPityMeterPresentation(
   };
 }
 
-export function mapSummonPullErrorMessage(status: number, errorMessage: string): string {
+export function mapSummonPullErrorMessage(
+  status: number,
+  errorMessage: string,
+): string {
   if (status === 401) {
     return "セッションが切れました。再度ログインしてください。";
   }
