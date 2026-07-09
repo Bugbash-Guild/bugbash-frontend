@@ -20,6 +20,26 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+    files: ["src/components/prestige/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [
+                "@/components/billing/**",
+                "../billing/**",
+                "../../components/billing/**",
+              ],
+              message: "名声UIから課金UIを参照しないでください。",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;
