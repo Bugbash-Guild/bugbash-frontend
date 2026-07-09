@@ -53,3 +53,14 @@ export type CreateSubscriptionCheckoutResponse = {
   subscriptionId: string;
   checkoutUrl: string;
 };
+
+export type PurchaseOrderHistory = {
+  orderId: string;
+  runeProductId: string;
+  amountJpyTaxIncluded: number;
+  runeAmount: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+  paidAt: string | null;
+};
