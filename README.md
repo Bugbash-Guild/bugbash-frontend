@@ -35,6 +35,12 @@ export R2_BUCKET=bugbash-assets-prod
 npm run assets:upload:r2
 ```
 
+スキンのcard/OGP/widget派生生成を含め、buildからR2アップロードまで続けて実行する場合:
+
+```bash
+npm run assets:publish:r2
+```
+
 GitHub Actions の `Upload Game Assets to R2` workflow からも手動実行できます。
 詳しい投入ルールは `game-assets/README.md` を見てください。
 

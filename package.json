@@ -5,6 +5,7 @@
   "scripts": {
     "assets:build": "tsx scripts/build-game-assets.ts",
     "assets:intake:skin": "tsx scripts/intake-skin-assets.ts",
+    "assets:publish:r2": "npm run assets:build && npm run assets:upload:r2",
     "assets:upload:r2": "tsx scripts/upload-game-assets-r2.ts",
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",

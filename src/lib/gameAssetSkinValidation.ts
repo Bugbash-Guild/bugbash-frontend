@@ -47,6 +47,10 @@ function parseSkinAssetPath(inputKey: string): SkinAssetDescriptor | null {
   };
 }
 
+export function isAppendixASkinAssetInputKey(inputKey: string): boolean {
+  return parseSkinAssetPath(inputKey) !== null;
+}
+
 function isSkinPath(inputKey: string): boolean {
   return SKIN_PATH_PREFIX.test(toPosixPath(inputKey));
 }
