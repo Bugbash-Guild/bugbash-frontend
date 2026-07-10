@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "assets:build": "tsx scripts/build-game-assets.ts",
+    "assets:generate:skin": "tsx scripts/generate-skin-candidates.ts",
     "assets:intake:skin": "tsx scripts/intake-skin-assets.ts",
     "assets:publish:r2": "npm run assets:build && npm run assets:upload:r2",
     "assets:review:skin": "tsx scripts/review-skin-candidates.ts",

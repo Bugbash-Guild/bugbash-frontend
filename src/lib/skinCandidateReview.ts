@@ -60,6 +60,7 @@ export type SkinReviewCliOptions = {
   candidateDir: string;
   force: boolean;
   monsterSlug: string;
+  openReview: boolean;
   port: number;
   publish: boolean;
   skinId: string;
@@ -252,6 +253,7 @@ export function parseSkinReviewCliOptions(
     candidateDir,
     force: args.includes("--force"),
     monsterSlug,
+    openReview: args.includes("--open"),
     port,
     publish: !args.includes("--no-upload"),
     skinId,
