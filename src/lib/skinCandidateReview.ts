@@ -15,8 +15,8 @@ import {
   type SkinAssetIntakeResult,
 } from "./skinAssetIntake";
 import {
-  stageApprovedSkinAtomically,
-  withSkinPublicationLock,
+  withApprovedSkinStaged,
+  withGameAssetPublicationLock,
 } from "./skinAssetPublication";
 
 export type SkinReviewCandidate = {
@@ -47,12 +47,13 @@ type FinalizeSkinSelectionOptions = {
   force: boolean;
   inspectImage?: (filePath: string) => Promise<SkinAssetImageMetadata>;
   monsterSlug: string;
+  sourceDir: string;
+  publicationKey: string;
   publish: boolean;
   runBuild: () => Promise<void>;
   runUpload: () => Promise<void>;
   selections: SkinStageSelections;
   skinId: string;
-  sourceDir: string;
 };
 
 export type SkinReviewCliOptions = {
@@ -150,16 +151,20 @@ export async function finalizeSkinSelection({
   force,
   inspectImage = inspectWithSharp,
   monsterSlug,
+  sourceDir,
+  publicationKey,
   publish,
   runBuild,
   runUpload,
   selections,
   skinId,
-  sourceDir,
 }: FinalizeSkinSelectionOptions): Promise<SkinAssetIntakeResult> {
   const plan = planSkinSelection(catalogue, selections);
-  return withSkinPublicationLock(
-    { monsterSlug, skinId, sourceDir },
+  return withGameAssetPublicationLock(
+    {
+      label: `${monsterSlug}/${skinId}`,
+      publicationKey,
+    },
     async () => {
       const approvedDir = await mkdtemp(
         path.join(os.tmpdir(), "bugbash-approved-skin-"),
@@ -180,16 +185,20 @@ export async function finalizeSkinSelection({
             await inspectImage(path.join(approvedDir, `${stage}.png`)),
           );
         }
-        const result = await stageApprovedSkinAtomically({
-          approvedDir,
-          force,
-          monsterSlug,
-          skinId,
-          sourceDir,
-        });
-        await runBuild();
-        if (publish) await runUpload();
-        return result;
+        return await withApprovedSkinStaged(
+          {
+            approvedDir,
+            force,
+            monsterSlug,
+            skinId,
+            sourceDir,
+          },
+          async (result) => {
+            await runBuild();
+            if (publish) await runUpload();
+            return result;
+          },
+        );
       } finally {
         await rm(approvedDir, { force: true, recursive: true });
       }

@@ -1,5 +1,12 @@
 import assert from "node:assert/strict";
-import { access, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import {
+  access,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  writeFile,
+} from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, it } from "node:test";
@@ -120,6 +127,7 @@ describe("skin candidate review", () => {
       force: false,
       inspectImage: validMetadata,
       monsterSlug: "token-mimic",
+      publicationKey: sourceDir,
       publish: true,
       runBuild: async () => {
         await access(
@@ -146,6 +154,7 @@ describe("skin candidate review", () => {
   it("stops after the local build when R2 upload is disabled", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "bugbash-skin-review-"));
     const candidateDir = path.join(root, "candidates");
+    const sourceDir = path.join(root, "source");
     await createCandidateTree(candidateDir);
     const catalogue = await discoverSkinCandidates({
       candidateDir,
@@ -158,6 +167,7 @@ describe("skin candidate review", () => {
       force: false,
       inspectImage: validMetadata,
       monsterSlug: "token-mimic",
+      publicationKey: sourceDir,
       publish: false,
       runBuild: async () => {
         calls.push("build");
@@ -167,7 +177,7 @@ describe("skin candidate review", () => {
         APPENDIX_A_SKIN_STAGES.map((stage) => [stage, "candidate-a.png"]),
       ),
       skinId: "kernel-panic",
-      sourceDir: path.join(root, "source"),
+      sourceDir,
     });
 
     assert.deepEqual(calls, ["build"]);
@@ -190,6 +200,7 @@ describe("skin candidate review", () => {
       force: false,
       inspectImage: validMetadata,
       monsterSlug: "token-mimic",
+      publicationKey: sourceDir,
       publish: true,
       selections,
       skinId: "kernel-panic",
@@ -227,7 +238,7 @@ describe("skin candidate review", () => {
     assert.equal(uploadCalls, 2);
   });
 
-  it("locks one skin across publication and never mixes concurrent selections", async () => {
+  it("serializes the shared asset pipeline across different skins", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "bugbash-skin-review-"));
     const candidateDirA = path.join(root, "candidates-a");
     const candidateDirB = path.join(root, "candidates-b");
@@ -261,6 +272,7 @@ describe("skin candidate review", () => {
       force: false,
       inspectImage: validMetadata,
       monsterSlug: "token-mimic",
+      publicationKey: sourceDir,
       publish: false,
       runBuild: async () => {
         markBuildStarted?.();
@@ -268,7 +280,7 @@ describe("skin candidate review", () => {
       },
       runUpload: async () => undefined,
       selections,
-      skinId: "kernel-panic",
+      skinId: "kernel-panic-a",
       sourceDir,
     });
     await buildStarted;
@@ -280,11 +292,12 @@ describe("skin candidate review", () => {
           force: false,
           inspectImage: validMetadata,
           monsterSlug: "token-mimic",
+          publicationKey: sourceDir,
           publish: false,
           runBuild: async () => undefined,
           runUpload: async () => undefined,
           selections,
-          skinId: "kernel-panic",
+          skinId: "kernel-panic-b",
           sourceDir,
         }),
       /publication is already running/,
@@ -297,7 +310,7 @@ describe("skin candidate review", () => {
         await readFile(
           path.join(
             sourceDir,
-            "monsters/token-mimic/skins/kernel-panic",
+            "monsters/token-mimic/skins/kernel-panic-a",
             `${stage}.png`,
           ),
           "utf8",
@@ -331,6 +344,7 @@ describe("skin candidate review", () => {
     const commonOptions = {
       inspectImage: validMetadata,
       monsterSlug: "token-mimic",
+      publicationKey: sourceDir,
       publish: false,
       runBuild: async () => undefined,
       runUpload: async () => undefined,
@@ -352,6 +366,45 @@ describe("skin candidate review", () => {
           force: false,
         }),
       /destination already exists/,
+    );
+    await assert.rejects(
+      () =>
+        finalizeSkinSelection({
+          ...commonOptions,
+          catalogue: catalogueB,
+          force: true,
+          runBuild: async () => {
+            const entries = await readdir(
+              path.join(sourceDir, "monsters/token-mimic/skins"),
+            );
+            assert.equal(entries.includes("kernel-panic"), true);
+            assert.equal(
+              entries.some((entry) =>
+                entry.startsWith(".kernel-panic-backup-"),
+              ),
+              true,
+            );
+            throw new Error("build failed");
+          },
+        }),
+      /build failed/,
+    );
+    for (const stage of APPENDIX_A_SKIN_STAGES) {
+      assert.equal(
+        await readFile(
+          path.join(
+            sourceDir,
+            "monsters/token-mimic/skins/kernel-panic",
+            `${stage}.png`,
+          ),
+          "utf8",
+        ),
+        `${stage}-a`,
+      );
+    }
+    assert.deepEqual(
+      await readdir(path.join(sourceDir, "monsters/token-mimic/skins")),
+      ["kernel-panic"],
     );
     await finalizeSkinSelection({
       ...commonOptions,
@@ -399,6 +452,7 @@ describe("skin candidate review", () => {
             width: 512,
           }),
           monsterSlug: "token-mimic",
+          publicationKey: sourceDir,
           publish: false,
           runBuild: async () => assert.fail("build must not run"),
           runUpload: async () => assert.fail("upload must not run"),

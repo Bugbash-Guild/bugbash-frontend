@@ -5,9 +5,9 @@ import {
   mkdtemp,
   readFile,
   readdir,
-  realpath,
   rename,
   rm,
+  stat,
   writeFile,
 } from "node:fs/promises";
 import os from "node:os";
@@ -19,20 +19,26 @@ import {
   type SkinAssetIntakeResult,
 } from "./skinAssetIntake";
 
-type SkinPublicationTarget = {
+type GameAssetPublicationLockOptions = {
+  label: string;
+  publicationKey: string;
+};
+
+type StageApprovedSkinOptions = {
+  approvedDir: string;
+  force: boolean;
   monsterSlug: string;
   skinId: string;
   sourceDir: string;
 };
 
-type StageApprovedSkinOptions = SkinPublicationTarget & {
-  approvedDir: string;
-  force: boolean;
-};
-
 type ExistingSkinState = "missing" | "matching" | "conflict";
 
+export const BUGBASH_GAME_ASSET_PUBLICATION_KEY =
+  "bugbash-frontend/shared-game-assets-pipeline-v1";
+
 const LOCK_OWNER_FILE = "owner.json";
+const OWNER_METADATA_GRACE_MS = 30_000;
 const EXPECTED_SKIN_FILE_NAMES = APPENDIX_A_SKIN_STAGES.map(
   (stage) => `${stage}.png`,
 ).sort();
@@ -55,6 +61,23 @@ function isProcessRunning(pid: number): boolean {
   }
 }
 
+export function gameAssetPublicationLockDir(publicationKey: string): string {
+  const lockHash = createHash("sha256").update(publicationKey).digest("hex");
+  return path.join(
+    os.tmpdir(),
+    `bugbash-game-asset-publication-${lockHash}.lock`,
+  );
+}
+
+async function ownerlessLockIsStale(lockDir: string): Promise<boolean> {
+  try {
+    const lockStats = await stat(lockDir);
+    return Date.now() - lockStats.mtimeMs >= OWNER_METADATA_GRACE_MS;
+  } catch (error) {
+    return errorCode(error) === "ENOENT";
+  }
+}
+
 async function removeAbandonedLock(lockDir: string): Promise<boolean> {
   let owner: unknown;
   try {
@@ -62,24 +85,20 @@ async function removeAbandonedLock(lockDir: string): Promise<boolean> {
       await readFile(path.join(lockDir, LOCK_OWNER_FILE), "utf8"),
     );
   } catch {
-    return false;
+    if (!(await ownerlessLockIsStale(lockDir))) return false;
   }
 
-  if (
-    typeof owner !== "object" ||
-    owner === null ||
-    !("pid" in owner) ||
-    typeof owner.pid !== "number"
-  ) {
-    return false;
-  }
-  if (
-    !Number.isInteger(owner.pid) ||
-    owner.pid < 1 ||
-    isProcessRunning(owner.pid)
-  ) {
-    return false;
-  }
+  const ownerPid =
+    typeof owner === "object" &&
+    owner !== null &&
+    "pid" in owner &&
+    typeof owner.pid === "number" &&
+    Number.isInteger(owner.pid) &&
+    owner.pid > 0
+      ? owner.pid
+      : null;
+  if (ownerPid !== null && isProcessRunning(ownerPid)) return false;
+  if (ownerPid === null && !(await ownerlessLockIsStale(lockDir))) return false;
 
   const abandonedDir = `${lockDir}.abandoned-${randomUUID()}`;
   try {
@@ -91,24 +110,11 @@ async function removeAbandonedLock(lockDir: string): Promise<boolean> {
   return true;
 }
 
-async function publicationLockDir({
-  monsterSlug,
-  skinId,
-  sourceDir,
-}: SkinPublicationTarget): Promise<string> {
-  await mkdir(sourceDir, { recursive: true });
-  const canonicalSourceDir = await realpath(sourceDir);
-  const targetHash = createHash("sha256")
-    .update(`${canonicalSourceDir}\0${monsterSlug}\0${skinId}`)
-    .digest("hex");
-  return path.join(os.tmpdir(), `bugbash-skin-publication-${targetHash}.lock`);
-}
-
-export async function withSkinPublicationLock<T>(
-  target: SkinPublicationTarget,
+export async function withGameAssetPublicationLock<T>(
+  { label, publicationKey }: GameAssetPublicationLockOptions,
   action: () => Promise<T>,
 ): Promise<T> {
-  const lockDir = await publicationLockDir(target);
+  const lockDir = gameAssetPublicationLockDir(publicationKey);
   let acquired = false;
 
   for (let attempt = 0; attempt < 2 && !acquired; attempt += 1) {
@@ -118,23 +124,19 @@ export async function withSkinPublicationLock<T>(
     } catch (error) {
       if (errorCode(error) !== "EEXIST") throw error;
       if (attempt > 0 || !(await removeAbandonedLock(lockDir))) {
-        throw new Error(
-          `Skin publication is already running for ${target.monsterSlug}/${target.skinId}`,
-        );
+        throw new Error(`Game asset publication is already running (${label})`);
       }
     }
   }
 
   if (!acquired) {
-    throw new Error(
-      `Skin publication is already running for ${target.monsterSlug}/${target.skinId}`,
-    );
+    throw new Error(`Game asset publication is already running (${label})`);
   }
 
   try {
     await writeFile(
       path.join(lockDir, LOCK_OWNER_FILE),
-      `${JSON.stringify({ pid: process.pid, startedAt: new Date().toISOString() })}\n`,
+      `${JSON.stringify({ label, pid: process.pid, startedAt: new Date().toISOString() })}\n`,
       { flag: "wx" },
     );
     return await action();
@@ -178,30 +180,55 @@ async function existingSkinState(
   return "matching";
 }
 
-export async function stageApprovedSkinAtomically({
-  approvedDir,
-  force,
-  monsterSlug,
-  skinId,
-  sourceDir,
-}: StageApprovedSkinOptions): Promise<SkinAssetIntakeResult> {
+function intakeResult(
+  plan: ReturnType<typeof planSkinAssetIntake>,
+): SkinAssetIntakeResult {
+  return {
+    ...plan,
+    stagedKeys: plan.copies.map((copy) => copy.inputKey),
+  };
+}
+
+async function restorePreviousSkin(
+  targetDir: string,
+  backupDir: string,
+  originalError: unknown,
+): Promise<never> {
+  try {
+    await rm(targetDir, { force: true, recursive: true });
+    await rename(backupDir, targetDir);
+  } catch (restoreError) {
+    throw new AggregateError(
+      [originalError, restoreError],
+      `Skin publication failed; previous assets remain at ${backupDir}`,
+    );
+  }
+  throw originalError;
+}
+
+export async function withApprovedSkinStaged<T>(
+  {
+    approvedDir,
+    force,
+    monsterSlug,
+    skinId,
+    sourceDir,
+  }: StageApprovedSkinOptions,
+  action: (result: SkinAssetIntakeResult) => Promise<T>,
+): Promise<T> {
   const plan = planSkinAssetIntake({
     candidateDir: approvedDir,
     monsterSlug,
     skinId,
     sourceDir,
   });
+  const result = intakeResult(plan);
   const targetDir = path.dirname(plan.copies[0].toPath);
   const parentDir = path.dirname(targetDir);
   await mkdir(parentDir, { recursive: true });
 
   const state = await existingSkinState(targetDir, approvedDir);
-  if (state === "matching") {
-    return {
-      ...plan,
-      stagedKeys: plan.copies.map((copy) => copy.inputKey),
-    };
-  }
+  if (state === "matching") return action(result);
   if (state === "conflict" && !force) {
     throw new Error(`Skin asset destination already exists: ${targetDir}`);
   }
@@ -210,8 +237,6 @@ export async function stageApprovedSkinAtomically({
     path.join(parentDir, `.${skinId}-approved-`),
   );
   let backupDir: string | null = null;
-  let installed = false;
-  let preserveBackup = false;
 
   try {
     // A same-filesystem directory rename exposes all six validated files at once.
@@ -225,43 +250,47 @@ export async function stageApprovedSkinAtomically({
     );
 
     if (state === "conflict") {
-      backupDir = `${targetDir}.backup-${randomUUID()}`;
+      backupDir = path.join(parentDir, `.${skinId}-backup-${randomUUID()}`);
       await rename(targetDir, backupDir);
     }
-    await rename(stagingDir, targetDir);
-    stagingDir = null;
-    installed = true;
 
-    if (backupDir) {
-      await rm(backupDir, { force: true, recursive: true });
-      backupDir = null;
-    }
-  } catch (error) {
-    if (backupDir && !installed) {
-      const preservedBackupDir = backupDir;
-      try {
-        await rename(preservedBackupDir, targetDir);
+    try {
+      await rename(stagingDir, targetDir);
+      stagingDir = null;
+    } catch (installError) {
+      if (backupDir) {
+        const previousAssets = backupDir;
         backupDir = null;
-      } catch (restoreError) {
-        preserveBackup = true;
-        throw new AggregateError(
-          [error, restoreError],
-          `Skin replacement failed; previous assets remain at ${preservedBackupDir}`,
-        );
+        try {
+          await rename(previousAssets, targetDir);
+        } catch (restoreError) {
+          backupDir = previousAssets;
+          throw new AggregateError(
+            [installError, restoreError],
+            `Skin replacement failed; previous assets remain at ${previousAssets}`,
+          );
+        }
       }
+      throw installError;
     }
-    throw error;
   } finally {
     if (stagingDir) {
       await rm(stagingDir, { force: true, recursive: true });
     }
-    if (backupDir && !preserveBackup) {
-      await rm(backupDir, { force: true, recursive: true });
-    }
   }
 
-  return {
-    ...plan,
-    stagedKeys: plan.copies.map((copy) => copy.inputKey),
-  };
+  let actionResult: T;
+  try {
+    actionResult = await action(result);
+  } catch (actionError) {
+    if (backupDir) {
+      return restorePreviousSkin(targetDir, backupDir, actionError);
+    }
+    throw actionError;
+  }
+
+  if (backupDir) {
+    await rm(backupDir, { force: true, recursive: true });
+  }
+  return actionResult;
 }

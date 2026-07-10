@@ -8,6 +8,7 @@ import {
 } from "../src/lib/skinCandidateReview";
 import { renderSkinCandidateReviewPage } from "../src/lib/skinCandidateReviewPage";
 import { createSkinCandidateReviewServer } from "../src/lib/skinCandidateReviewServer";
+import { BUGBASH_GAME_ASSET_PUBLICATION_KEY } from "../src/lib/skinAssetPublication";
 
 function runNpm(args: string[]): Promise<void> {
   const executable = process.platform === "win32" ? "npm.cmd" : "npm";
@@ -45,6 +46,7 @@ async function main() {
         catalogue,
         force: options.force,
         monsterSlug: options.monsterSlug,
+        publicationKey: BUGBASH_GAME_ASSET_PUBLICATION_KEY,
         publish: options.publish,
         runBuild: () =>
           runNpm(["run", "assets:build", "--", "--source", options.sourceDir]),

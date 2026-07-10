@@ -1,19 +1,19 @@
 import { access, writeFile } from "node:fs/promises";
 import { setTimeout as delay } from "node:timers/promises";
 
-import { withSkinPublicationLock } from "../skinAssetPublication";
+import { withGameAssetPublicationLock } from "../skinAssetPublication";
 
 async function main() {
-  const [sourceDir, markerFile, releaseFile] = process.argv.slice(2);
-  if (!sourceDir || !markerFile || !releaseFile) {
-    throw new Error("source, marker, and release paths are required");
+  const [publicationKey, markerFile, releaseFile, skinId] =
+    process.argv.slice(2);
+  if (!publicationKey || !markerFile || !releaseFile || !skinId) {
+    throw new Error("publication key, marker, release, and skin are required");
   }
 
-  await withSkinPublicationLock(
+  await withGameAssetPublicationLock(
     {
-      monsterSlug: "token-mimic",
-      skinId: "kernel-panic",
-      sourceDir,
+      label: `token-mimic/${skinId}`,
+      publicationKey,
     },
     async () => {
       await writeFile(markerFile, "locked");
