@@ -46,6 +46,55 @@ dist/game-assets/
 
 各派生画像は透明背景を維持し、元の付録Aパスを接頭辞の後ろに保持します。6面の正本6件と派生18件はすべて同じ `asset-manifest.json` に入り、R2 uploaderの対象になります。
 
+## スキン候補の一括生成
+
+画像生成サービスごとのアダプタを1度設定すると、普段は対象モンスターとテーマだけで6段階の候補生成から選定画面まで起動できます。既定は各段階3候補、合計18枚です。`skinId` はテーマからlower kebab-caseで自動生成され、日本語のみのテーマでは安定したハッシュIDになります。
+
+```bash
+export BUGBASH_SKIN_GENERATOR_COMMAND=/absolute/path/to/skin-generator
+export BUGBASH_SKIN_GENERATOR_ARGS_JSON='["--model","production"]'
+
+npm run assets:generate:skin -- \
+  --monster token-mimic \
+  --theme "Kernel Panic"
+```
+
+生成アダプタは起動ごとに、標準入力から次のJSONリクエストを1件受け取ります。6段階の正本参照画像、`BugBash House Style Lock` を先頭に持つ本番用プロンプト、出力規約が含まれます。アダプタはログを標準エラーへ出し、標準出力には最終PNGのバイナリだけを返します。
+
+```json
+{
+  "schemaVersion": 1,
+  "monsterSlug": "token-mimic",
+  "skinId": "kernel-panic",
+  "theme": "Kernel Panic",
+  "stage": "base",
+  "candidateId": "candidate-01",
+  "prompt": "...",
+  "primaryReferenceImage": "/absolute/path/to/base.png",
+  "generatedCandidateImagesByStage": {},
+  "referenceImagesByStage": {
+    "base": "/absolute/path/to/base.png",
+    "evo": "/absolute/path/to/evo.png",
+    "awakened": "/absolute/path/to/awakened.png",
+    "awakened-final": "/absolute/path/to/awakened-final.png",
+    "berserk": "/absolute/path/to/berserk.png",
+    "berserk-final": "/absolute/path/to/berserk-final.png"
+  },
+  "output": {
+    "format": "png",
+    "width": 1254,
+    "height": 1254,
+    "alpha": true
+  }
+}
+```
+
+`generatedCandidateImagesByStage` には、同じ候補番号で先に生成・検証された祖先フォームだけが入ります。たとえばEvoにはBase、BerserkにはBaseとEvoが渡り、Awakened側の生成画像は混ざりません。生成アダプタはこの値を、スキン素材・模様・色・テーマの系統内一貫性を保つ追加参照として使います。
+
+全参照画像を先に検証し、生成された全候補が `PNG 1254x1254 RGBA` を満たした場合だけ、候補ディレクトリを一式で確定します。失敗時は既存候補を保持し、選定画面やR2公開へ進みません。候補は `generated/skins/{monsterSlug}/{skinId}/` に置かれ、Gitには入りません。
+
+候補数や自動導出されたIDを変える場合は `--count 1..9`、`--skin lower-kebab-case` を指定します。生成だけを検証する場合は `--no-review`、R2へ送らず選定・ローカルbuildまで行う場合は `--no-upload` を指定します。既存候補の再生成には `--force` が必要です。
+
 ## スキン候補の選定と公開
 
 候補画像はスキンごとの作業ディレクトリに、付録Aの6段階をディレクトリ名として配置します。各候補は `PNG 1254x1254 RGBA` に限ります。

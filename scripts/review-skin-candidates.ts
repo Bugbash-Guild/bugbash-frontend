@@ -9,6 +9,7 @@ import {
 import { renderSkinCandidateReviewPage } from "../src/lib/skinCandidateReviewPage";
 import { createSkinCandidateReviewServer } from "../src/lib/skinCandidateReviewServer";
 import { BUGBASH_GAME_ASSET_PUBLICATION_KEY } from "../src/lib/skinAssetPublication";
+import { openLocalBrowser } from "../src/lib/localBrowser";
 
 function runNpm(args: string[]): Promise<void> {
   const executable = process.platform === "win32" ? "npm.cmd" : "npm";
@@ -61,9 +62,14 @@ async function main() {
 
   server.listen(options.port, "127.0.0.1", () => {
     const destination = options.publish ? "R2 publish" : "local build";
-    console.log(
-      `Skin review ready at http://127.0.0.1:${options.port} (${destination})`,
-    );
+    const reviewUrl = `http://127.0.0.1:${options.port}`;
+    console.log(`Skin review ready at ${reviewUrl} (${destination})`);
+    if (options.openReview) {
+      void openLocalBrowser(reviewUrl).then((opened) => {
+        if (!opened)
+          console.warn(`Could not open a browser. Open ${reviewUrl}`);
+      });
+    }
   });
 }
 

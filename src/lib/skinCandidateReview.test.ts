@@ -491,6 +491,7 @@ describe("skin candidate review", () => {
         candidateDir: path.join("/repo", "generated/kernel-panic"),
         force: false,
         monsterSlug: "token-mimic",
+        openReview: false,
         port: 4317,
         publish: true,
         skinId: "kernel-panic",
@@ -514,5 +515,22 @@ describe("skin candidate review", () => {
     );
 
     assert.equal(options.publish, false);
+  });
+
+  it("opens the local review page only when --open is explicit", () => {
+    const options = parseSkinReviewCliOptions(
+      [
+        "--monster",
+        "token-mimic",
+        "--skin",
+        "kernel-panic",
+        "--candidates",
+        "generated/kernel-panic",
+        "--open",
+      ],
+      "/repo",
+    );
+
+    assert.equal(options.openReview, true);
   });
 });
