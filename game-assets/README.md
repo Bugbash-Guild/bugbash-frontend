@@ -34,6 +34,18 @@ dist/game-assets/
 
 `dist/game-assets` はアップロード用の一時生成物なのでGitには入れません。
 
+### スキンの派生画像
+
+付録A準拠のスキン6面は、正本WebPに加えてbuild時に次の派生画像を自動生成します。正本PNGは変更しません。
+
+| 用途   |     寸法 | R2キーの接頭辞          |
+| ------ | -------: | ----------------------- |
+| card   |  640x640 | `derived/skins/card/`   |
+| OGP    | 1200x630 | `derived/skins/ogp/`    |
+| widget |  256x256 | `derived/skins/widget/` |
+
+各派生画像は透明背景を維持し、元の付録Aパスを接頭辞の後ろに保持します。6面の正本6件と派生18件はすべて同じ `asset-manifest.json` に入り、R2 uploaderの対象になります。
+
 ## モンスター画像の通常追加フロー
 
 画像生成が終わっていて、既存と同じモンスターアセット追加だけを行う場合は、TDDや新規テスト追加は不要です。
@@ -65,6 +77,12 @@ export R2_BUCKET=bugbash-assets-prod
 
 npm run assets:build
 npm run assets:upload:r2
+```
+
+buildからR2アップロードまで続けて実行する場合:
+
+```bash
+npm run assets:publish:r2
 ```
 
 GitHub Actions から実行する場合は、Repository Secrets に `CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` を登録して、`Upload Game Assets to R2` workflow を手動実行します。

@@ -13,6 +13,7 @@ import {
   assertSkinAssetImageMetadata,
   validateSkinAssetInputKeys,
 } from "../src/lib/gameAssetSkinValidation";
+import { generateSkinAssetDerivatives } from "../src/lib/skinAssetDerivatives";
 
 type Options = {
   sourceDir: string;
@@ -129,6 +130,17 @@ async function main() {
 
     outputKeys.push(outputKey);
     console.log(`${inputKey} -> ${outputKey}`);
+
+    const derivatives = await generateSkinAssetDerivatives({
+      inputKey,
+      inputPath,
+      outDir: options.outDir,
+      quality: options.quality,
+    });
+    for (const derivative of derivatives) {
+      outputKeys.push(derivative.outputKey);
+      console.log(`${inputKey} -> ${derivative.outputKey}`);
+    }
   }
 
   const manifest = createGameAssetManifest(outputKeys);
