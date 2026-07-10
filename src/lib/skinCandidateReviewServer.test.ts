@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { request } from "node:http";
 import type { AddressInfo } from "node:net";
 import os from "node:os";
 import path from "node:path";
@@ -54,6 +55,35 @@ function completeSelections() {
   );
 }
 
+async function requestWithHost(
+  baseUrl: string,
+  host: string,
+): Promise<{ body: string; status: number | undefined }> {
+  const url = new URL(baseUrl);
+  return new Promise((resolve, reject) => {
+    const outgoing = request(
+      {
+        headers: { host },
+        hostname: url.hostname,
+        path: "/",
+        port: url.port,
+      },
+      (response) => {
+        const chunks: Buffer[] = [];
+        response.on("data", (chunk: Buffer) => chunks.push(chunk));
+        response.on("end", () => {
+          resolve({
+            body: Buffer.concat(chunks).toString("utf8"),
+            status: response.statusCode,
+          });
+        });
+      },
+    );
+    outgoing.once("error", reject);
+    outgoing.end();
+  });
+}
+
 describe("skin candidate review server", () => {
   it("serves only discovered candidate files", async () => {
     const catalogue = await createCatalogue();
@@ -85,6 +115,37 @@ describe("skin candidate review server", () => {
     });
   });
 
+  it("rejects foreign Host and Origin values before exposing or accepting review data", async () => {
+    const catalogue = await createCatalogue();
+    const server = createSkinCandidateReviewServer({
+      catalogue,
+      finalize: async () => ({
+        assetBasePath: "monsters/token-mimic/skins/kernel-panic",
+        copies: [],
+        stagedKeys: [],
+      }),
+      html: "review-secret",
+      reviewToken: "secret",
+    });
+
+    await withServer(server, async (baseUrl) => {
+      const foreignHost = await requestWithHost(baseUrl, "attacker.example");
+      assert.equal(foreignHost.status, 403);
+      assert.equal(foreignHost.body.includes("review-secret"), false);
+
+      const foreignOrigin = await fetch(`${baseUrl}/approve`, {
+        body: JSON.stringify({ selections: completeSelections() }),
+        headers: {
+          "content-type": "application/json",
+          origin: "https://attacker.example",
+          "x-review-token": "secret",
+        },
+        method: "POST",
+      });
+      assert.equal(foreignOrigin.status, 403);
+    });
+  });
+
   it("requires the review token and accepts a complete selection only once", async () => {
     const catalogue = await createCatalogue();
     let finalizeCalls = 0;
@@ -105,7 +166,7 @@ describe("skin candidate review server", () => {
     await withServer(server, async (baseUrl) => {
       const unauthorized = await fetch(`${baseUrl}/approve`, {
         body: JSON.stringify({ selections: completeSelections() }),
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", origin: baseUrl },
         method: "POST",
       });
       assert.equal(unauthorized.status, 403);
@@ -114,6 +175,7 @@ describe("skin candidate review server", () => {
         body: JSON.stringify({ selections: { base: "candidate-a.png" } }),
         headers: {
           "content-type": "application/json",
+          origin: baseUrl,
           "x-review-token": "secret",
         },
         method: "POST",
@@ -124,6 +186,7 @@ describe("skin candidate review server", () => {
         body: JSON.stringify({ selections: completeSelections() }),
         headers: {
           "content-type": "application/json",
+          origin: baseUrl,
           "x-review-token": "secret",
         },
         method: "POST",
@@ -139,6 +202,7 @@ describe("skin candidate review server", () => {
         body: JSON.stringify({ selections: completeSelections() }),
         headers: {
           "content-type": "application/json",
+          origin: baseUrl,
           "x-review-token": "secret",
         },
         method: "POST",
@@ -182,12 +246,16 @@ describe("skin candidate review server", () => {
     };
 
     await withServer(server, async (baseUrl) => {
-      const firstApproval = fetch(`${baseUrl}/approve`, approvalRequest);
+      const requestWithOrigin = {
+        ...approvalRequest,
+        headers: { ...approvalRequest.headers, origin: baseUrl },
+      };
+      const firstApproval = fetch(`${baseUrl}/approve`, requestWithOrigin);
       await finalizeStarted;
 
       const overlappingApproval = await fetch(
         `${baseUrl}/approve`,
-        approvalRequest,
+        requestWithOrigin,
       );
       assert.equal(overlappingApproval.status, 409);
 

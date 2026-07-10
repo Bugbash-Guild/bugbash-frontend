@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, it } from "node:test";
@@ -171,6 +171,207 @@ describe("skin candidate review", () => {
     });
 
     assert.deepEqual(calls, ["build"]);
+  });
+
+  it("resumes the same approved skin after an R2 upload failure", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "bugbash-skin-review-"));
+    const candidateDir = path.join(root, "candidates");
+    const sourceDir = path.join(root, "source");
+    await createCandidateTree(candidateDir);
+    const catalogue = await discoverSkinCandidates({
+      candidateDir,
+      inspectImage: validMetadata,
+    });
+    const selections = Object.fromEntries(
+      APPENDIX_A_SKIN_STAGES.map((stage) => [stage, "candidate-a.png"]),
+    );
+    const commonOptions = {
+      catalogue,
+      force: false,
+      inspectImage: validMetadata,
+      monsterSlug: "token-mimic",
+      publish: true,
+      selections,
+      skinId: "kernel-panic",
+      sourceDir,
+    };
+    let buildCalls = 0;
+    let uploadCalls = 0;
+
+    await assert.rejects(
+      () =>
+        finalizeSkinSelection({
+          ...commonOptions,
+          runBuild: async () => {
+            buildCalls += 1;
+          },
+          runUpload: async () => {
+            uploadCalls += 1;
+            throw new Error("R2 unavailable");
+          },
+        }),
+      /R2 unavailable/,
+    );
+
+    await finalizeSkinSelection({
+      ...commonOptions,
+      runBuild: async () => {
+        buildCalls += 1;
+      },
+      runUpload: async () => {
+        uploadCalls += 1;
+      },
+    });
+
+    assert.equal(buildCalls, 2);
+    assert.equal(uploadCalls, 2);
+  });
+
+  it("locks one skin across publication and never mixes concurrent selections", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "bugbash-skin-review-"));
+    const candidateDirA = path.join(root, "candidates-a");
+    const candidateDirB = path.join(root, "candidates-b");
+    const sourceDir = path.join(root, "source");
+    await createCandidateTree(candidateDirA);
+    await createCandidateTree(candidateDirB);
+    for (const stage of APPENDIX_A_SKIN_STAGES) {
+      await writeFile(
+        path.join(candidateDirB, stage, "candidate-a.png"),
+        `${stage}-other`,
+      );
+    }
+    const [catalogueA, catalogueB] = await Promise.all(
+      [candidateDirA, candidateDirB].map((candidateDir) =>
+        discoverSkinCandidates({ candidateDir, inspectImage: validMetadata }),
+      ),
+    );
+    const selections = Object.fromEntries(
+      APPENDIX_A_SKIN_STAGES.map((stage) => [stage, "candidate-a.png"]),
+    );
+    let releaseBuild: (() => void) | undefined;
+    let markBuildStarted: (() => void) | undefined;
+    const buildStarted = new Promise<void>((resolve) => {
+      markBuildStarted = resolve;
+    });
+    const buildReleased = new Promise<void>((resolve) => {
+      releaseBuild = resolve;
+    });
+    const firstPublication = finalizeSkinSelection({
+      catalogue: catalogueA,
+      force: false,
+      inspectImage: validMetadata,
+      monsterSlug: "token-mimic",
+      publish: false,
+      runBuild: async () => {
+        markBuildStarted?.();
+        await buildReleased;
+      },
+      runUpload: async () => undefined,
+      selections,
+      skinId: "kernel-panic",
+      sourceDir,
+    });
+    await buildStarted;
+
+    await assert.rejects(
+      () =>
+        finalizeSkinSelection({
+          catalogue: catalogueB,
+          force: false,
+          inspectImage: validMetadata,
+          monsterSlug: "token-mimic",
+          publish: false,
+          runBuild: async () => undefined,
+          runUpload: async () => undefined,
+          selections,
+          skinId: "kernel-panic",
+          sourceDir,
+        }),
+      /publication is already running/,
+    );
+
+    releaseBuild?.();
+    await firstPublication;
+    for (const stage of APPENDIX_A_SKIN_STAGES) {
+      assert.equal(
+        await readFile(
+          path.join(
+            sourceDir,
+            "monsters/token-mimic/skins/kernel-panic",
+            `${stage}.png`,
+          ),
+          "utf8",
+        ),
+        `${stage}-a`,
+      );
+    }
+  });
+
+  it("replaces a different complete skin only when force is explicit", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "bugbash-skin-review-"));
+    const candidateDirA = path.join(root, "candidates-a");
+    const candidateDirB = path.join(root, "candidates-b");
+    const sourceDir = path.join(root, "source");
+    await createCandidateTree(candidateDirA);
+    await createCandidateTree(candidateDirB);
+    for (const stage of APPENDIX_A_SKIN_STAGES) {
+      await writeFile(
+        path.join(candidateDirB, stage, "candidate-a.png"),
+        `${stage}-replacement`,
+      );
+    }
+    const [catalogueA, catalogueB] = await Promise.all(
+      [candidateDirA, candidateDirB].map((candidateDir) =>
+        discoverSkinCandidates({ candidateDir, inspectImage: validMetadata }),
+      ),
+    );
+    const selections = Object.fromEntries(
+      APPENDIX_A_SKIN_STAGES.map((stage) => [stage, "candidate-a.png"]),
+    );
+    const commonOptions = {
+      inspectImage: validMetadata,
+      monsterSlug: "token-mimic",
+      publish: false,
+      runBuild: async () => undefined,
+      runUpload: async () => undefined,
+      selections,
+      skinId: "kernel-panic",
+      sourceDir,
+    };
+
+    await finalizeSkinSelection({
+      ...commonOptions,
+      catalogue: catalogueA,
+      force: false,
+    });
+    await assert.rejects(
+      () =>
+        finalizeSkinSelection({
+          ...commonOptions,
+          catalogue: catalogueB,
+          force: false,
+        }),
+      /destination already exists/,
+    );
+    await finalizeSkinSelection({
+      ...commonOptions,
+      catalogue: catalogueB,
+      force: true,
+    });
+
+    for (const stage of APPENDIX_A_SKIN_STAGES) {
+      assert.equal(
+        await readFile(
+          path.join(
+            sourceDir,
+            "monsters/token-mimic/skins/kernel-panic",
+            `${stage}.png`,
+          ),
+          "utf8",
+        ),
+        `${stage}-replacement`,
+      );
+    }
   });
 
   it("revalidates copied candidates before staging them as source assets", async () => {

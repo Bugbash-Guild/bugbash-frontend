@@ -34,6 +34,19 @@ class RequestError extends Error {
   }
 }
 
+function isAllowedLocalHost(request: IncomingMessage): boolean {
+  const port = request.socket.localPort;
+  const host = request.headers.host?.toLowerCase();
+  if (!port || !host) return false;
+  return host === `127.0.0.1:${port}` || host === `localhost:${port}`;
+}
+
+function isSameOriginApproval(request: IncomingMessage): boolean {
+  const host = request.headers.host?.toLowerCase();
+  const origin = request.headers.origin?.toLowerCase();
+  return Boolean(host && origin === `http://${host}`);
+}
+
 function sendJson(
   response: ServerResponse,
   status: number,
@@ -125,6 +138,11 @@ export function createSkinCandidateReviewServer({
   let approvalState: ApprovalState = "idle";
 
   return createServer(async (request, response) => {
+    if (!isAllowedLocalHost(request)) {
+      sendJson(response, 403, { error: "Local review host required" });
+      return;
+    }
+
     const pathname = new URL(request.url ?? "/", "http://127.0.0.1").pathname;
 
     if (request.method === "GET" && pathname === "/") {
@@ -164,6 +182,10 @@ export function createSkinCandidateReviewServer({
     }
 
     if (request.method === "POST" && pathname === "/approve") {
+      if (!isSameOriginApproval(request)) {
+        sendJson(response, 403, { error: "Same-origin approval required" });
+        return;
+      }
       if (request.headers["x-review-token"] !== reviewToken) {
         sendJson(response, 403, { error: "Invalid review token" });
         return;

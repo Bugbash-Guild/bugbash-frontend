@@ -12,9 +12,12 @@ import {
 } from "./gameAssetSkinValidation";
 import {
   planSkinAssetIntake,
-  stageSkinAssetIntake,
   type SkinAssetIntakeResult,
 } from "./skinAssetIntake";
+import {
+  stageApprovedSkinAtomically,
+  withSkinPublicationLock,
+} from "./skinAssetPublication";
 
 export type SkinReviewCandidate = {
   filePath: string;
@@ -155,35 +158,43 @@ export async function finalizeSkinSelection({
   sourceDir,
 }: FinalizeSkinSelectionOptions): Promise<SkinAssetIntakeResult> {
   const plan = planSkinSelection(catalogue, selections);
-  const approvedDir = await mkdtemp(
-    path.join(os.tmpdir(), "bugbash-approved-skin-"),
-  );
-
-  try {
-    await Promise.all(
-      plan.map(({ candidate, stage }) =>
-        copyFile(candidate.filePath, path.join(approvedDir, `${stage}.png`)),
-      ),
-    );
-    for (const { stage } of plan) {
-      assertSkinAssetImageMetadata(
-        `monsters/${monsterSlug}/skins/${skinId}/${stage}.png`,
-        await inspectImage(path.join(approvedDir, `${stage}.png`)),
+  return withSkinPublicationLock(
+    { monsterSlug, skinId, sourceDir },
+    async () => {
+      const approvedDir = await mkdtemp(
+        path.join(os.tmpdir(), "bugbash-approved-skin-"),
       );
-    }
-    const result = await stageSkinAssetIntake({
-      candidateDir: approvedDir,
-      force,
-      monsterSlug,
-      skinId,
-      sourceDir,
-    });
-    await runBuild();
-    if (publish) await runUpload();
-    return result;
-  } finally {
-    await rm(approvedDir, { force: true, recursive: true });
-  }
+
+      try {
+        await Promise.all(
+          plan.map(({ candidate, stage }) =>
+            copyFile(
+              candidate.filePath,
+              path.join(approvedDir, `${stage}.png`),
+            ),
+          ),
+        );
+        for (const { stage } of plan) {
+          assertSkinAssetImageMetadata(
+            `monsters/${monsterSlug}/skins/${skinId}/${stage}.png`,
+            await inspectImage(path.join(approvedDir, `${stage}.png`)),
+          );
+        }
+        const result = await stageApprovedSkinAtomically({
+          approvedDir,
+          force,
+          monsterSlug,
+          skinId,
+          sourceDir,
+        });
+        await runBuild();
+        if (publish) await runUpload();
+        return result;
+      } finally {
+        await rm(approvedDir, { force: true, recursive: true });
+      }
+    },
+  );
 }
 
 function readCliOption(args: string[], flag: string): string | null {
