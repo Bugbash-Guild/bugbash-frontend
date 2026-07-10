@@ -41,6 +41,15 @@ npm run assets:upload:r2
 npm run assets:publish:r2
 ```
 
+6段階のスキン候補をローカル画面で選定し、取り込みからR2公開まで実行する場合:
+
+```bash
+npm run assets:review:skin -- \
+  --monster token-mimic \
+  --skin kernel-panic \
+  --candidates generated/kernel-panic
+```
+
 GitHub Actions の `Upload Game Assets to R2` workflow からも手動実行できます。
 詳しい投入ルールは `game-assets/README.md` を見てください。
 

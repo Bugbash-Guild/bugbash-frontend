@@ -46,6 +46,53 @@ dist/game-assets/
 
 各派生画像は透明背景を維持し、元の付録Aパスを接頭辞の後ろに保持します。6面の正本6件と派生18件はすべて同じ `asset-manifest.json` に入り、R2 uploaderの対象になります。
 
+## スキン候補の選定と公開
+
+候補画像はスキンごとの作業ディレクトリに、付録Aの6段階をディレクトリ名として配置します。各候補は `PNG 1254x1254 RGBA` に限ります。
+
+```text
+generated/kernel-panic/
+  base/
+    candidate-a.png
+    candidate-b.png
+  evo/
+    candidate-a.png
+    candidate-b.png
+  awakened/
+    candidate-a.png
+    candidate-b.png
+  awakened-final/
+    candidate-a.png
+    candidate-b.png
+  berserk/
+    candidate-a.png
+    candidate-b.png
+  berserk-final/
+    candidate-a.png
+    candidate-b.png
+```
+
+ローカル選定画面を起動します。全6段階で1枚ずつ承認すると、付録Aの正本パスへの取り込み、WebPと派生画像のbuild、R2アップロードを順に実行します。既存スキンは `--force` を明示しない限り上書きしません。
+
+```bash
+npm run assets:review:skin -- \
+  --monster token-mimic \
+  --skin kernel-panic \
+  --candidates generated/kernel-panic
+```
+
+R2へアップロードせず、取り込みとローカルbuildまで確認する場合:
+
+```bash
+npm run assets:review:skin -- \
+  --monster token-mimic \
+  --skin kernel-panic \
+  --candidates generated/kernel-panic \
+  --no-upload
+```
+
+選定画面は `127.0.0.1` のみに公開されます。候補ディレクトリは一時作業用であり、承認された正本PNGだけを `game-assets/source/monsters/{slug}/skins/{skinId}/` に保存します。
+
 ## モンスター画像の通常追加フロー
 
 画像生成が終わっていて、既存と同じモンスターアセット追加だけを行う場合は、TDDや新規テスト追加は不要です。
