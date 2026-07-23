@@ -59,7 +59,7 @@ export function SkinTargetList({
             <p>所有済みスキンはまだありません。</p>
             <Link
               className="mt-3 inline-flex border border-accent/35 bg-accent/10 px-3 py-2 text-[11px] text-accent hover:bg-accent/20"
-              href="/shop"
+              href="/shop/skins"
             >
               スキンカタログを見る
             </Link>

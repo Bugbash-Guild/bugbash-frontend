@@ -96,6 +96,14 @@ export function SkinMasteryPanel({
         </button>
       </div>
       <p className="mt-3 text-[10px] leading-5 text-text-faint">{FORGE_COSMETIC_ONLY_COPY}</p>
+      <aside
+        aria-label="安全な強化について"
+        className="mt-3 border-l-2 border-accent-2 bg-accent-2/5 px-3 py-2 text-[10px] leading-5 text-text-dim"
+      >
+        <span className="font-semibold text-accent-2">SAFE UPGRADE — </span>
+        見た目だけの調律です。古い表示のまま上書きしません。通信が途切れても同じ操作が二重に反映されないよう保護します。
+        自動では再実行しません。状態を確認してから、必要なときだけもう一度押してください。
+      </aside>
 
       {error && <p className="mt-3 border border-pink/30 bg-pink/10 px-3 py-2 text-[11px] text-pink">{error}</p>}
 
