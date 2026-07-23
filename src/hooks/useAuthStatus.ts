@@ -1,9 +1,11 @@
 export interface User {
+    githubId?: string;
     username: string;
 }
 
 export interface AuthStatus {
     authenticated?: boolean;
+    githubId?: unknown;
     username?: unknown;
 }
 
@@ -19,6 +21,9 @@ export const normalizeAuthStatus = (status: AuthStatus | null): NormalizedAuthSt
 
     return {
         isAuthenticated: true,
-        user: { username: status.username },
+        user: {
+            username: status.username,
+            ...(typeof status.githubId === 'string' ? { githubId: status.githubId } : {}),
+        },
     };
 };

@@ -22,6 +22,7 @@ import { BadgePrestigeGrid } from "@/components/prestige/BadgePrestigeGrid";
 import { WalletBadge } from "@/components/WalletBadge";
 import { useAuth } from "@/hooks/useAuth";
 import { useBadges } from "@/hooks/useBadges";
+import { useCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { useWallet } from "@/hooks/useWallet";
 import {
   BADGE_VISIBILITY_TIP_STORAGE_KEY,
@@ -54,6 +55,7 @@ export default function BadgesPage() {
     refetchAll,
     refetchProgress,
   } = useBadges(isAuthenticated);
+  const { offers: commemorativeOffers } = useCommemorativeMints(isAuthenticated);
   const {
     error: walletError,
     loading: walletLoading,
@@ -287,6 +289,9 @@ export default function BadgesPage() {
         <BadgePrestigeGrid
           badges={progress}
           loading={loading && progress.length === 0}
+          mintReadyAchievements={commemorativeOffers
+            .filter((offer) => offer.unlocked && offer.mint == null)
+            .map((offer) => offer.achievement)}
         />
 
         <section

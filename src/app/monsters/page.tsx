@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
+import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { usePartner } from "@/hooks/usePartner";
 import { MainWrapper } from "@/components/MainWrapper";
 import { MonsterVisual } from "@/components/MonsterVisual";
@@ -17,6 +18,8 @@ import {
   MONSTER_EVOLUTION_LEVEL,
   MONSTER_MAX_LEVEL,
 } from "@/lib/monsterProgression";
+import { matchMintToOwnedMonster } from "@/lib/commemorativeMint";
+import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
 
 const AWAKENING_LABEL: Partial<
   Record<import("@/types/monster").AwakeningState, string>
@@ -26,10 +29,11 @@ const AWAKENING_LABEL: Partial<
 };
 
 export default function MonstersPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { monsters, loading, error, refetch } = useMonsters();
   const { partnerId, setPartner } = usePartner();
   const { hero, refetch: refetchHero } = useHero(isAuthenticated);
+  const { mints } = usePublicCommemorativeMints(user?.githubId);
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [levelingUp, setLevelingUp] = useState<string | null>(null);
@@ -256,6 +260,7 @@ export default function MonstersPage() {
             const canEvolve = canEvolveMonster(m);
             const canLevelUp = canLevelUpMonster(m);
             const levelUpCost = getMonsterLevelUpCost(m.level);
+            const mint = matchMintToOwnedMonster(mints, m.ownedMonsterId);
             return (
               <div
                 key={m.id}
@@ -470,6 +475,7 @@ export default function MonstersPage() {
                     パートナーに設定
                   </button>
                 )}
+                {mint && <CommemorativePlate className="mt-3" plate={mint} />}
               </div>
             );
           })}

@@ -10,6 +10,7 @@ export type MonsterFormStage =
 
 export type Monster = {
     id: string;
+    ownedMonsterId?: string | number;
     slug?: string;
     name: string;
     emoji: string;
