@@ -39,6 +39,65 @@ export function getMintPricePresentation(
   };
 }
 
+export type MintPurchaseFailure = {
+  clearIdempotencyKey: boolean;
+  message: string;
+  refreshOffers: boolean;
+  refreshWallet: boolean;
+  retrySameContent: boolean;
+  routeToLogin: boolean;
+};
+
+export function mapMintPurchaseFailure(status: number): MintPurchaseFailure {
+  switch (status) {
+    case 400:
+      return {
+        clearIdempotencyKey: false,
+        message: "鋳造内容が最新の状態と一致しません。内容を確認してからもう一度操作してください。",
+        refreshOffers: true,
+        refreshWallet: false,
+        retrySameContent: false,
+        routeToLogin: false,
+      };
+    case 401:
+      return {
+        clearIdempotencyKey: false,
+        message: "",
+        refreshOffers: false,
+        refreshWallet: false,
+        retrySameContent: false,
+        routeToLogin: true,
+      };
+    case 409:
+      return {
+        clearIdempotencyKey: true,
+        message: "鋳造内容を確認する必要があります。最新の状態を確認して、内容を選び直してください。",
+        refreshOffers: true,
+        refreshWallet: true,
+        retrySameContent: false,
+        routeToLogin: false,
+      };
+    case 422:
+      return {
+        clearIdempotencyKey: false,
+        message: "現在このプレートは鋳造できません。残高と鋳造権を確認してください。",
+        refreshOffers: true,
+        refreshWallet: true,
+        retrySameContent: false,
+        routeToLogin: false,
+      };
+    default:
+      return {
+        clearIdempotencyKey: false,
+        message: "通信結果を確認できません。同じ内容で再試行できます。",
+        refreshOffers: false,
+        refreshWallet: false,
+        retrySameContent: true,
+        routeToLogin: false,
+      };
+  }
+}
+
 function idempotencyStorageKey(
   achievement: string,
   recolor: string,

@@ -7,6 +7,7 @@ import {
   getMintDisplayState,
   getMintPricePresentation,
   isAllowedRecolor,
+  mapMintPurchaseFailure,
   matchMintToOwnedMonster,
 } from "./commemorativeMint";
 
@@ -97,4 +98,50 @@ test("matches plates to the owned instance id, not the monster catalog id", () =
   };
   assert.equal(matchMintToOwnedMonster([plate], "42"), plate);
   assert.equal(matchMintToOwnedMonster([plate], "monster-slug"), undefined);
+});
+
+test("maps deterministic mint rejections to reconciliation without automatic retry", () => {
+  assert.deepEqual(mapMintPurchaseFailure(400), {
+    clearIdempotencyKey: false,
+    message: "鋳造内容が最新の状態と一致しません。内容を確認してからもう一度操作してください。",
+    refreshOffers: true,
+    refreshWallet: false,
+    routeToLogin: false,
+    retrySameContent: false,
+  });
+  assert.deepEqual(mapMintPurchaseFailure(409), {
+    clearIdempotencyKey: true,
+    message: "鋳造内容を確認する必要があります。最新の状態を確認して、内容を選び直してください。",
+    refreshOffers: true,
+    refreshWallet: true,
+    routeToLogin: false,
+    retrySameContent: false,
+  });
+  assert.deepEqual(mapMintPurchaseFailure(422), {
+    clearIdempotencyKey: false,
+    message: "現在このプレートは鋳造できません。残高と鋳造権を確認してください。",
+    refreshOffers: true,
+    refreshWallet: true,
+    routeToLogin: false,
+    retrySameContent: false,
+  });
+  assert.deepEqual(mapMintPurchaseFailure(401), {
+    clearIdempotencyKey: false,
+    message: "",
+    refreshOffers: false,
+    refreshWallet: false,
+    routeToLogin: true,
+    retrySameContent: false,
+  });
+});
+
+test("preserves the idempotency key for uncertain mint outcomes", () => {
+  assert.deepEqual(mapMintPurchaseFailure(500), {
+    clearIdempotencyKey: false,
+    message: "通信結果を確認できません。同じ内容で再試行できます。",
+    refreshOffers: false,
+    refreshWallet: false,
+    routeToLogin: false,
+    retrySameContent: true,
+  });
 });

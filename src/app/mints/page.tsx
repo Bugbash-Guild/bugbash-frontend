@@ -17,6 +17,7 @@ import {
   getMintDisplayState,
   getMintPricePresentation,
   isAllowedRecolor,
+  mapMintPurchaseFailure,
 } from "@/lib/commemorativeMint";
 import type {
   CommemorativeMintOffer,
@@ -94,6 +95,21 @@ export default function MintsPage() {
     setSelectedRecolor(getFirstAllowedRecolor(offer.allowedRecolors));
   }
 
+  async function reconcileMintState(options: {
+    offers: boolean;
+    wallet: boolean;
+  }) {
+    const refreshes = [
+      ...(options.offers ? [refetch()] : []),
+      ...(options.wallet ? [refetchWallet()] : []),
+    ];
+    try {
+      await Promise.all(refreshes);
+    } catch {
+      // Reconciliation is best-effort only. It must never trigger another POST.
+    }
+  }
+
   async function purchase() {
     if (
       inFlight ||
@@ -123,13 +139,25 @@ export default function MintsPage() {
         method: "POST",
       });
       if (!response.ok) {
-        setPurchaseError("鋳造を完了できませんでした。同じ内容で再試行できます。");
+        const failure = mapMintPurchaseFailure(response.status);
+        if (failure.clearIdempotencyKey) {
+          manager.clear(selectedOffer.achievement, selectedRecolor);
+        }
+        if (failure.routeToLogin) {
+          router.replace("/login");
+          return;
+        }
+        setPurchaseError(failure.message);
+        await reconcileMintState({
+          offers: failure.refreshOffers,
+          wallet: failure.refreshWallet,
+        });
         return;
       }
 
       const minted = (await response.json()) as CommemorativeMintPlate;
       manager.clear(selectedOffer.achievement, selectedRecolor);
-      await Promise.all([refetch(), refetchWallet()]);
+      await reconcileMintState({ offers: true, wallet: true });
       setNotice(`記念プレート ${minted.mintNumber} を鋳造しました。`);
     } catch {
       setPurchaseError("通信結果を確認できません。同じ内容で再試行できます。");
