@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  APEX_PARTICLE_LIMIT,
   ForgeIdempotencyKeys,
+  buildApexParticleSlots,
   buildForgeCostTable,
   canUpgradeForge,
   selectForgeStages,
@@ -45,6 +47,19 @@ const defs: ForgeLevelDef[] = [
 ];
 
 describe("forge presentation helpers", () => {
+  it("derives bounded Apex particle slots from actual PR activity", () => {
+    assert.deepEqual(buildApexParticleSlots(0), []);
+
+    const earlyActivity = buildApexParticleSlots(12);
+    const sustainedActivity = buildApexParticleSlots(250);
+    const cappedActivity = buildApexParticleSlots(100_000);
+
+    assert.ok(earlyActivity.length > 0);
+    assert.ok(sustainedActivity.length >= earlyActivity.length);
+    assert.equal(cappedActivity.length, APEX_PARTICLE_LIMIT);
+    assert.ok(cappedActivity.length <= APEX_PARTICLE_LIMIT);
+  });
+
   it("orders API costs and calculates cumulative totals without a frontend price curve", () => {
     assert.deepEqual(
       buildForgeCostTable(defs).map(({ level, runeCost, cumulativeRuneCost }) => ({

@@ -10,11 +10,13 @@ import { SkinMasteryPanel } from "@/components/forge/SkinMasteryPanel";
 import { SkinTargetList } from "@/components/forge/SkinTargetList";
 import { useAuth } from "@/hooks/useAuth";
 import { useForge } from "@/hooks/useForge";
+import { useHero } from "@/hooks/useHero";
 import { buildForgeCostTable, canUpgradeForge, selectForgeStages } from "@/lib/forge";
 
 export default function ForgePage() {
   const router = useRouter();
   const { isAuthenticated, loading: authLoading, user } = useAuth();
+  const { hero } = useHero(isAuthenticated);
   const {
     error,
     levelDefs,
@@ -147,6 +149,7 @@ export default function ForgePage() {
                   next={stages.next}
                   onUpgrade={() => void handleUpgrade()}
                   skin={selectedSkin}
+                  totalPrsMerged={hero?.totalPrsMerged ?? 0}
                   upgrading={upgradingSkinId === selectedSkin.skinId}
                 />
               ) : (

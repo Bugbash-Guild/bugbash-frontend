@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { OwnedMonsterSkin } from "@/types/forge";
 
 type SkinTargetListProps = {
@@ -54,9 +55,15 @@ export function SkinTargetList({
           );
         })}
         {skins.length === 0 && (
-          <p className="px-4 py-8 text-center text-[11px] leading-5 text-text-dim">
-            所有済みスキンはまだありません。
-          </p>
+          <div className="px-4 py-8 text-center text-[11px] leading-5 text-text-dim">
+            <p>所有済みスキンはまだありません。</p>
+            <Link
+              className="mt-3 inline-flex border border-accent/35 bg-accent/10 px-3 py-2 text-[11px] text-accent hover:bg-accent/20"
+              href="/shop"
+            >
+              スキンカタログを見る
+            </Link>
+          </div>
         )}
       </div>
     </section>

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ForgeLevelDef, OwnedMonsterSkin } from "@/types/forge";
-import { FORGE_COSMETIC_ONLY_COPY } from "@/lib/forge";
+import { buildApexParticleSlots, FORGE_COSMETIC_ONLY_COPY } from "@/lib/forge";
 
 type SkinMasteryPanelProps = {
   apex: ForgeLevelDef | undefined;
@@ -11,6 +11,7 @@ type SkinMasteryPanelProps = {
   next: ForgeLevelDef | undefined;
   onUpgrade: () => void;
   skin: OwnedMonsterSkin;
+  totalPrsMerged: number;
   upgrading: boolean;
 };
 
@@ -22,9 +23,11 @@ export function SkinMasteryPanel({
   next,
   onUpgrade,
   skin,
+  totalPrsMerged,
   upgrading,
 }: SkinMasteryPanelProps) {
   const totalStages = apex?.level ?? 0;
+  const particleSlots = buildApexParticleSlots(totalPrsMerged);
 
   return (
     <section aria-labelledby="mastery-heading" className="border border-line bg-bg-elev p-5">
@@ -96,11 +99,24 @@ export function SkinMasteryPanel({
 
       {error && <p className="mt-3 border border-pink/30 bg-pink/10 px-3 py-2 text-[11px] text-pink">{error}</p>}
 
-      <div className="mt-5 border border-gold/35 bg-gold/5 px-4 py-3">
-        <p className="text-[10px] tracking-[0.12em] text-gold">APEX PREVIEW · St{apex?.level ?? "?"}</p>
-        <p className="mt-1 text-[11px] leading-5 text-text-dim">
-          {apex?.diffNote ?? "最終段階の外観はサーバー定義の読込後に表示されます。"}
-        </p>
+      <div className="relative mt-5 overflow-hidden border border-gold/35 bg-gold/5 px-4 py-3">
+        <div aria-hidden className="pointer-events-none absolute inset-0 grid grid-cols-5 gap-5 p-3">
+          {particleSlots.map((slot) => (
+            <span
+              className="size-1 animate-pulse self-center justify-self-center rounded-full bg-gold shadow-[0_0_10px_rgba(227,179,65,0.9)]"
+              key={slot}
+            />
+          ))}
+        </div>
+        <div className="relative">
+          <p className="text-[10px] tracking-[0.12em] text-gold">APEX PREVIEW · St{apex?.level ?? "?"}</p>
+          <p className="mt-1 text-[11px] leading-5 text-text-dim">
+            {apex?.diffNote ?? "最終段階の外観はサーバー定義の読込後に表示されます。"}
+          </p>
+          <p className="mt-2 text-[10px] text-gold/80">
+            PR SIGNAL: {totalPrsMerged.toLocaleString("ja-JP")} merged · {particleSlots.length} active particles
+          </p>
+        </div>
       </div>
     </section>
   );

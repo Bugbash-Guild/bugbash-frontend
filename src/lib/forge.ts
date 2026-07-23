@@ -3,6 +3,19 @@ import type { ForgeCostRow, ForgeLevelDef } from "@/types/forge";
 export const FORGE_COSMETIC_ONLY_COPY =
   "この強化で変わるのは見た目だけです。ステータス・報酬・順位には影響しません。";
 
+export const APEX_PARTICLE_LIMIT = 20;
+
+const PRS_PER_APEX_PARTICLE = 20;
+
+export function buildApexParticleSlots(totalPrsMerged: number): number[] {
+  const particleCount = Math.min(
+    Math.ceil(Math.max(0, totalPrsMerged) / PRS_PER_APEX_PARTICLE),
+    APEX_PARTICLE_LIMIT,
+  );
+
+  return Array.from({ length: particleCount }, (_, index) => index);
+}
+
 export function buildForgeCostTable(
   definitions: ForgeLevelDef[],
 ): ForgeCostRow[] {
