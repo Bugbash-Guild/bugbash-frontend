@@ -15,6 +15,7 @@ const unlockedOffer = {
   achievement: "PR_MERGED_100",
   unlocked: true,
   achievedAt: "2026-07-23T00:00:00Z",
+  achievedAtEstimated: false,
   repositoryFullName: "bugbash-guild/bugbash-backend",
   subjectOwnedMonsterId: 42,
   runeCost: 247,
@@ -77,13 +78,34 @@ test("formats deterministic engravings and tolerates a null repository", () => {
     formatPlateEngraving({
       achievement: "PR_MERGED_100",
       achievedAt: "2026-07-23T01:02:03Z",
+      achievedAtEstimated: false,
       repositoryFullName: null,
       mintNumber: 7,
     }),
     {
       achievement: "100 PR マージ",
       achievedDate: "2026.07.23",
+      achievedLabel: "達成日",
       mintNumber: "#000007",
+      repository: "REPOSITORY / —",
+    },
+  );
+});
+
+test("labels legacy fallback dates as estimated instead of exact achievements", () => {
+  assert.deepEqual(
+    formatPlateEngraving({
+      achievement: "MONSTER_LEVEL_100",
+      achievedAt: "2025-04-05T00:00:00Z",
+      achievedAtEstimated: true,
+      repositoryFullName: null,
+      mintNumber: 12,
+    }),
+    {
+      achievement: "モンスター Lv.100",
+      achievedDate: "2025.04.05",
+      achievedLabel: "達成時期（推定）",
+      mintNumber: "#000012",
       repository: "REPOSITORY / —",
     },
   );

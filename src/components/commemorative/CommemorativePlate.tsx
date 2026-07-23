@@ -5,7 +5,11 @@ type CommemorativePlateProps = {
   className?: string;
   plate: Pick<
     CommemorativeMintPlate,
-    "achievement" | "achievedAt" | "recolor" | "repositoryFullName"
+    | "achievement"
+    | "achievedAt"
+    | "achievedAtEstimated"
+    | "recolor"
+    | "repositoryFullName"
   > & { mintNumber?: number };
 };
 
@@ -33,7 +37,7 @@ export function CommemorativePlate({ className, plate }: CommemorativePlateProps
 
   return (
     <article
-      aria-label={`${engraving.achievement} 記念プレート ${serial}`}
+      aria-label={`${engraving.achievement} 記念プレート ${serial} ${engraving.achievedLabel} ${engraving.achievedDate}`}
       className={`relative overflow-hidden rounded-[3px] border px-3 py-2 font-mono ${className ?? ""}`}
       style={{
         background: `linear-gradient(135deg, ${recolor.metal}, #151a18 55%, ${recolor.metal})`,
@@ -50,7 +54,7 @@ export function CommemorativePlate({ className, plate }: CommemorativePlateProps
         {engraving.achievement}
       </div>
       <div className="relative mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[8px] text-white/60">
-        <span>ACHIEVED / {engraving.achievedDate}</span>
+        <span>{engraving.achievedLabel} / {engraving.achievedDate}</span>
         <span>{engraving.repository}</span>
       </div>
     </article>

@@ -29,10 +29,16 @@ function createBrowserIdempotencyKey(): string {
   return globalThis.crypto?.randomUUID?.() ?? `commemorative-mint-${Date.now()}`;
 }
 
-function buildPreview(offer: CommemorativeMintOffer, recolor: CommemorativeMintRecolor) {
+function buildPreview(
+  offer: CommemorativeMintOffer,
+  recolor: CommemorativeMintRecolor,
+) {
+  if (offer.achievedAt == null || offer.achievedAtEstimated == null) return null;
+
   return {
     achievement: offer.achievement,
-    achievedAt: offer.achievedAt ?? new Date(0).toISOString(),
+    achievedAt: offer.achievedAt,
+    achievedAtEstimated: offer.achievedAtEstimated,
     repositoryFullName: offer.repositoryFullName,
     recolor,
   };

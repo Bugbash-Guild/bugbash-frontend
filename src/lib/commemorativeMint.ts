@@ -127,7 +127,11 @@ export function createMintIdempotencyKeyManager(
 export function formatPlateEngraving(
   plate: Pick<
     CommemorativeMintPlate,
-    "achievement" | "achievedAt" | "mintNumber" | "repositoryFullName"
+    | "achievement"
+    | "achievedAt"
+    | "achievedAtEstimated"
+    | "mintNumber"
+    | "repositoryFullName"
   >,
 ) {
   const date = new Date(plate.achievedAt);
@@ -137,6 +141,7 @@ export function formatPlateEngraving(
   return {
     achievement: ACHIEVEMENT_LABELS[plate.achievement],
     achievedDate,
+    achievedLabel: plate.achievedAtEstimated ? "達成時期（推定）" : "達成日",
     mintNumber: `#${String(plate.mintNumber).padStart(6, "0")}`,
     repository: `REPOSITORY / ${plate.repositoryFullName ?? "—"}`,
   };

@@ -9,6 +9,7 @@ export type CommemorativeMintPlate = {
   mintNumber: number;
   achievement: CommemorativeAchievement;
   achievedAt: string;
+  achievedAtEstimated: boolean;
   repositoryFullName: string | null;
   subjectOwnedMonsterId: number | null;
   recolor: CommemorativeMintRecolor;
@@ -19,6 +20,7 @@ export type CommemorativeMintOffer = {
   achievement: CommemorativeAchievement;
   unlocked: boolean;
   achievedAt: string | null;
+  achievedAtEstimated: boolean | null;
   repositoryFullName: string | null;
   subjectOwnedMonsterId: number | null;
   runeCost: number;
