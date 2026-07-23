@@ -102,6 +102,21 @@ export default function ShopPage() {
           <span className="inline-block w-2 h-[14px] ml-0.5 bg-accent align-middle animate-pulse" />
         </div>
 
+        <nav aria-label="ショップ種別" className="mb-4 inline-flex border border-line text-[11px]">
+          <Link className="px-3 py-2 text-text-dim hover:text-text" href="/shop/runes">
+            RUNES
+          </Link>
+          <Link
+            className="border-x border-line px-3 py-2 text-text-dim hover:text-accent-2"
+            href="/shop/skins"
+          >
+            SKINS
+          </Link>
+          <span aria-current="page" className="bg-bg-elev-2 px-3 py-2 text-accent">
+            ITEMS
+          </span>
+        </nav>
+
         <WalletBadge enabled={isAuthenticated} />
 
         {successFlash && (

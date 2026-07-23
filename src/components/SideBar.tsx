@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { glyph: "$", label: "~/shop", href: "/shop" },
   { glyph: "◇", label: "~/pass", href: "/pass" },
   { glyph: "*", label: "~/summon", href: "/summon" },
+  { glyph: "⚒", label: "~/forge", href: "/forge" },
   { glyph: "✦", label: "~/badges", href: "/badges" },
   { glyph: "◫", label: "~/billing", href: "/mypage/billing" },
   { glyph: "▲", label: "~/leaderboard", href: "/leaderboard" },
