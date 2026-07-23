@@ -7,11 +7,13 @@ import { useActivities, isMonsterDetail, isPrMergedMetadata, isXpDetail } from "
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
+import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { useRewardNotification } from "@/hooks/useRewardNotification";
 import { GameAssetFallback } from "@/components/GameAssetFallback";
 import { MainWrapper } from "@/components/MainWrapper";
 import { MonsterVisual } from "@/components/MonsterVisual";
 import { RewardModal } from "@/components/RewardModal";
+import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
 
 import { RARITY_COLOR } from "@/constants/rarity";
 
@@ -113,6 +115,7 @@ export default function Home() {
   const { monsters } = useMonsters();
   const { activities, loading: activitiesLoading } = useActivities();
   const { unread, acknowledge } = useRewardNotification(isAuthenticated);
+  const { mints: commemorativeMints } = usePublicCommemorativeMints(user?.githubId);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.replace("/login");
@@ -282,6 +285,17 @@ export default function Home() {
             </div>
 
             {/* BOTTOM ROW */}
+            {commemorativeMints.length > 0 && (
+              <section className="mb-3.5 border border-line bg-bg-elev p-4 rounded-[6px]" aria-labelledby="commemorative-collection-heading">
+                <div className="flex items-baseline justify-between gap-3">
+                  <h2 id="commemorative-collection-heading" className="text-[11px] tracking-[0.12em] text-gold">COMMEMORATIVE COLLECTION</h2>
+                  <span className="text-[10px] text-text-faint">{commemorativeMints.length} plates</span>
+                </div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {commemorativeMints.map((mint) => <CommemorativePlate key={mint.mintNumber} plate={mint} />)}
+                </div>
+              </section>
+            )}
             <div className="grid gap-3.5" style={{ gridTemplateColumns: "1fr 2fr" }}>
               {/* 2×2 stat boxes */}
               <div className="grid grid-cols-2 gap-2.5">

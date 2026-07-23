@@ -1,14 +1,23 @@
 import { FiAward, FiLock } from "react-icons/fi";
+import Link from "next/link";
 
 import { BADGE_PRESTIGE_COPY, getBadgeProgressRatio } from "@/lib/badges";
 import type { BadgeProgress } from "@/types/badge";
+import type { CommemorativeAchievement } from "@/types/commemorativeMint";
 
 type BadgePrestigeGridProps = {
   badges: BadgeProgress[];
   loading: boolean;
+  mintReadyAchievements?: readonly CommemorativeAchievement[];
 };
 
-export function BadgePrestigeGrid({ badges, loading }: BadgePrestigeGridProps) {
+const BADGE_MINT_ACHIEVEMENTS: Partial<Record<string, CommemorativeAchievement>> = {
+  codex_keeper: "CODEX_COMPLETE",
+  maxed_one: "MONSTER_LEVEL_100",
+  pr_slayer: "PR_MERGED_100",
+};
+
+export function BadgePrestigeGrid({ badges, loading, mintReadyAchievements = [] }: BadgePrestigeGridProps) {
   return (
     <section
       aria-labelledby="badge-prestige-heading"
@@ -46,6 +55,8 @@ export function BadgePrestigeGrid({ badges, loading }: BadgePrestigeGridProps) {
             {badges.map((badge) => {
               const earned = badge.earnedAt != null;
               const progressRatio = getBadgeProgressRatio(badge);
+              const achievement = BADGE_MINT_ACHIEVEMENTS[badge.code];
+              const mintReady = achievement != null && mintReadyAchievements.includes(achievement);
               return (
                 <article
                   key={badge.code}
@@ -80,6 +91,14 @@ export function BadgePrestigeGrid({ badges, loading }: BadgePrestigeGridProps) {
                       <p className="mt-2 text-[11px] leading-5 text-text-dim">
                         {badge.description}
                       </p>
+                      {mintReady && (
+                        <Link
+                          className="mt-2 inline-flex items-center text-[10px] text-gold hover:underline"
+                          href="/mints"
+                        >
+                          🔨 鋳造可能
+                        </Link>
+                      )}
                     </div>
                   </div>
 

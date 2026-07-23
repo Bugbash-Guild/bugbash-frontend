@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { MainWrapper } from "@/components/MainWrapper";
+import Link from "next/link";
 
 const RANK_COLORS: Record<number, string> = {
   1: "var(--gold)",
@@ -98,7 +99,7 @@ export default function LeaderboardPage() {
                     >
                       {login[0]?.toUpperCase() ?? "?"}
                     </div>
-                    <span className="text-[13px] text-text truncate">{login}</span>
+                    <Link className="text-[13px] text-text truncate hover:text-accent" href={`/heroes/${encodeURIComponent(entry.heroId)}`}>{login}</Link>
                   </div>
 
                   {/* level */}
