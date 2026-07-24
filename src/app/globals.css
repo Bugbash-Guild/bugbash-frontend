@@ -16,9 +16,38 @@
   --accent:       #7ee787;
   --accent-dim:   #3da55a;
   --accent-2:     #79c0ff;
+  --blue:         #79c0ff;
   --purple:       #d2a8ff;
   --gold:         #e3b341;
   --pink:         #ff7b72;
+
+  /* ---- 課金圏トークン（名声=緑 と分離: rune=琥珀 / coin=金 / pass=青） ---- */
+  --rune:         #f0b429;
+  --rune-dim:     #b07d15;
+  --rune-glow:    rgba(240,180,41,0.35);
+  --rune-bg:      rgba(240,180,41,0.10);
+  --rune-border:  rgba(240,180,41,0.42);
+
+  --coin:         #c9a24a;
+  --coin-bg:      rgba(201,162,74,0.10);
+  --coin-border:  rgba(201,162,74,0.34);
+
+  --pass:         #79c0ff;
+  --pass-bg:      rgba(121,192,255,0.10);
+  --pass-border:  rgba(121,192,255,0.38);
+
+  /* ---- 工房グレード ramp G1→G5（コスメ・琥珀系） ---- */
+  --grade-1:      #8a7a4a;
+  --grade-2:      #c9a24a;
+  --grade-3:      #f0b429;
+  --grade-4:      #ffd76a;
+  --grade-5:      #fff0c0;
+
+  /* ---- レアリティ ---- */
+  --rar-n:        #7a9c8c;
+  --rar-r:        #79c0ff;
+  --rar-sr:       #d2a8ff;
+  --rar-ssr:      #e3b341;
 }
 
 @theme inline {
@@ -34,9 +63,33 @@
   --color-accent: var(--accent);
   --color-accent-dim: var(--accent-dim);
   --color-accent-2: var(--accent-2);
+  --color-blue: var(--blue);
   --color-purple: var(--purple);
   --color-gold: var(--gold);
   --color-pink: var(--pink);
+
+  --color-rune: var(--rune);
+  --color-rune-dim: var(--rune-dim);
+  --color-rune-bg: var(--rune-bg);
+  --color-rune-border: var(--rune-border);
+  --color-coin: var(--coin);
+  --color-coin-bg: var(--coin-bg);
+  --color-coin-border: var(--coin-border);
+  --color-pass: var(--pass);
+  --color-pass-bg: var(--pass-bg);
+  --color-pass-border: var(--pass-border);
+
+  --color-grade-1: var(--grade-1);
+  --color-grade-2: var(--grade-2);
+  --color-grade-3: var(--grade-3);
+  --color-grade-4: var(--grade-4);
+  --color-grade-5: var(--grade-5);
+
+  --color-rar-n: var(--rar-n);
+  --color-rar-r: var(--rar-r);
+  --color-rar-sr: var(--rar-sr);
+  --color-rar-ssr: var(--rar-ssr);
+
   --font-mono: var(--font-jetbrains-mono);
 }
 

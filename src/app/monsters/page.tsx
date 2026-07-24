@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
+import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
+import { MainWrapper } from "@/components/MainWrapper";
+import { MonsterVisual } from "@/components/MonsterVisual";
+import { RARITY_COLOR } from "@/constants/rarity";
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
-import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { usePartner } from "@/hooks/usePartner";
-import { MainWrapper } from "@/components/MainWrapper";
-import { MonsterVisual } from "@/components/MonsterVisual";
-import { RARITY_COLOR, RARITY_ORDER } from "@/constants/rarity";
+import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
+import { matchMintToOwnedMonster } from "@/lib/commemorativeMint";
 import {
   canEvolveMonster,
   canLevelUpMonster,
@@ -18,469 +20,452 @@ import {
   MONSTER_EVOLUTION_LEVEL,
   MONSTER_MAX_LEVEL,
 } from "@/lib/monsterProgression";
-import { matchMintToOwnedMonster } from "@/lib/commemorativeMint";
-import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
+import type { CommemorativeMintPlate } from "@/types/commemorativeMint";
+import type { AwakeningState, Monster } from "@/types/monster";
 
-const AWAKENING_LABEL: Partial<
-  Record<import("@/types/monster").AwakeningState, string>
-> = {
+type RarityKey = "SSR" | "SR" | "R" | "N";
+type FilterKey = "all" | RarityKey;
+
+const RARITY_GROUPS: RarityKey[] = ["SSR", "SR", "R", "N"];
+const FILTERS: FilterKey[] = ["all", "SSR", "SR", "R", "N"];
+
+const AWAKENING_LABEL: Partial<Record<AwakeningState, string>> = {
   AWAKENED: "覚醒",
   BERSERK: "暴走",
 };
+
+/** 進化段階（活動由来）。formStage から派生。 */
+function evolutionStage(monster: Monster): number {
+  switch (monster.formStage) {
+    case "EVO":
+      return 1;
+    case "AWAKENED":
+    case "BERSERK":
+      return 2;
+    case "AWAKENED_FINAL":
+    case "BERSERK_FINAL":
+      return 3;
+    default:
+      return 0;
+  }
+}
+
+function RarityChip({ rarity }: { rarity: RarityKey }) {
+  const c = RARITY_COLOR[rarity];
+  return (
+    <span
+      className="inline-flex rounded-[2px] border px-[7px] py-px text-[9.5px] font-bold tracking-[0.1em]"
+      style={{ color: c, background: `${c}1f`, borderColor: `${c}66` }}
+    >
+      {rarity}
+    </span>
+  );
+}
 
 export default function MonstersPage() {
   const { isAuthenticated, user } = useAuth();
   const { monsters, loading, error, refetch } = useMonsters();
   const { partnerId, setPartner } = usePartner();
-  const { hero, refetch: refetchHero } = useHero(isAuthenticated);
+  const { refetch: refetchHero } = useHero(isAuthenticated);
   const { mints } = usePublicCommemorativeMints(user?.githubId);
+  const [filter, setFilter] = useState<FilterKey>("all");
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [levelingUp, setLevelingUp] = useState<string | null>(null);
   const [evolving, setEvolving] = useState<string | null>(null);
   const [changingPath, setChangingPath] = useState<string | null>(null);
 
-  const handleLevelUp = async (monsterId: string) => {
-    setLevelingUp(monsterId);
+  async function runAction(
+    monsterId: string,
+    action: "level-up" | "evolve" | "change-path",
+    setBusy: (id: string | null) => void,
+    describe: (body: Record<string, unknown>) => string,
+  ) {
+    setBusy(monsterId);
     setActionError(null);
     setSuccessMsg(null);
     try {
-      const res = await fetch(`/api/monsters/${monsterId}/level-up`, {
+      const res = await fetch(`/api/monsters/${monsterId}/${action}`, {
         method: "POST",
       });
-      const body = (await res.json()) as {
-        newLevel?: number;
-        soulsRemaining?: number;
-        guildCoinBalance?: number;
-        error?: string;
-      };
+      const body = (await res.json()) as Record<string, unknown>;
       if (!res.ok) {
-        setActionError(body.error ?? `Error ${res.status}`);
+        setActionError((body.error as string) ?? `Error ${res.status}`);
       } else {
-        setSuccessMsg(`Lv.${body.newLevel ?? "?"} に上昇！`);
+        setSuccessMsg(describe(body));
         await Promise.all([refetch(), refetchHero()]);
       }
     } catch {
       setActionError("Network error");
     } finally {
-      setLevelingUp(null);
+      setBusy(null);
     }
-  };
+  }
 
-  const handleChangePath = async (monsterId: string) => {
-    setChangingPath(monsterId);
-    setActionError(null);
-    setSuccessMsg(null);
-    try {
-      const res = await fetch(`/api/monsters/${monsterId}/change-path`, {
-        method: "POST",
-      });
-      const body = (await res.json()) as {
-        awakeningState?: import("@/types/monster").AwakeningState;
-        itemRemaining?: number;
-        error?: string;
-      };
-      if (!res.ok) {
-        setActionError(body.error ?? `Error ${res.status}`);
-      } else {
-        const label = body.awakeningState
-          ? (AWAKENING_LABEL[body.awakeningState] ?? body.awakeningState)
-          : "?";
-        setSuccessMsg(
-          `路線変更：${label}（証残数: ${body.itemRemaining ?? "?"}）`,
-        );
-        await Promise.all([refetch(), refetchHero()]);
-      }
-    } catch {
-      setActionError("Network error");
-    } finally {
-      setChangingPath(null);
-    }
-  };
+  const handleLevelUp = (id: string) =>
+    runAction(id, "level-up", setLevelingUp, (b) => `Lv.${b.newLevel ?? "?"} に上昇！`);
+  const handleEvolve = (id: string) =>
+    runAction(id, "evolve", setEvolving, (b) => `覚醒：${b.awakeningState ?? "?"}`);
+  const handleChangePath = (id: string) =>
+    runAction(id, "change-path", setChangingPath, (b) => {
+      const label = b.awakeningState
+        ? (AWAKENING_LABEL[b.awakeningState as AwakeningState] ?? String(b.awakeningState))
+        : "?";
+      return `路線変更：${label}（証残数: ${b.itemRemaining ?? "?"}）`;
+    });
 
-  const handleEvolve = async (monsterId: string) => {
-    setEvolving(monsterId);
-    setActionError(null);
-    setSuccessMsg(null);
-    try {
-      const res = await fetch(`/api/monsters/${monsterId}/evolve`, {
-        method: "POST",
-      });
-      const body = (await res.json()) as {
-        awakeningState?: string;
-        evolutionStonesRemaining?: number;
-        error?: string;
-      };
-      if (!res.ok) {
-        setActionError(body.error ?? `Error ${res.status}`);
-      } else {
-        setSuccessMsg(`覚醒：${body.awakeningState ?? "?"}`);
-        await Promise.all([refetch(), refetchHero()]);
-      }
-    } catch {
-      setActionError("Network error");
-    } finally {
-      setEvolving(null);
-    }
-  };
-
-  const dex = [...monsters].sort(
-    (a, b) =>
-      RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity] ||
-      a.id.localeCompare(b.id),
+  const dex = useMemo(
+    () => [...monsters].sort((a, b) => a.id.localeCompare(b.id)),
+    [monsters],
   );
-
   const partnerMonster = dex.find((m) => m.id === partnerId) ?? null;
   const discoveredCount = dex.filter((m) => m.isOwned).length;
+  const ownedInstances = dex.reduce((sum, m) => sum + (m.isOwned ? 1 : 0), 0);
+
+  const visibleGroups = RARITY_GROUPS.filter(
+    (g) => filter === "all" || filter === g,
+  ).map((g) => ({
+    rarity: g,
+    items: dex.filter((m) => m.rarity === g),
+  })).filter((group) => group.items.length > 0);
 
   return (
     <MainWrapper>
       <div className="px-9 py-6">
         {/* prompt header */}
-        <div className="text-[13px] text-text-dim mb-5">
+        <div className="mb-5 text-[13px] text-text-dim">
           <span className="text-accent">
-            {isAuthenticated ? "hero" : "guest"}@bugbash
+            {user?.username ?? (isAuthenticated ? "hero" : "guest")}@bugbash
           </span>
           <span className="text-text-faint">:</span>
-          <span className="text-accent-2">~/monsters</span>
+          <span className="text-blue">~/monsters</span>
           <span className="text-text-faint">$ </span>
           <span>cat dex/*.card --format=detailed</span>
-          <span className="inline-block w-2 h-[14px] ml-0.5 bg-accent align-middle animate-pulse" />
+          <span className="ml-0.5 inline-block h-[14px] w-2 animate-pulse bg-accent align-middle" />
         </div>
 
-        {/* page header */}
-        <div className="flex items-end justify-between mb-3.5">
+        {/* page header + filters */}
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <div className="text-[28px] font-semibold">Monster Dex</div>
-            <div className="text-[12px] text-text-dim mt-1">
-              detailed view · sorted by rarity
-            </div>
+            <h1 className="text-[28px] font-semibold tracking-[-0.015em]">Monster Dex</h1>
+            <p className="mt-1.5 text-[12.5px] leading-7 text-text-dim">
+              discovered <b className="text-accent">{discoveredCount}</b> / {dex.length}
+              {" · "}owned <b className="text-accent">{ownedInstances}</b> instances{" · "}
+              進化/覚醒＝<span className="text-accent">活動由来</span>
+            </p>
           </div>
-          <div className="flex items-center gap-4">
-            {hero && (
-              <div className="text-[13px] text-text-dim">
-                GC{" "}
-                <span className="text-accent font-semibold">
-                  {hero.guildCoinBalance}
-                </span>{" "}
-                G
-              </div>
-            )}
-            <div className="text-[11px] text-text-faint">
-              [&nbsp;<span className="text-accent">list</span>&nbsp;| grid |
-              tree&nbsp;]
-            </div>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="レアリティで絞り込み">
+            {FILTERS.map((f) => {
+              const active = filter === f;
+              return (
+                <button
+                  key={f}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setFilter(f)}
+                  className={[
+                    "rounded-[4px] border px-3 py-1.5 text-[11px] transition-colors",
+                    active
+                      ? "border-accent/40 bg-accent/[0.08] text-accent"
+                      : "border-line-strong text-text-dim hover:text-text",
+                  ].join(" ")}
+                >
+                  {f}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* loading / error */}
-        {loading && (
-          <div className="text-text-faint text-[13px] mb-4">loading dex…</div>
-        )}
-        {error && (
-          <div className="text-pink text-[13px] mb-4">error: {error}</div>
-        )}
-        {successMsg && (
-          <div className="text-accent text-[13px] mb-4 px-3 py-2 rounded border border-accent/30 bg-accent/10">
-            {successMsg}
-          </div>
-        )}
-        {actionError && (
-          <div className="text-pink text-[13px] mb-4 px-3 py-2 rounded border border-pink/30 bg-pink/10">
-            {actionError}
-          </div>
-        )}
-
-        {/* PARTNER banner */}
+        {/* FAVORITE / partner banner */}
         <div
-          className="mb-4 px-3.5 py-2.5 rounded-[4px]"
+          className="mt-4 flex items-center gap-3 rounded-[4px] border px-3.5 py-2.5 text-[12px]"
           style={{
             background: partnerMonster
-              ? `${RARITY_COLOR[partnerMonster.rarity]}10`
+              ? `${RARITY_COLOR[partnerMonster.rarity]}14`
               : "var(--bg-elev)",
-            border: partnerMonster
-              ? `1px solid ${RARITY_COLOR[partnerMonster.rarity]}55`
-              : "1px solid var(--line)",
+            borderColor: partnerMonster
+              ? `${RARITY_COLOR[partnerMonster.rarity]}88`
+              : "var(--line)",
           }}
         >
           {partnerMonster ? (
-            <div className="flex items-center gap-3">
-              <span className="text-[9px] text-text-faint tracking-[0.12em]">
-                PARTNER / パートナー
+            <>
+              <span className="shrink-0 text-[10px] uppercase tracking-[0.12em] text-text-faint">
+                FAVORITE / 連れている
               </span>
               <MonsterVisual
                 artworkByStage={partnerMonster.artworkByStage}
                 assetUrl={partnerMonster.assetUrl}
-                className="size-8"
+                className="size-7 shrink-0"
                 formStage={partnerMonster.formStage}
                 id={partnerMonster.id}
                 awakeningState={partnerMonster.awakeningState}
                 level={partnerMonster.level}
                 name={partnerMonster.name}
-                sizes="32px"
+                sizes="28px"
               />
-              <div className="flex-1">
-                <div
-                  className="text-[13px] font-semibold"
-                  style={{ color: RARITY_COLOR[partnerMonster.rarity] }}
-                >
-                  {partnerMonster.name}
-                </div>
-                <div className="text-xs opacity-60 mt-0.5">
-                  {partnerMonster.soulCount}{" "}
-                  {partnerMonster.attributeName ?? ""}ソウル
-                </div>
-              </div>
-              <span className="text-xs text-yellow-400 border border-yellow-400 px-2 py-0.5 rounded">
-                パートナー中
+              <b
+                className="shrink-0 whitespace-nowrap"
+                style={{ color: RARITY_COLOR[partnerMonster.rarity] }}
+              >
+                {partnerMonster.name}
+              </b>
+              <span className="ml-auto min-w-0 truncate text-[10px] text-text-faint">
+                カードをクリックで変更（獲得済みのみ）
               </span>
-              <span className="text-[11px] text-text-faint">
-                {discoveredCount} / {dex.length} discovered
-              </span>
-            </div>
+            </>
           ) : (
-            <div className="p-1 text-sm opacity-40">
-              モンスターカードをクリックしてパートナーに設定しよう
-            </div>
+            <span className="text-text-faint">
+              モンスターカードをクリックしてパートナー（連れ歩き）に設定できます。
+            </span>
           )}
         </div>
 
-        {/* 4-column dex grid */}
-        <div
-          className="grid gap-3"
-          style={{
-            gridTemplateColumns:
-              "repeat(auto-fill, minmax(max(130px, calc((100% - 72px) / 7)), 1fr))",
-          }}
-        >
-          {dex.map((m) => {
-            const c = RARITY_COLOR[m.rarity];
-            const isComp = m.id === partnerId;
-            const isAwakened = isMonsterAwakened(m);
-            const canEvolve = canEvolveMonster(m);
-            const canLevelUp = canLevelUpMonster(m);
-            const levelUpCost = getMonsterLevelUpCost(m.level);
-            const mint = matchMintToOwnedMonster(mints, m.ownedMonsterId);
+        {/* messages */}
+        {loading && <p className="mt-4 text-[13px] text-text-faint">loading dex…</p>}
+        {error && <p className="mt-4 text-[13px] text-pink">error: {error}</p>}
+        {successMsg && (
+          <p className="mt-4 rounded border border-accent/30 bg-accent/10 px-3 py-2 text-[13px] text-accent">
+            {successMsg}
+          </p>
+        )}
+        {actionError && (
+          <p className="mt-4 rounded border border-pink/30 bg-pink/10 px-3 py-2 text-[13px] text-pink">
+            {actionError}
+          </p>
+        )}
+
+        {/* grouped dex */}
+        <div className="mt-4 space-y-2">
+          {visibleGroups.map(({ rarity, items }) => {
+            const got = items.filter((m) => m.isOwned).length;
             return (
-              <div
-                key={m.id}
-                className="rounded-[6px] p-3.5 relative transition-transform duration-[120ms]"
-                style={{
-                  background: m.isOwned ? "var(--bg-elev)" : "var(--bg-elev-2)",
-                  border: `${isComp ? 2 : 1}px ${m.isOwned ? "solid" : "dashed"} ${
-                    isComp ? c : m.isOwned ? `${c}66` : "var(--line-strong)"
-                  }`,
-                  opacity: m.isOwned ? 1 : 0.6,
-                  boxShadow: isComp
-                    ? `0 0 0 1px ${c}aa, 0 8px 24px ${c}33`
-                    : m.isOwned && m.rarity === "SSR"
-                      ? `inset 0 0 24px ${c}22`
-                      : "none",
-                  cursor: m.isOwned ? "pointer" : "not-allowed",
-                }}
-              >
-                {/* PARTNER badge */}
-                {isComp && (
-                  <div
-                    className="absolute -top-2 right-2.5 text-[9px] font-bold px-2 py-0.5 rounded-[2px] tracking-[0.1em]"
-                    style={{ background: c, color: "var(--bg)" }}
-                  >
-                    PARTNER
-                  </div>
-                )}
-
-                {/* id + rarity */}
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-[10px] text-text-faint">
-                    #{m.id.slice(0, 8)}
+              <section key={rarity} aria-label={`${rarity} monsters`}>
+                <div className="mb-3.5 mt-8 flex items-center gap-2.5">
+                  <RarityChip rarity={rarity} />
+                  <span className="text-[11px] tabular-nums text-text-dim">
+                    {got}/{items.length} discovered
                   </span>
-                  <span
-                    className="text-[9px] font-bold px-1.5 py-0.5 rounded-[2px] tracking-[0.1em]"
-                    style={{
-                      color: c,
-                      background: `${c}14`,
-                      border: `1px solid ${c}55`,
-                    }}
-                  >
-                    {m.rarity}
-                  </span>
+                  <span className="h-px flex-1 bg-gradient-to-r from-line to-transparent" />
                 </div>
-
-                {/* portrait */}
-                <div
-                  className="aspect-square rounded-[4px] flex items-center justify-center text-[64px] mb-2.5 border border-line relative overflow-hidden"
-                  style={{
-                    background: m.isOwned
-                      ? `radial-gradient(circle at 50% 40%, ${c}1a 0%, transparent 70%), var(--bg-elev-2)`
-                      : "var(--bg-elev-2)",
-                  }}
-                >
-                  <MonsterVisual
-                    artworkByStage={m.artworkByStage}
-                    assetUrl={m.assetUrl}
-                    className="size-full"
-                    formStage={m.formStage}
-                    id={m.id}
-                    imageClassName={
-                      !m.isOwned ? "brightness-0 opacity-35" : undefined
-                    }
-                    awakeningState={m.awakeningState}
-                    level={m.level}
-                    name={m.name}
-                    sizes="160px"
-                  />
-                  {!m.isOwned && (
-                    <span className="absolute bottom-1 right-1.5 text-[9px] text-text-faint tracking-[0.1em] opacity-80">
-                      ???
-                    </span>
-                  )}
-                </div>
-
-                {/* name */}
-                <div
-                  className="text-[13px] font-semibold mb-0.5"
-                  style={{
-                    color: m.isOwned ? "var(--text)" : "var(--text-faint)",
-                  }}
-                >
-                  {m.isOwned ? m.name : "???"}
-                </div>
-
-                {/* stats */}
-                <div className="text-[10px] text-text-faint leading-[1.5]">
-                  <div className="whitespace-nowrap">
-                    <span
-                      style={{
-                        color: m.isOwned ? "var(--accent)" : "var(--pink)",
+                <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 xl:grid-cols-4">
+                  {items.map((m) => (
+                    <MonsterCard
+                      key={m.id}
+                      monster={m}
+                      isPartner={m.id === partnerId}
+                      mint={matchMintToOwnedMonster(mints, m.ownedMonsterId)}
+                      busy={{
+                        levelingUp: levelingUp === m.id,
+                        evolving: evolving === m.id,
+                        changingPath: changingPath === m.id,
                       }}
-                    >
-                      {m.isOwned ? "所持中" : "未入手"}
-                    </span>
-                  </div>
-
-                  {/* 属性 + ソウル + レベル（所持のみ） */}
-                  {m.isOwned && (
-                    <>
-                      {m.attributeName && (
-                        <div className="mt-1">
-                          <span className="text-[9px] px-1 py-0.5 rounded opacity-60 bg-white/5">
-                            {m.attributeName}
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex items-center justify-between mt-1">
-                        <span className="text-xs opacity-50">
-                          soul × {m.soulCount}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          Lv.{m.level}
-                        </span>
-                      </div>
-                    </>
-                  )}
+                      onSetPartner={() => void setPartner(m.id)}
+                      onLevelUp={() => void handleLevelUp(m.id)}
+                      onEvolve={() => void handleEvolve(m.id)}
+                      onChangePath={() => void handleChangePath(m.id)}
+                    />
+                  ))}
                 </div>
-
-                {/* 覚醒済みバッジ / 進化ボタン / レベルアップボタン */}
-                {m.isOwned && (
-                  <div className="mt-1 space-y-1">
-                    {isAwakened && (
-                      <>
-                        <div
-                          className="text-[10px] text-center font-bold tracking-widest rounded py-0.5"
-                          style={{
-                            color:
-                              m.awakeningState === "BERSERK"
-                                ? "#f97316"
-                                : "#a78bfa",
-                            border: `1px solid ${m.awakeningState === "BERSERK" ? "#f9731640" : "#a78bfa40"}`,
-                          }}
-                        >
-                          {m.awakeningState &&
-                            (AWAKENING_LABEL[m.awakeningState] ??
-                              m.awakeningState)}
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            void handleChangePath(m.id);
-                          }}
-                          disabled={changingPath === m.id}
-                          className="w-full text-[10px] px-2 py-0.5 rounded border border-current opacity-60 hover:opacity-100 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity"
-                          style={{
-                            color:
-                              m.awakeningState === "BERSERK"
-                                ? "#a78bfa"
-                                : "#f97316",
-                          }}
-                        >
-                          {changingPath === m.id ? "…" : "路線変更"}
-                        </button>
-                      </>
-                    )}
-
-                    {canEvolve && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          void handleEvolve(m.id);
-                        }}
-                        disabled={evolving === m.id}
-                        className="w-full text-[10px] px-2 py-0.5 rounded border border-current opacity-80 hover:opacity-100 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity"
-                        style={{ color: "#a78bfa" }}
-                      >
-                        {evolving === m.id
-                          ? "…"
-                          : `進化 (Lv${MONSTER_EVOLUTION_LEVEL}+)`}
-                      </button>
-                    )}
-
-                    {canLevelUp ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          void handleLevelUp(m.id);
-                        }}
-                        disabled={
-                          m.soulCount < levelUpCost || levelingUp === m.id
-                        }
-                        className="w-full text-[10px] px-2 py-0.5 rounded border border-current opacity-60 hover:opacity-100 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity"
-                        style={{ color: c }}
-                      >
-                        {levelingUp === m.id
-                          ? "…"
-                          : `Lv UP (${levelUpCost} ${m.attributeName ?? "soul"})`}
-                      </button>
-                    ) : !canEvolve ? (
-                      <div className="text-[10px] text-center font-bold tracking-widest rounded py-0.5 border border-line text-text-faint">
-                        Lv.{MONSTER_MAX_LEVEL}
-                      </div>
-                    ) : null}
-                  </div>
-                )}
-
-                {/* パートナー設定ボタン / バッジ */}
-                {m.isOwned && isComp && (
-                  <div className="mt-1 text-xs text-yellow-400 text-center">
-                    パートナー中
-                  </div>
-                )}
-                {m.isOwned && !isComp && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      void setPartner(m.id);
-                    }}
-                    className="mt-1 w-full text-xs px-2 py-0.5 rounded border border-current opacity-40 hover:opacity-90 transition-opacity"
-                  >
-                    パートナーに設定
-                  </button>
-                )}
-                {mint && <CommemorativePlate className="mt-3" plate={mint} />}
-              </div>
+              </section>
             );
           })}
+          {!loading && visibleGroups.length === 0 && (
+            <p className="mt-8 border border-dashed border-line-strong bg-bg-elev px-5 py-12 text-center text-[12px] text-text-faint">
+              該当するモンスターがいません。
+            </p>
+          )}
         </div>
       </div>
     </MainWrapper>
+  );
+}
+
+function MonsterCard({
+  monster: m,
+  isPartner,
+  mint,
+  busy,
+  onSetPartner,
+  onLevelUp,
+  onEvolve,
+  onChangePath,
+}: {
+  monster: Monster;
+  isPartner: boolean;
+  mint: CommemorativeMintPlate | undefined;
+  busy: { levelingUp: boolean; evolving: boolean; changingPath: boolean };
+  onSetPartner: () => void;
+  onLevelUp: () => void;
+  onEvolve: () => void;
+  onChangePath: () => void;
+}) {
+  const c = RARITY_COLOR[m.rarity];
+  const awakened = isMonsterAwakened(m);
+  const berserk = m.awakeningState === "BERSERK";
+  const evoStage = evolutionStage(m);
+  const canEvolve = canEvolveMonster(m);
+  const canLevelUp = canLevelUpMonster(m);
+  const levelUpCost = getMonsterLevelUpCost(m.level);
+
+  // art tint by activity state (green evolution / gold awaken / pink berserk)
+  const artBorder = berserk
+    ? "rgba(255,123,114,0.55)"
+    : awakened
+      ? "var(--grade-5)"
+      : m.isOwned
+        ? "var(--line)"
+        : "var(--line)";
+  const artShadow = berserk
+    ? "inset 0 0 22px rgba(255,123,114,0.2)"
+    : awakened
+      ? "inset 0 0 22px rgba(255,240,192,0.26)"
+      : "none";
+
+  return (
+    <div
+      onClick={m.isOwned && !isPartner ? onSetPartner : undefined}
+      className="relative rounded-[8px] p-3 transition-colors"
+      style={{
+        background: m.isOwned ? "var(--bg-elev)" : "var(--bg-elev-2)",
+        borderStyle: m.isOwned ? "solid" : "dashed",
+        borderWidth: isPartner ? 2 : 1,
+        borderColor: isPartner ? c : m.isOwned ? `${c}66` : "var(--line-strong)",
+        opacity: m.isOwned ? 1 : 0.5,
+        boxShadow: isPartner
+          ? `0 0 0 1px ${c}, 0 8px 24px rgba(0,0,0,0.4)`
+          : m.isOwned && m.rarity === "SSR"
+            ? `inset 0 0 22px ${c}1a`
+            : "none",
+        cursor: m.isOwned ? "pointer" : "not-allowed",
+      }}
+    >
+      {isPartner && (
+        <span
+          className="absolute -top-2.5 right-2.5 rounded-[2px] px-2 py-0.5 text-[9px] font-bold tracking-[0.1em]"
+          style={{ background: c, color: "#0b0f0d" }}
+        >
+          ★ FAVORITE
+        </span>
+      )}
+
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-[10px] text-text-faint">#{m.id.slice(0, 8)}</span>
+        <RarityChip rarity={m.rarity} />
+      </div>
+
+      {/* portrait */}
+      <div
+        className="relative flex items-center justify-center overflow-hidden rounded-[5px] border text-[54px]"
+        style={{
+          aspectRatio: "1 / 0.72",
+          background: m.isOwned
+            ? `radial-gradient(circle at 50% 42%, ${c}29 0%, transparent 68%), var(--bg-elev-2)`
+            : "var(--bg-elev-2)",
+          borderColor: artBorder,
+          boxShadow: artShadow,
+        }}
+      >
+        {m.isOwned ? (
+          <MonsterVisual
+            artworkByStage={m.artworkByStage}
+            assetUrl={m.assetUrl}
+            className="size-full"
+            formStage={m.formStage}
+            id={m.id}
+            awakeningState={m.awakeningState}
+            level={m.level}
+            name={m.name}
+            sizes="160px"
+          />
+        ) : (
+          <span className="text-text-faint">?</span>
+        )}
+      </div>
+
+      {/* name */}
+      <div
+        className="mt-2.5 text-[13px] font-semibold"
+        style={{ color: m.isOwned ? "var(--text)" : "var(--text-faint)" }}
+      >
+        {m.isOwned ? m.name : "???"}
+      </div>
+
+      {/* meta */}
+      <div className="mt-0.5 text-[10px] leading-6 text-text-faint">
+        status:{" "}
+        {m.isOwned ? (
+          <span className="text-accent">caught · {m.attributeName ?? "soul"} × {m.soulCount}</span>
+        ) : (
+          <span className="text-pink">not_found</span>
+        )}
+      </div>
+
+      {/* activity-derived badges (green fame / gold awaken / pink berserk) */}
+      {m.isOwned && (
+        <div className="mt-1.5 flex flex-wrap gap-1">
+          <span
+            className="inline-flex items-center gap-1 rounded-[2px] border border-accent/30 bg-accent/[0.08] px-[7px] py-px text-[9px] font-bold tracking-[0.08em] text-accent"
+          >
+            Lv.{m.level}
+            {evoStage > 0 && <> · 進化{"★".repeat(evoStage)}</>}
+          </span>
+          {awakened && !berserk && (
+            <span className="inline-flex items-center rounded-[2px] border border-grade-5/40 bg-grade-5/[0.08] px-[7px] py-px text-[9px] font-bold tracking-[0.08em] text-grade-5">
+              覚醒
+            </span>
+          )}
+          {berserk && (
+            <span className="inline-flex items-center rounded-[2px] border border-pink/40 bg-pink/[0.08] px-[7px] py-px text-[9px] font-bold tracking-[0.08em] text-pink">
+              暴走
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* management actions (real functionality, kept subtle) */}
+      {m.isOwned && (
+        <div className="mt-2 space-y-1" onClick={(e) => e.stopPropagation()}>
+          {canLevelUp && (
+            <button
+              type="button"
+              onClick={onLevelUp}
+              disabled={m.soulCount < levelUpCost || busy.levelingUp}
+              className="w-full rounded border border-accent/40 px-2 py-1 text-[10px] text-accent transition-opacity hover:bg-accent/[0.08] disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              {busy.levelingUp ? "…" : `Lv UP (${levelUpCost} ${m.attributeName ?? "soul"})`}
+            </button>
+          )}
+          {canEvolve && (
+            <button
+              type="button"
+              onClick={onEvolve}
+              disabled={busy.evolving}
+              className="w-full rounded border border-purple/40 px-2 py-1 text-[10px] text-purple transition-opacity hover:bg-purple/[0.08] disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              {busy.evolving ? "…" : `進化 (Lv${MONSTER_EVOLUTION_LEVEL}+)`}
+            </button>
+          )}
+          {awakened && (
+            <button
+              type="button"
+              onClick={onChangePath}
+              disabled={busy.changingPath}
+              className="w-full rounded border border-line-strong px-2 py-1 text-[10px] text-text-dim transition-opacity hover:text-text disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              {busy.changingPath ? "…" : "路線変更"}
+            </button>
+          )}
+          {!canLevelUp && !canEvolve && m.level >= MONSTER_MAX_LEVEL && (
+            <div className="rounded border border-line py-1 text-center text-[10px] font-bold tracking-widest text-text-faint">
+              Lv.{MONSTER_MAX_LEVEL}
+            </div>
+          )}
+        </div>
+      )}
+
+      {mint && <CommemorativePlate className="mt-3" plate={mint} />}
+    </div>
   );
 }
