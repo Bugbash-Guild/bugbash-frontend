@@ -5,9 +5,103 @@ import { useParams } from "next/navigation";
 import { FiAward } from "react-icons/fi";
 
 import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
+import { MonsterVisual } from "@/components/MonsterVisual";
 import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { usePublicHeroBadges } from "@/hooks/useBadges";
+import { usePublicHeroProfile } from "@/hooks/useHeroProfile";
+import { RARITY_COLOR } from "@/constants/rarity";
 import type { PublicHeroBadge } from "@/types/badge";
+import type { PublicApexSkin, PublicShowcaseMonster } from "@/types/hero";
+
+const SKIN_TIER_LABEL: Record<string, string> = { STD: "STD", DX: "DX", LG: "LG" };
+
+function ShowcaseCard({ monster }: { monster: PublicShowcaseMonster }) {
+  const rarityColor = RARITY_COLOR[monster.rarity] ?? "var(--text-dim)";
+  const awakened = monster.awakeningState === "AWAKENED";
+  const berserk = monster.awakeningState === "BERSERK";
+  return (
+    <div className="rounded-[6px] border border-line bg-bg-elev p-3">
+      <div
+        className="relative flex h-[120px] items-center justify-center overflow-hidden rounded-[5px] border"
+        style={{
+          background: "var(--bg-elev-2)",
+          borderColor: berserk
+            ? "rgba(255,123,114,0.5)"
+            : awakened
+              ? "var(--grade-5)"
+              : monster.equippedSkinId
+                ? "var(--grade-5)"
+                : "var(--line)",
+        }}
+      >
+        <MonsterVisual
+          artworkByStage={monster.artworkByStage}
+          assetUrl={monster.assetUrl}
+          awakeningState={monster.awakeningState}
+          className="size-full"
+          formStage={monster.formStage}
+          id={monster.slug}
+          level={monster.level}
+          name={monster.name}
+          sizes="220px"
+        />
+      </div>
+      <div className="mt-2.5 flex items-center justify-between gap-2">
+        <span className="truncate text-[13px] font-semibold text-text">{monster.name}</span>
+        <span className="shrink-0 text-[9px] font-bold tracking-[0.1em]" style={{ color: rarityColor }}>
+          {monster.rarity}
+        </span>
+      </div>
+      <div className="mt-1.5 flex flex-wrap gap-1 text-[9px]">
+        <span className="inline-flex items-center rounded-[2px] border border-accent/30 bg-accent/[0.08] px-[7px] py-px font-bold tracking-[0.08em] text-accent">
+          Lv.{monster.level}
+        </span>
+        {awakened && (
+          <span className="inline-flex items-center rounded-[2px] border border-grade-5/40 bg-grade-5/[0.08] px-[7px] py-px font-bold text-grade-5">
+            覚醒
+          </span>
+        )}
+        {berserk && (
+          <span className="inline-flex items-center rounded-[2px] border border-pink/40 bg-pink/[0.08] px-[7px] py-px font-bold text-pink">
+            暴走
+          </span>
+        )}
+        {monster.equippedSkinLineName && (
+          <span className="inline-flex items-center gap-1 rounded-[2px] border border-rune-border bg-rune-bg px-[7px] py-px font-bold text-rune">
+            ◨ {monster.equippedSkinLineName}
+            {monster.equippedSkinTier ? ` ${SKIN_TIER_LABEL[monster.equippedSkinTier] ?? monster.equippedSkinTier}` : ""}
+            {monster.masteryLevel > 0 ? ` St${monster.masteryLevel}` : ""}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ApexCard({ skin }: { skin: PublicApexSkin }) {
+  return (
+    <div
+      className="rounded-[8px] border p-4"
+      style={{
+        borderColor: "var(--grade-5)",
+        background: "linear-gradient(180deg, #12181a 0%, #0a0e0c 100%)",
+        boxShadow: "inset 0 0 26px rgba(255,240,192,0.14)",
+      }}
+    >
+      <div className="flex items-center justify-between text-[9px] tracking-[0.2em] text-grade-5">
+        <span>APEX — {skin.lineName}線</span>
+        <span>St{skin.masteryLevel}</span>
+      </div>
+      <p className="mt-2 text-[15px] font-extrabold text-text">{skin.lineName}</p>
+      <p className="mt-1 text-[10px] text-text-dim">
+        {skin.monsterSlug} · {skin.tier}
+      </p>
+      <p className="mt-3 border-t border-line pt-2 text-[9px] leading-5 text-text-faint">
+        スキンマスタリー最終段階（St{skin.masteryLevel}）到達 — 活動で使い込んだ証。
+      </p>
+    </div>
+  );
+}
 
 function SectionHeading({ title, note }: { title: string; note?: string }) {
   return (
@@ -63,8 +157,9 @@ export default function PublicHeroPage() {
     loading: mintsLoading,
     mints,
   } = usePublicCommemorativeMints(heroId);
+  const { profile } = usePublicHeroProfile(heroId);
 
-  const handle = heroId;
+  const handle = profile?.githubLogin ?? heroId;
   const topTier = badges.reduce((max, b) => Math.max(max, b.currentTier), 0);
   // 名声由来の称号（購入不可）: 最高ティアのバッジ上位2件を表示
   const honors = [...badges]
@@ -103,9 +198,14 @@ export default function PublicHeroPage() {
             {handle.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-[240px] flex-1">
-            <div className="text-[26px] font-extrabold tracking-[-0.01em]">
-              <span className="font-normal text-text-faint">@</span>
-              {handle}
+            <div className="flex flex-wrap items-baseline gap-3">
+              <div className="text-[26px] font-extrabold tracking-[-0.01em]">
+                <span className="font-normal text-text-faint">@</span>
+                {handle}
+              </div>
+              {profile && (
+                <span className="text-[16px] font-bold text-accent">Lv.{profile.level}</span>
+              )}
             </div>
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
               {honors.map((b) => (
@@ -125,11 +225,19 @@ export default function PublicHeroPage() {
 
         {/* stat row (public, real) */}
         <div className="mt-5 flex flex-wrap gap-2">
-          {[
-            { k: "BADGES", v: String(badges.length), s: "earned" },
-            { k: "TOP TIER", v: topTier > 0 ? `T${topTier}` : "—", s: "highest" },
-            { k: "CASTS", v: String(mints.length), s: "記念鋳造" },
-          ].map((stat) => (
+          {(profile
+            ? [
+                { k: "PRS MERGED", v: profile.totalPrsMerged.toLocaleString("ja-JP"), s: "lifetime" },
+                { k: "STREAK", v: `${profile.streakDays}d`, s: "current" },
+                { k: "BADGES", v: String(badges.length), s: `top T${topTier}` },
+                { k: "CASTS", v: String(mints.length), s: "記念鋳造" },
+              ]
+            : [
+                { k: "BADGES", v: String(badges.length), s: "earned" },
+                { k: "TOP TIER", v: topTier > 0 ? `T${topTier}` : "—", s: "highest" },
+                { k: "CASTS", v: String(mints.length), s: "記念鋳造" },
+              ]
+          ).map((stat) => (
             <div
               key={stat.k}
               className="min-w-[150px] flex-1 rounded-[4px] border border-line bg-bg-elev px-4 py-3"
@@ -140,6 +248,30 @@ export default function PublicHeroPage() {
             </div>
           ))}
         </div>
+
+        {/* apex hall of fame */}
+        {profile && profile.apex.length > 0 && (
+          <>
+            <SectionHeading note="St10 到達スキンのみ殿堂入り" title="APEX HALL OF FAME" />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {profile.apex.map((skin) => (
+                <ApexCard key={skin.skinId} skin={skin} />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* showcase party */}
+        {profile && profile.showcase.length > 0 && (
+          <>
+            <SectionHeading note="連れ歩き · 名声→コスメの順" title="SHOWCASE PARTY" />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {profile.showcase.map((monster) => (
+                <ShowcaseCard key={monster.slug} monster={monster} />
+              ))}
+            </div>
+          </>
+        )}
 
         {/* badges */}
         <SectionHeading note="ティアは活動でのみ上昇" title="BADGES" />

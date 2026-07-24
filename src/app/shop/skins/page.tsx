@@ -283,7 +283,7 @@ export default function SkinCatalogPage() {
                       </div>
                       <div className="mt-3 flex items-center justify-between border-t border-line pt-3">
                         <span className="text-[13px] font-semibold text-accent">
-                          {skin.priceRune.toLocaleString("ja-JP")} R
+                          {skin.priceRune.toLocaleString("ja-JP")} 💎
                         </span>
                         {skin.owned ? (
                           <span className="text-[10px] text-accent">✓ 所有済み · St{skin.masteryLevel}</span>
@@ -399,7 +399,7 @@ export default function SkinCatalogPage() {
               <div className="mt-5 border border-accent/30 bg-accent/5 p-4">
                 <p className="text-[11px] font-semibold text-text">購入内容を確認</p>
                 <div className="mt-3 grid gap-2 text-[10px] text-text-dim sm:grid-cols-2">
-                  <p>価格 {selected.priceRune.toLocaleString("ja-JP")} R</p>
+                  <p>価格 {selected.priceRune.toLocaleString("ja-JP")} 💎</p>
                   <p>現在残高 {wallet?.runeBalance.toLocaleString("ja-JP") ?? "—"} R</p>
                 </div>
                 <p className="mt-3 text-[10px] leading-5 text-text-faint">
@@ -437,7 +437,7 @@ export default function SkinCatalogPage() {
                 <div>
                   <p className="text-[10px] tracking-[0.1em] text-text-faint">PRICE</p>
                   <p className="mt-1 text-[17px] font-semibold text-accent">
-                    {selected.priceRune.toLocaleString("ja-JP")} R
+                    {selected.priceRune.toLocaleString("ja-JP")} 💎
                   </p>
                 </div>
                 <button className="bg-accent px-4 py-2 text-[11px] font-semibold text-bg" onClick={() => setConfirmingPurchase(true)} type="button">

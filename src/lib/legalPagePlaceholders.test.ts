@@ -32,7 +32,7 @@ describe("legal page placeholders", () => {
 
   it("exposes footer links to the required legal pages", () => {
     assert.deepEqual(legalFooterLinks, [
-      { href: "/legal/tokushoho", label: "特定商取引法に基づく表記" },
+      { href: "/legal/tokushoho", label: "特定商取引法に基づく表示" },
       { href: "/legal/prepaid", label: "資金決済法に基づく表示" },
       { href: "/legal/terms", label: "利用規約" },
     ]);

@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
 import { usePartner } from "@/hooks/usePartner";
+import { useSkinCatalog } from "@/hooks/useSkinCatalog";
 import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { matchMintToOwnedMonster } from "@/lib/commemorativeMint";
 import {
@@ -67,6 +68,7 @@ export default function MonstersPage() {
   const { isAuthenticated, user } = useAuth();
   const { monsters, loading, error, refetch } = useMonsters();
   const { partnerId, setPartner } = usePartner();
+  const { ownedSkins } = useSkinCatalog(isAuthenticated);
   const { refetch: refetchHero } = useHero(isAuthenticated);
   const { mints } = usePublicCommemorativeMints(user?.githubId);
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -119,6 +121,20 @@ export default function MonstersPage() {
     () => [...monsters].sort((a, b) => a.id.localeCompare(b.id)),
     [monsters],
   );
+  // 装備中スキンのマスタリー（コスメ・琥珀）を monsterSlug で引けるようにする
+  const cosmeticBySlug = useMemo(() => {
+    const map = new Map<string, { masteryLevel: number; lineName: string }>();
+    for (const skin of ownedSkins) {
+      if (skin.equipped) {
+        map.set(skin.monsterSlug, {
+          masteryLevel: skin.masteryLevel,
+          lineName: skin.lineName,
+        });
+      }
+    }
+    return map;
+  }, [ownedSkins]);
+
   const partnerMonster = dex.find((m) => m.id === partnerId) ?? null;
   const discoveredCount = dex.filter((m) => m.isOwned).length;
   const ownedInstances = dex.reduce((sum, m) => sum + (m.isOwned ? 1 : 0), 0);
@@ -245,6 +261,7 @@ export default function MonstersPage() {
                       key={m.id}
                       monster={m}
                       isPartner={m.id === partnerId}
+                      cosmetic={m.slug ? (cosmeticBySlug.get(m.slug) ?? null) : null}
                       mint={matchMintToOwnedMonster(mints, m.ownedMonsterId)}
                       busy={{
                         levelingUp: levelingUp === m.id,
@@ -275,6 +292,7 @@ export default function MonstersPage() {
 function MonsterCard({
   monster: m,
   isPartner,
+  cosmetic,
   mint,
   busy,
   onSetPartner,
@@ -284,6 +302,7 @@ function MonsterCard({
 }: {
   monster: Monster;
   isPartner: boolean;
+  cosmetic: { masteryLevel: number; lineName: string } | null;
   mint: CommemorativeMintPlate | undefined;
   busy: { levelingUp: boolean; evolving: boolean; changingPath: boolean };
   onSetPartner: () => void;
@@ -409,6 +428,14 @@ function MonsterCard({
           {berserk && (
             <span className="inline-flex items-center rounded-[2px] border border-pink/40 bg-pink/[0.08] px-[7px] py-px text-[9px] font-bold tracking-[0.08em] text-pink">
               暴走
+            </span>
+          )}
+          {cosmetic && (
+            <span
+              title={`${cosmetic.lineName} スキン装備（コスメ・見た目のみ）`}
+              className="inline-flex items-center rounded-[2px] border border-rune-border bg-rune-bg px-[7px] py-px text-[9px] font-bold tracking-[0.08em] text-rune"
+            >
+              ⚒ St{cosmetic.masteryLevel} · COSMETIC
             </span>
           )}
         </div>

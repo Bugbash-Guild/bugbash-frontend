@@ -14,6 +14,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { DisclosureModal } from "@/components/billing/DisclosureModal";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { ItemVisual } from "@/components/ItemVisual";
+import { LegalFooter } from "@/components/LegalFooter";
 import { MainWrapper } from "@/components/MainWrapper";
 import { PityMeter } from "@/components/summon/PityMeter";
 import {
@@ -135,6 +136,30 @@ export default function SummonPage() {
     <MainWrapper>
       <ConsoleTopbar command="./summon --currency=coin" path="~/summon" showWallet />
       <div className="px-9 py-6 min-h-screen">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-4 max-w-4xl">
+          <div>
+            <h1 className="flex items-center gap-2 text-[24px] font-semibold text-text">
+              通常召喚
+              <span className="rounded-[3px] border border-coin-border bg-coin-bg px-2 py-0.5 text-[11px] font-semibold text-coin">
+                🪙 COIN
+              </span>
+            </h1>
+            <p className="mt-1 text-[12px] text-text-dim">
+              ギルドコイン（活動で獲得）で相棒を召喚します。{" "}
+              <button
+                className="text-blue hover:underline"
+                onClick={() => setDisclosureOpen(true)}
+                type="button"
+              >
+                提供割合について ▸
+              </button>
+            </p>
+          </div>
+          <span className="rounded-[3px] border border-accent/30 bg-accent/[0.08] px-2.5 py-1 text-[11px] font-semibold text-accent">
+            PRESTIGE ZONE — 課金導線なし
+          </span>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl">
           {/* ── Left: summon panel ── */}
           <div className="space-y-4">
@@ -205,6 +230,10 @@ export default function SummonPage() {
                 : "召喚コストを確認しています"}
             </div>
 
+            <p className="text-[10.5px] text-text-faint px-1">
+              コインが足りないときは — PR をマージして集めましょう（購入はできません）。
+            </p>
+
             <Link
               className="block border border-line px-3 py-2 text-center text-[12px] text-gold hover:border-gold"
               href="/summon/limited"
@@ -240,6 +269,10 @@ export default function SummonPage() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="max-w-4xl">
+          <LegalFooter />
         </div>
 
         {/* ── Result modal ── */}
