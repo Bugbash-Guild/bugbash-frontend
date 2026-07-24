@@ -19,7 +19,7 @@ export type LegalPage = {
 export const LEGAL_PLACEHOLDER_VALUE = "弁護士レビュー後に掲載予定";
 
 export const legalFooterLinks = [
-  { href: "/legal/tokushoho", label: "特定商取引法に基づく表記" },
+  { href: "/legal/tokushoho", label: "特定商取引法に基づく表示" },
   { href: "/legal/prepaid", label: "資金決済法に基づく表示" },
   { href: "/legal/terms", label: "利用規約" },
 ] as const;
@@ -30,7 +30,7 @@ export const legalPages: LegalPage[] = [
       "購入前に確認できるよう、通販表示に必要な項目構造だけを先行配置しています。",
     href: "/legal/tokushoho",
     reviewStatus: "弁護士レビュー中",
-    title: "特定商取引法に基づく表記",
+    title: "特定商取引法に基づく表示",
     sections: [
       {
         title: "事業者情報",

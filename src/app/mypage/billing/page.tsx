@@ -176,7 +176,7 @@ export default function BillingManagementPage() {
         </Link>
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-[20px] font-semibold text-text">課金・アカウント管理</h1>
+            <h1 className="text-[20px] font-semibold text-text">残高・課金履歴・管理</h1>
             <p className="mt-1 max-w-2xl text-[12px] leading-6 text-text-dim">
               残高、購入履歴、冒険者パス、年齢設定を確認できます。
             </p>
