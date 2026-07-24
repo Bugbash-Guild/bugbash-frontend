@@ -23,6 +23,19 @@ export type BadgeProgress = BadgeCatalogItem & {
   nextThreshold: number | null;
 };
 
+export type PublicHeroBadge = {
+  artKey: string;
+  category: string;
+  code: string;
+  currentTier: number;
+  description: string;
+  displayName: string;
+  earnedAt: string;
+  equippedSlot: number | null;
+  forgeRank: number;
+  grade: number;
+};
+
 export type BadgeDisplaySettings = {
   code: string;
   equippedSlot: number | null;

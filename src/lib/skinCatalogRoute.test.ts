@@ -13,7 +13,8 @@ describe("/shop/skins catalog route", () => {
     const page = await readFile(PAGE_URL, "utf8");
     assert.match(page, /useSkinCatalog/);
     assert.match(page, /buildSkinCatalogLines/);
-    assert.match(page, /WalletBadge/);
+    // Wallet is now shown via the shared ConsoleTopbar (showWallet) header.
+    assert.match(page, /ConsoleTopbar[\s\S]*showWallet/);
     assert.match(page, /変身前/);
     assert.match(page, /変身後/);
     assert.match(page, /初出/);

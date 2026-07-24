@@ -19,7 +19,7 @@ import { BadgeCosmeticConfirmModal } from "@/components/badges/BadgeCosmeticConf
 import { LegalFooter } from "@/components/LegalFooter";
 import { MainWrapper } from "@/components/MainWrapper";
 import { BadgePrestigeGrid } from "@/components/prestige/BadgePrestigeGrid";
-import { WalletBadge } from "@/components/WalletBadge";
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { useAuth } from "@/hooks/useAuth";
 import { useBadges } from "@/hooks/useBadges";
 import { useCommemorativeMints } from "@/hooks/useCommemorativeMints";
@@ -245,16 +245,10 @@ export default function BadgesPage() {
 
   return (
     <MainWrapper>
+      <ConsoleTopbar command="./inspect-achievements" path="~/badges" showWallet />
       <div className="min-h-screen">
         <header className="mx-auto max-w-6xl px-5 py-6 sm:px-9">
-          <div className="text-[13px] text-text-dim">
-            <span className="text-accent">hero@bugbash</span>
-            <span className="text-text-faint">:</span>
-            <span className="text-accent-2">~/badges</span>
-            <span className="text-text-faint">$ </span>
-            <span className="text-text">./inspect-achievements</span>
-          </div>
-          <div className="mt-5 flex flex-wrap items-start justify-between gap-4">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className="text-[20px] font-semibold text-text">バッジ</h1>
               <p className="mt-1 max-w-2xl text-[12px] leading-6 text-text-dim">
@@ -266,7 +260,6 @@ export default function BadgesPage() {
                 </p>
               )}
             </div>
-            <WalletBadge enabled={isAuthenticated} />
           </div>
         </header>
 

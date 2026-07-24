@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { MainWrapper } from "@/components/MainWrapper";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -125,15 +126,8 @@ export default function BillingReturnPage() {
 
   return (
     <MainWrapper>
+      <ConsoleTopbar command="./wait-for-ledger" path="~/billing/return" showWallet />
       <div className="min-h-screen px-9 py-6">
-        <div className="mb-4 text-[13px] text-text-dim">
-          <span className="text-accent">root@bugbash</span>
-          <span className="text-text-faint">:</span>
-          <span className="text-accent-2">~/billing/return</span>
-          <span className="text-text-faint">$ </span>
-          <span>./wait-for-ledger</span>
-        </div>
-
         <section className="max-w-2xl border border-line bg-bg-elev p-5">
           <div className="mb-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
             BILLING RETURN

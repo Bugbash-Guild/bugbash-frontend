@@ -8,7 +8,7 @@ import { AgeVerificationModal } from "@/components/billing/AgeVerificationModal"
 import { SubscriptionStatusSummary } from "@/components/billing/SubscriptionStatusSummary";
 import { LegalFooter } from "@/components/LegalFooter";
 import { MainWrapper } from "@/components/MainWrapper";
-import { WalletBadge } from "@/components/WalletBadge";
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { clearAgeVerification } from "@/lib/billing/ageVerification";
@@ -197,15 +197,8 @@ export default function PassPage() {
 
   return (
     <MainWrapper>
+      <ConsoleTopbar command="./manage-adventurer-pass" path="~/pass" showWallet />
       <div className="min-h-screen px-9 py-6">
-        <div className="mb-4 text-[13px] text-text-dim">
-          <span className="text-accent">root@bugbash</span>
-          <span className="text-text-faint">:</span>
-          <span className="text-accent-2">~/pass</span>
-          <span className="text-text-faint">$ </span>
-          <span>./manage-adventurer-pass</span>
-        </div>
-
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-[20px] font-semibold text-text">冒険者パス</h1>
@@ -213,7 +206,6 @@ export default function PassPage() {
               継続特典の内容、加入状態、解約予定をこの画面で確認できます。
             </p>
           </div>
-          <WalletBadge enabled={isAuthenticated} />
         </div>
 
         {subscriptionError && (

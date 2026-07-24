@@ -9,7 +9,7 @@ import { AgeVerificationModal } from "@/components/billing/AgeVerificationModal"
 import { SubscriptionStatusSummary } from "@/components/billing/SubscriptionStatusSummary";
 import { LegalFooter } from "@/components/LegalFooter";
 import { MainWrapper } from "@/components/MainWrapper";
-import { WalletBadge } from "@/components/WalletBadge";
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { useAuth } from "@/hooks/useAuth";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -166,6 +166,7 @@ export default function BillingManagementPage() {
 
   return (
     <MainWrapper mobileFullWidth>
+      <ConsoleTopbar command="./account-billing" path="~/mypage/billing" showWallet />
       <div className="min-h-screen px-4 py-5 sm:px-7 lg:px-9 lg:py-6">
         <Link
           className="mb-3 inline-block text-[12px] text-accent hover:underline md:hidden"
@@ -173,14 +174,6 @@ export default function BillingManagementPage() {
         >
           ← ホームへ
         </Link>
-        <div className="mb-4 text-[13px] text-text-dim">
-          <span className="text-accent">root@bugbash</span>
-          <span className="text-text-faint">:</span>
-          <span className="text-accent-2">~/mypage/billing</span>
-          <span className="text-text-faint">$ </span>
-          <span>./account-billing</span>
-        </div>
-
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-[20px] font-semibold text-text">課金・アカウント管理</h1>
@@ -188,7 +181,6 @@ export default function BillingManagementPage() {
               残高、購入履歴、冒険者パス、年齢設定を確認できます。
             </p>
           </div>
-          <WalletBadge enabled={isAuthenticated} />
         </div>
 
         <div className="grid max-w-6xl grid-cols-1 gap-4 xl:grid-cols-2">

@@ -1,29 +1,44 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
+import { ItemVisual } from "@/components/ItemVisual";
+import { MainWrapper } from "@/components/MainWrapper";
 import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/hooks/useInventory";
 import { useUseItem } from "@/hooks/useUseItem";
-import { ItemVisual } from "@/components/ItemVisual";
-import { MainWrapper } from "@/components/MainWrapper";
 import type { InventoryItem, UseItemResponse } from "@/types/inventory";
 
-const ROWS = 4;
-const COLS = 12;
-const STORAGE_SLOTS = ROWS * COLS;
-const HOTBAR_SLOTS = 12;
+const COLS = 9;
+const MIN_STORAGE_SLOTS = 27;
+const HOTBAR_SLOTS = 9;
+
+const CATEGORY_LABEL: Record<InventoryItem["category"], string> = {
+  EVOLUTION: "evolution",
+  SOUL_PACK: "soul pack",
+};
+
+/** ルーン建てアイテム（琥珀・💎）。SOUL_PACK が該当。 */
+function isRuneItem(item: InventoryItem): boolean {
+  return item.category === "SOUL_PACK";
+}
 
 export default function ItemsPage() {
   const router = useRouter();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const { items, loading, error, refetch } = useInventory(isAuthenticated);
   const { consume, loading: useLoading, error: useError, reset: resetUseError } = useUseItem();
-  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
-  const [hotbarSelected, setHotbarSelected] = useState<number>(0);
+  const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const [useResult, setUseResult] = useState<UseItemResponse | null>(null);
   const [refetching, setRefetching] = useState(false);
   const activeItemIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) router.replace("/login");
+  }, [authLoading, isAuthenticated, router]);
 
   async function handleUseItem(itemId: string) {
     resetUseError();
@@ -41,226 +56,205 @@ export default function ItemsPage() {
     }
   }
 
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) router.replace("/login");
-  }, [authLoading, isAuthenticated, router]);
+  function selectSlot(idx: number) {
+    setSelectedIdx(idx);
+    setUseResult(null);
+    resetUseError();
+    activeItemIdRef.current = null;
+  }
 
   if (authLoading || !isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg">
-        <div className="flex items-center gap-2 text-text-dim text-[13px]">
-          <span className="w-4 h-4 border border-accent border-t-transparent rounded-full animate-spin" />
+      <div className="flex min-h-screen items-center justify-center bg-bg">
+        <div className="flex items-center gap-2 text-[13px] text-text-dim">
+          <span className="size-4 animate-spin rounded-full border border-accent border-t-transparent" />
           authenticating…
         </div>
       </div>
     );
   }
 
-  const storageSlots: (InventoryItem | null)[] = Array.from(
-    { length: STORAGE_SLOTS },
-    (_, i) => items[i] ?? null,
+  const storageCount = Math.max(
+    MIN_STORAGE_SLOTS,
+    Math.ceil(items.length / COLS) * COLS,
   );
-  const hotbarSlots: (InventoryItem | null)[] = Array.from(
-    { length: HOTBAR_SLOTS },
-    (_, i) => items[i] ?? null,
-  );
-
-  const totalQty = items.reduce((a, b) => a + b.quantity, 0);
   const occupied = items.length;
-
-  const selectedItem =
-    selectedIdx !== null ? storageSlots[selectedIdx] : hotbarSlots[hotbarSelected];
+  const selectedItem = items[selectedIdx] ?? null;
 
   return (
     <MainWrapper>
+      <ConsoleTopbar command="inv --grid" path="~/items" showWallet />
       <div className="px-9 py-6">
-        {/* prompt header */}
-        <div className="text-[13px] text-text-dim mb-5">
-          <span className="text-accent">hero@bugbash</span>
-          <span className="text-text-faint">:</span>
-          <span className="text-accent-2">~/items</span>
-          <span className="text-text-faint">$ </span>
-          <span>inv --grid</span>
-          <span className="inline-block w-2 h-[14px] ml-0.5 bg-accent align-middle animate-pulse" />
-        </div>
-
         {/* page header */}
-        <div className="mb-6">
-          <div className="text-[28px] font-semibold">Inventory</div>
-          <div className="text-[12px] text-text-dim mt-1">
-            {occupied} stacks · {totalQty} items total
-          </div>
+        <div className="mb-4">
+          <h1 className="text-[28px] font-semibold tracking-[-0.015em]">Inventory</h1>
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[12.5px] text-text-dim">
+            <span>{storageCount} slots</span>
+            <span className="text-text-faint">·</span>
+            <span>
+              <b className="text-accent">{occupied}</b> occupied
+            </span>
+            <span className="text-text-faint">·</span>
+            <span className="inline-flex items-center gap-1 rounded-[3px] border border-rune-border bg-rune-bg px-1.5 py-px text-[9px] text-rune">
+              💎
+            </span>
+            <span>はルーン建てアイテム</span>
+          </p>
         </div>
 
-        {loading && <div className="text-text-faint text-[13px] mb-4">loading inventory…</div>}
-        {error && <div className="text-pink text-[13px] mb-4">error: {error}</div>}
+        {loading && <p className="mb-4 text-[13px] text-text-faint">loading inventory…</p>}
+        {error && <p className="mb-4 text-[13px] text-pink">error: {error}</p>}
 
-        {/* main layout: left grows, right is fixed-width panel */}
-        <div className="flex gap-5 items-start">
+        {/* layout: grids + selected panel */}
+        <div className="grid grid-cols-1 items-start gap-[18px] xl:grid-cols-[minmax(0,1fr)_260px]">
           {/* LEFT: storage + hotbar */}
-          <div className="bg-bg-elev border border-line rounded-[6px] p-3.5 flex-1 min-w-0">
-            <div className="text-[10px] text-text-faint tracking-[0.12em] mb-2.5">STORAGE</div>
-
-            <div
-              className="grid gap-1"
-              style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}
-            >
-              {Array.from({ length: STORAGE_SLOTS }).map((_, idx) => {
-                const item = storageSlots[idx];
-                const isSelected = selectedIdx === idx;
-                return (
-                  <Cell
-                    key={idx}
-                    item={item}
-                    selected={isSelected}
-                    onClick={() => {
-                      setSelectedIdx(isSelected ? null : idx);
-                      setHotbarSelected(-1);
-                      setUseResult(null);
-                      resetUseError();
-                      activeItemIdRef.current = null;
-                    }}
-                  />
-                );
-              })}
+          <div className="min-w-0 space-y-3">
+            <div className="rounded-[6px] border border-line bg-bg-elev">
+              <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+                <span className="text-[10px] uppercase tracking-[0.12em] text-text-faint">STORAGE</span>
+                <span className="text-[10px] text-text-faint">{occupied}/{storageCount}</span>
+              </div>
+              <div className="p-3.5">
+                <div className="grid gap-[5px]" style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}>
+                  {Array.from({ length: storageCount }).map((_, idx) => (
+                    <Slot
+                      key={idx}
+                      item={items[idx] ?? null}
+                      selected={selectedIdx === idx}
+                      onSelect={() => selectSlot(idx)}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div className="mt-4 pt-3.5 border-t border-line">
-              <div className="text-[10px] text-text-faint tracking-[0.12em] mb-2.5">
-                HOTBAR · 1–{HOTBAR_SLOTS}
+            <div className="rounded-[6px] border border-line bg-bg-elev">
+              <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+                <span className="text-[10px] uppercase tracking-[0.12em] text-text-faint">
+                  HOTBAR · 1–{HOTBAR_SLOTS}
+                </span>
+                <span className="text-[10px] text-text-faint">[E] use</span>
               </div>
-              <div
-                className="grid gap-1"
-                style={{ gridTemplateColumns: `repeat(${HOTBAR_SLOTS}, 1fr)` }}
-              >
-                {hotbarSlots.map((item, i) => {
-                  const isSelected = hotbarSelected === i && selectedIdx === null;
-                  return (
-                    <div key={i} className="relative">
-                      <Cell
-                        item={item}
-                        selected={isSelected}
-                        onClick={() => {
-                          setHotbarSelected(i);
-                          setSelectedIdx(null);
-                          setUseResult(null);
-                          resetUseError();
-                          activeItemIdRef.current = null;
-                        }}
-                      />
-                      <span className="absolute top-0.5 left-1 text-[9px] text-text-faint leading-none pointer-events-none">
-                        {i + 1}
-                      </span>
-                    </div>
-                  );
-                })}
+              <div className="p-3.5">
+                <div className="grid gap-[5px]" style={{ gridTemplateColumns: `repeat(${HOTBAR_SLOTS}, 1fr)` }}>
+                  {Array.from({ length: HOTBAR_SLOTS }).map((_, idx) => (
+                    <Slot
+                      key={idx}
+                      item={items[idx] ?? null}
+                      selected={selectedIdx === idx}
+                      hotIdx={idx + 1}
+                      onSelect={() => selectSlot(idx)}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
           {/* RIGHT: selected item detail panel */}
-          <div className="bg-bg-elev border border-line rounded-[6px] p-5 w-[280px] shrink-0">
-            <div className="text-[10px] text-text-faint tracking-[0.12em] mb-3.5">SELECTED</div>
-
-            {selectedItem ? (
-              <>
-                <div
-                  className="w-full aspect-square rounded-[4px] flex items-center justify-center text-[96px] mb-4 border border-line"
-                  style={{
-                    background:
-                      "radial-gradient(circle at 50% 40%, rgba(126,231,135,0.1) 0%, transparent 70%), var(--bg-elev-2)",
-                  }}
-                >
-                  <ItemVisual
-                    alt={selectedItem.name}
-                    assetUrl={selectedItem.assetUrl}
-                    className="size-full"
-                    sizes="240px"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="text-[15px] font-semibold flex-1 leading-tight">
-                    {selectedItem.name}
-                  </div>
-                  <span
-                    className="text-[9px] font-bold px-1.5 py-0.5 rounded-[2px] tracking-[0.1em] shrink-0"
+          <div className="rounded-[6px] border border-line bg-bg-elev">
+            <div className="border-b border-line px-4 py-2.5">
+              <span className="text-[10px] uppercase tracking-[0.12em] text-text-faint">SELECTED</span>
+            </div>
+            <div className="p-4">
+              {selectedItem ? (
+                <>
+                  <div
+                    className="flex aspect-square max-h-[150px] w-full items-center justify-center rounded-[5px] border border-line text-[64px]"
                     style={{
-                      color: "var(--accent-2)",
-                      background: "rgba(79,201,211,0.1)",
-                      border: "1px solid rgba(79,201,211,0.3)",
+                      background:
+                        "radial-gradient(circle at 50% 40%, rgba(126,231,135,0.08) 0%, transparent 70%), var(--bg-elev-2)",
                     }}
                   >
-                    {selectedItem.category}
-                  </span>
-                </div>
-
-                <div className="text-[11px] text-text-faint leading-[1.65] mb-3">
-                  {selectedItem.description}
-                </div>
-
-                <div className="border-t border-line my-3" />
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-text-faint">qty</span>
-                    <span className="text-accent font-bold">×{selectedItem.quantity}</span>
+                    <ItemVisual
+                      alt={selectedItem.name}
+                      assetUrl={selectedItem.assetUrl}
+                      className="size-full"
+                      imageClassName="p-3"
+                      sizes="220px"
+                    />
                   </div>
-                </div>
 
-                {selectedItem.category === 'SOUL_PACK' && (
-                  <div className="mt-4 space-y-2">
-                    <button
-                      disabled={useLoading || refetching || selectedItem.quantity === 0}
-                      onClick={() => handleUseItem(selectedItem.itemId)}
-                      className="w-full py-2 rounded-[4px] text-[12px] font-bold tracking-[0.05em] transition-all duration-[80ms] disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{
-                        background: 'rgba(126,231,135,0.12)',
-                        border: '1px solid rgba(126,231,135,0.35)',
-                        color: 'var(--accent)',
-                      }}
-                    >
-                      {useLoading ? '使用中…' : '使う'}
-                    </button>
-
-                    {useResult && (
-                      <div
-                        role="status"
-                        aria-live="polite"
-                        className="rounded-[4px] p-2.5 text-[11px] space-y-1"
-                        style={{ background: 'rgba(126,231,135,0.06)', border: '1px solid rgba(126,231,135,0.2)' }}
-                      >
-                        <div className="text-accent font-bold">使用しました</div>
-                        <div className="text-text-faint">
-                          <span className="capitalize">{useResult.attribute}</span> 属性に{' '}
-                          <span className="text-accent">+{useResult.soulsAdded}</span> ソウル付与
-                        </div>
-                        <div className="text-text-faint">
-                          合計: <span className="text-text">{useResult.soulsAfter}</span> ソウル
-                        </div>
-                      </div>
-                    )}
-
-                    {useError && (
-                      <div
-                        role="alert"
-                        aria-live="assertive"
-                        className="rounded-[4px] p-2.5 text-[11px]"
-                        style={{ background: 'rgba(255,100,100,0.06)', border: '1px solid rgba(255,100,100,0.2)', color: 'var(--pink)' }}
-                      >
-                        {useError.message}
-                      </div>
+                  <div className="mt-3 flex items-start gap-2">
+                    <span className="flex-1 text-[14px] font-semibold leading-tight">
+                      {selectedItem.name}
+                    </span>
+                    {isRuneItem(selectedItem) && (
+                      <span className="shrink-0 rounded-[3px] border border-rune-border bg-rune-bg px-1.5 py-0.5 text-[9px] font-bold tracking-[0.1em] text-rune">
+                        💎 RUNE
+                      </span>
                     )}
                   </div>
-                )}
-              </>
-            ) : (
-              <div className="text-[11px] text-text-faint leading-[1.6]">
-                no item selected
-                <br />
-                <span className="text-text-faint/60">click a slot to inspect</span>
-              </div>
-            )}
+
+                  <p className="mt-1.5 text-[11px] leading-relaxed text-text-dim">
+                    {selectedItem.description}
+                  </p>
+
+                  <div className="mt-3 flex items-center justify-between border-t border-line pt-3 text-[11px] text-text-faint">
+                    <span>
+                      kind: <span className="text-text">{CATEGORY_LABEL[selectedItem.category]}</span>
+                    </span>
+                    <span>
+                      qty: <span className="tabular-nums text-accent">×{selectedItem.quantity}</span>
+                    </span>
+                  </div>
+
+                  {selectedItem.category === "SOUL_PACK" ? (
+                    <div className="mt-3.5 space-y-2">
+                      <button
+                        type="button"
+                        disabled={useLoading || refetching || selectedItem.quantity === 0}
+                        onClick={() => handleUseItem(selectedItem.itemId)}
+                        className="w-full rounded-[4px] border border-accent bg-accent py-2 text-[12px] font-bold tracking-[0.05em] text-bg transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        {useLoading ? "使用中…" : "USE [E]"}
+                      </button>
+
+                      {useResult && (
+                        <div
+                          role="status"
+                          aria-live="polite"
+                          className="space-y-1 rounded-[4px] border border-accent/20 bg-accent/[0.06] p-2.5 text-[11px]"
+                        >
+                          <div className="font-bold text-accent">使用しました</div>
+                          <div className="text-text-faint">
+                            <span className="capitalize">{useResult.attribute}</span> 属性に{" "}
+                            <span className="text-accent">+{useResult.soulsAdded}</span> ソウル付与
+                          </div>
+                          <div className="text-text-faint">
+                            合計: <span className="text-text">{useResult.soulsAfter}</span> ソウル
+                          </div>
+                        </div>
+                      )}
+
+                      {useError && (
+                        <div
+                          role="alert"
+                          aria-live="assertive"
+                          className="rounded-[4px] border border-pink/20 bg-pink/[0.06] p-2.5 text-[11px] text-pink"
+                        >
+                          {useError.message}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="mt-3.5 rounded-[4px] border border-line bg-bg-elev-2 p-2.5 text-[11px] leading-relaxed text-text-faint">
+                      このアイテムは{" "}
+                      <Link className="text-accent underline underline-offset-2" href="/monsters">
+                        モンスター画面
+                      </Link>{" "}
+                      で進化・覚醒に使用します。
+                    </p>
+                  )}
+                </>
+              ) : (
+                <div className="text-[11px] leading-relaxed text-text-faint">
+                  no item selected
+                  <br />
+                  <span className="opacity-60">click a slot to inspect</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -268,46 +262,68 @@ export default function ItemsPage() {
   );
 }
 
-function Cell({
+function Slot({
   item,
   selected,
-  onClick,
+  hotIdx,
+  onSelect,
 }: {
   item: InventoryItem | null;
   selected: boolean;
-  onClick: () => void;
+  hotIdx?: number;
+  onSelect: () => void;
 }) {
+  if (!item) {
+    return (
+      <div
+        aria-hidden
+        className="aspect-square rounded-[4px] border border-dashed border-line"
+      />
+    );
+  }
+  const rune = isRuneItem(item);
   return (
-    <div
-      onClick={onClick}
-      className="aspect-square rounded-[4px] flex items-center justify-center relative cursor-pointer transition-all duration-[80ms]"
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-label={`${item.name} ×${item.quantity}`}
+      aria-pressed={selected}
+      className="relative flex aspect-square items-center justify-center rounded-[4px] border transition-shadow"
       style={{
         background: selected ? "var(--bg-elev)" : "var(--bg-elev-2)",
-        border: `1px ${item ? "solid" : "dashed"} ${
-          selected ? "rgba(126,231,135,0.55)" : "var(--line)"
-        }`,
+        borderColor: selected
+          ? "rgba(126,231,135,0.55)"
+          : rune
+            ? "var(--rune-border)"
+            : "var(--line)",
         boxShadow: selected
-          ? "0 0 0 1px rgba(126,231,135,0.22), inset 0 0 12px rgba(126,231,135,0.1)"
+          ? "0 0 0 2px rgba(126,231,135,0.15), inset 0 0 12px rgba(126,231,135,0.14)"
           : "none",
       }}
     >
-      {item && (
-        <>
-          <ItemVisual
-            alt={item.name}
-            assetUrl={item.assetUrl}
-            className="size-full"
-            imageClassName="p-1"
-            sizes="48px"
-          />
-          <span
-            className="absolute bottom-0.5 right-1 text-[10px] font-bold leading-none"
-            style={{ textShadow: "1px 1px 0 #000" }}
-          >
-            {item.quantity}
-          </span>
-        </>
+      {hotIdx != null && (
+        <span className="pointer-events-none absolute left-1 top-0.5 text-[9px] leading-none text-text-faint">
+          {hotIdx}
+        </span>
       )}
-    </div>
+      {rune && (
+        <span className="pointer-events-none absolute right-0.5 top-0.5 text-[8px] leading-none">
+          💎
+        </span>
+      )}
+      <ItemVisual
+        alt={item.name}
+        assetUrl={item.assetUrl}
+        className="size-full"
+        imageClassName="p-1"
+        sizes="48px"
+      />
+      <span
+        className="pointer-events-none absolute bottom-0.5 right-1 text-[10px] font-bold leading-none tabular-nums text-text"
+        style={{ textShadow: "1px 1px 0 #000" }}
+      >
+        {item.quantity}
+      </span>
+    </button>
   );
 }

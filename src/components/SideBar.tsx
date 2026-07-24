@@ -6,24 +6,51 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
 
-const NAV_ITEMS = [
-  { glyph: "⌂", label: "~/home", href: "/" },
-  { glyph: "◆", label: "~/monsters", href: "/monsters" },
-  { glyph: "▣", label: "~/items", href: "/items" },
-  { glyph: "$", label: "~/shop", href: "/shop" },
-  { glyph: "◇", label: "~/pass", href: "/pass" },
-  { glyph: "*", label: "~/summon", href: "/summon" },
-  { glyph: "⚒", label: "~/forge", href: "/forge" },
-  { glyph: "✦", label: "~/badges", href: "/badges" },
-  { glyph: "🔨", label: "~/mints", href: "/mints" },
-  { glyph: "◫", label: "~/billing", href: "/mypage/billing" },
-  { glyph: "▲", label: "~/leaderboard", href: "/leaderboard" },
-] as const;
+type NavItem = { glyph: string; label: string; href: string; paid?: boolean };
+
+const NAV_SECTIONS: { label: string; items: NavItem[] }[] = [
+  {
+    label: "NAVIGATION",
+    items: [
+      { glyph: "⌂", label: "~/home", href: "/" },
+      { glyph: "◆", label: "~/monsters", href: "/monsters" },
+      { glyph: "▣", label: "~/items", href: "/items" },
+      { glyph: "≡", label: "~/summon", href: "/summon" },
+      { glyph: "☄", label: "~/summon/limited", href: "/summon/limited", paid: true },
+      { glyph: "▲", label: "~/leaderboard", href: "/leaderboard" },
+    ],
+  },
+  {
+    label: "BILLING",
+    items: [
+      { glyph: "▤", label: "~/shop/runes", href: "/shop/runes", paid: true },
+      { glyph: "◨", label: "~/shop/skins", href: "/shop/skins", paid: true },
+      { glyph: "$", label: "~/shop", href: "/shop" },
+      { glyph: "✦", label: "~/pass", href: "/pass", paid: true },
+      { glyph: "⚒", label: "~/forge", href: "/forge", paid: true },
+      { glyph: "◉", label: "~/badges", href: "/badges" },
+      { glyph: "🔨", label: "~/mints", href: "/mints" },
+      { glyph: "⛭", label: "~/mypage/billing", href: "/mypage/billing" },
+    ],
+  },
+];
+
+/** より具体的な href が優先される active 判定。 */
+function isNavActive(pathname: string, href: string, allHrefs: string[]): boolean {
+  if (href === "/") return pathname === "/";
+  if (!pathname.startsWith(href)) return false;
+  // e.g. /shop should not stay active on /shop/runes
+  const moreSpecific = allHrefs.some(
+    (other) => other !== href && other.startsWith(href) && pathname.startsWith(other),
+  );
+  return !moreSpecific;
+}
 
 export function SideBar() {
   const pathname = usePathname();
   const { isAuthenticated, user } = useAuth();
   const { hero } = useHero(isAuthenticated);
+  const allHrefs = NAV_SECTIONS.flatMap((section) => section.items.map((item) => item.href));
 
   return (
     <aside className="w-60 shrink-0 flex flex-col bg-bg-elev border-r border-line overflow-y-auto">
@@ -48,32 +75,47 @@ export function SideBar() {
         </span>
       </div>
 
-      {/* ② NAVIGATIONセクション */}
+      {/* ② ナビゲーション（NAVIGATION / BILLING） */}
       <div className="flex-1 overflow-y-auto">
-        <p className="px-4 pt-4 pb-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
-          NAVIGATION
-        </p>
-        <nav>
-          {NAV_ITEMS.map(({ glyph, label, href }) => {
-            const isActive =
-              href === "/" ? pathname === "/" : pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={[
-                  "flex items-center mx-2 px-[10px] py-2 rounded text-[13px] transition-colors",
-                  isActive
-                    ? "text-accent border-l-2 border-accent bg-accent/8"
-                    : "text-text-dim hover:bg-bg-elev-2 border-l-2 border-transparent",
-                ].join(" ")}
-              >
-                <span className="w-[16px] mr-2 shrink-0 text-center inline-block">{glyph}</span>
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
+        {NAV_SECTIONS.map((section) => (
+          <div key={section.label}>
+            <p className="px-4 pb-2 pt-4 text-[10px] uppercase tracking-[0.16em] text-text-faint">
+              {section.label}
+            </p>
+            <nav className="flex flex-col gap-0.5 px-2">
+              {section.items.map(({ glyph, label, href, paid }) => {
+                const isActive = isNavActive(pathname, href, allHrefs);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={[
+                      "flex items-center rounded px-[10px] py-2 text-[13px] transition-colors",
+                      isActive
+                        ? "border-l-2 border-accent bg-accent/[0.08] text-accent"
+                        : "border-l-2 border-transparent text-text hover:bg-bg-elev-2",
+                    ].join(" ")}
+                  >
+                    <span
+                      className={[
+                        "mr-2 inline-block w-[16px] shrink-0 text-center",
+                        isActive
+                          ? "text-accent"
+                          : paid
+                            ? "text-rune"
+                            : "text-text-dim",
+                      ].join(" ")}
+                    >
+                      {glyph}
+                    </span>
+                    {label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        ))}
       </div>
 
       {/* ③ HERO_STATUSフッター */}

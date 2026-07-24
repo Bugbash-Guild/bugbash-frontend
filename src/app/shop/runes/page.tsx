@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { AgeVerificationModal } from "@/components/billing/AgeVerificationModal";
 import { LegalFooter } from "@/components/LegalFooter";
 import { MainWrapper } from "@/components/MainWrapper";
-import { WalletBadge } from "@/components/WalletBadge";
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { useAuth } from "@/hooks/useAuth";
 import { useRuneProducts } from "@/hooks/useRuneProducts";
 import { useWallet } from "@/hooks/useWallet";
@@ -136,15 +136,8 @@ export default function RuneShopPage() {
 
   return (
     <MainWrapper>
+      <ConsoleTopbar command="./buy-runes" path="~/shop/runes" showWallet />
       <div className="min-h-screen px-9 py-6">
-        <div className="mb-4 text-[13px] text-text-dim">
-          <span className="text-accent">root@bugbash</span>
-          <span className="text-text-faint">:</span>
-          <span className="text-accent-2">~/shop/runes</span>
-          <span className="text-text-faint">$ </span>
-          <span>./buy-runes</span>
-        </div>
-
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-[20px] font-semibold text-text">ルーン購入</h1>
@@ -152,7 +145,6 @@ export default function RuneShopPage() {
               価格は税込総額です。購入後の反映には少し時間がかかる場合があります。
             </p>
           </div>
-          <WalletBadge enabled={isAuthenticated} />
         </div>
 
         {monthlyLimitJpy !== null && (

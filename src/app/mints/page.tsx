@@ -6,8 +6,8 @@ import { FiCheck, FiTool } from "react-icons/fi";
 
 import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
 import { MintRightList } from "@/components/commemorative/MintRightList";
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { MainWrapper } from "@/components/MainWrapper";
-import { WalletBadge } from "@/components/WalletBadge";
 import { useAuth } from "@/hooks/useAuth";
 import { useCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { useWallet } from "@/hooks/useWallet";
@@ -174,16 +174,13 @@ export default function MintsPage() {
 
   return (
     <MainWrapper>
+      <ConsoleTopbar command="./commemorate" path="~/mints" showWallet />
       <div className="mx-auto min-h-screen max-w-6xl px-5 py-6 sm:px-9">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="text-[13px] text-text-dim">
-              <span className="text-accent">hero@bugbash</span><span className="text-text-faint">:</span><span className="text-accent-2">~/mints</span><span className="text-text-faint">$ </span>./commemorate
-            </div>
-            <h1 className="mt-5 text-[20px] font-semibold text-text">記念鋳造</h1>
+            <h1 className="text-[20px] font-semibold text-text">記念鋳造</h1>
             <p className="mt-1 text-[12px] text-text-dim">実績を記念するプレートです。能力値や名声には影響しません。</p>
           </div>
-          <WalletBadge enabled={isAuthenticated} />
         </header>
 
         {error && <div className="mt-5 border border-pink/30 bg-pink/10 px-3 py-3 text-[12px] text-pink">鋳造権を読み込めませんでした。</div>}
