@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { GameAssetFallback } from "@/components/GameAssetFallback";
 import { LegalFooter } from "@/components/LegalFooter";
 import { MainWrapper } from "@/components/MainWrapper";
-import { WalletBadge } from "@/components/WalletBadge";
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { useAuth } from "@/hooks/useAuth";
 import { useMonsters } from "@/hooks/useMonsters";
 import { usePurchase } from "@/hooks/usePurchase";
@@ -191,16 +191,9 @@ export default function SkinCatalogPage() {
 
   return (
     <MainWrapper mobileFullWidth>
+      <ConsoleTopbar command="./catalog --group=line --demand-first" path="~/shop/skins" showWallet />
       <div className="min-h-full px-5 py-6 sm:px-9">
-        <div className="text-[13px] text-text-dim">
-          <span className="text-accent">root@bugbash</span>
-          <span className="text-text-faint">:</span>
-          <span className="text-accent-2">~/shop/skins</span>
-          <span className="text-text-faint">$ </span>
-          <span>./catalog --group=line --demand-first</span>
-        </div>
-
-        <header className="mt-5 flex flex-wrap items-end justify-between gap-4">
+        <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-[10px] tracking-[0.14em] text-text-faint">
               COSMETIC ARCHIVE
@@ -224,10 +217,6 @@ export default function SkinCatalogPage() {
             </Link>
           </nav>
         </header>
-
-        <div className="mt-5">
-          <WalletBadge enabled={isAuthenticated} />
-        </div>
 
         {error && (
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border border-pink/30 bg-pink/10 px-3 py-3 text-[11px] text-pink">

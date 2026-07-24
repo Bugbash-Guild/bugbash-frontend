@@ -12,7 +12,7 @@ import { usePurchase } from "@/hooks/usePurchase";
 import { ItemVisual } from "@/components/ItemVisual";
 import { LegalFooter } from "@/components/LegalFooter";
 import { MainWrapper } from "@/components/MainWrapper";
-import { WalletBadge } from "@/components/WalletBadge";
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import {
   buildShopPurchasePresentation,
   formatShopCurrencyAmount,
@@ -91,17 +91,8 @@ export default function ShopPage() {
 
   return (
     <MainWrapper>
+      <ConsoleTopbar command="./browse --shop-items" path="~/shop" showWallet />
       <div className="px-9 py-6 min-h-screen">
-        {/* header */}
-        <div className="text-[13px] text-text-dim mb-4">
-          <span className="text-accent">root@bugbash</span>
-          <span className="text-text-faint">:</span>
-          <span className="text-accent-2">~/shop</span>
-          <span className="text-text-faint">$ </span>
-          <span>./browse --shop-items</span>
-          <span className="inline-block w-2 h-[14px] ml-0.5 bg-accent align-middle animate-pulse" />
-        </div>
-
         <nav aria-label="ショップ種別" className="mb-4 inline-flex border border-line text-[11px]">
           <Link className="px-3 py-2 text-text-dim hover:text-text" href="/shop/runes">
             RUNES
@@ -116,8 +107,6 @@ export default function ShopPage() {
             ITEMS
           </span>
         </nav>
-
-        <WalletBadge enabled={isAuthenticated} />
 
         {successFlash && (
           <div className="mb-4 px-3 py-2 bg-accent/10 border border-accent/40 rounded text-[12px] text-accent">

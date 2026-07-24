@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { MainWrapper } from "@/components/MainWrapper";
 import { SkinMasteryCostTable } from "@/components/forge/SkinMasteryCostTable";
 import { SkinMasteryPanel } from "@/components/forge/SkinMasteryPanel";
@@ -15,7 +16,7 @@ import { buildForgeCostTable, canUpgradeForge, selectForgeStages } from "@/lib/f
 
 export default function ForgePage() {
   const router = useRouter();
-  const { isAuthenticated, loading: authLoading, user } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const { hero } = useHero(isAuthenticated);
   const {
     error,
@@ -79,29 +80,15 @@ export default function ForgePage() {
 
   return (
     <MainWrapper>
+      <ConsoleTopbar command="./skin-mastery --track=monster" path="~/forge" showWallet />
       <div className="min-h-full px-5 py-6 sm:px-9">
-        <div className="text-[13px] text-text-dim">
-          <span className="text-accent">{user?.username ?? "hero"}@bugbash</span>
-          <span className="text-text-faint">:</span>
-          <span className="text-accent-2">~/forge</span>
-          <span className="text-text-faint">$ </span>
-          <span className="text-text">./skin-mastery --track=monster</span>
-          <span className="ml-1 inline-block h-[14px] w-2 animate-pulse bg-accent align-middle" />
-        </div>
-
-        <header className="mt-5 flex flex-wrap items-end justify-between gap-4">
+        <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-[10px] tracking-[0.12em] text-text-faint">COSMETIC FORGE</p>
             <h1 className="mt-1 text-[24px] font-semibold text-text">スキン工房</h1>
             <p className="mt-1 text-[12px] text-text-dim">
               所有済みスキンの外観を段階的に調律します。
             </p>
-          </div>
-          <div className="border border-line bg-bg-elev px-3 py-2 text-[11px]">
-            <span className="text-text-faint">RUNES </span>
-            <span className="font-semibold text-accent">
-              {wallet?.runeBalance.toLocaleString("ja-JP") ?? "—"} R
-            </span>
           </div>
         </header>
 

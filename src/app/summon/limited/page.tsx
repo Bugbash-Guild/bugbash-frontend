@@ -14,7 +14,7 @@ import {
   type LimitedResultDisplay,
 } from "@/components/summon/LimitedSummonResultModal";
 import { PityMeter } from "@/components/summon/PityMeter";
-import { WalletBadge } from "@/components/WalletBadge";
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { useAuth } from "@/hooks/useAuth";
 import { useLimitedSummon } from "@/hooks/useLimitedSummon";
 import { usePityCounter } from "@/hooks/usePityCounter";
@@ -190,17 +190,8 @@ export default function LimitedSummonPage() {
 
   return (
     <MainWrapper>
+      <ConsoleTopbar command="./summon --currency=rune --limited" path="~/summon/limited" showWallet />
       <div className="min-h-screen px-5 py-6 sm:px-9">
-        <div className="mb-5 text-[13px] text-text-dim">
-          <span className="text-accent">hero@bugbash</span>
-          <span className="text-text-faint">:</span>
-          <span className="text-accent-2">~/summon/limited</span>
-          <span className="text-text-faint">$ </span>
-          <span className="text-text">./gacha --pool LIMITED</span>
-        </div>
-
-        <WalletBadge enabled={isAuthenticated} />
-
         <div className="mb-5 flex flex-wrap items-center gap-3 text-[12px]">
           <Link className="text-text-dim hover:text-accent" href="/summon">
             通常召喚へ

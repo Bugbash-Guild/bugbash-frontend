@@ -12,6 +12,7 @@ import { useSummonDisclosure } from "@/hooks/useSummonDisclosure";
 import { useSummonHistory } from "@/hooks/useSummonHistory";
 import { useSubscription } from "@/hooks/useSubscription";
 import { DisclosureModal } from "@/components/billing/DisclosureModal";
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { ItemVisual } from "@/components/ItemVisual";
 import { MainWrapper } from "@/components/MainWrapper";
 import { PityMeter } from "@/components/summon/PityMeter";
@@ -132,16 +133,8 @@ export default function SummonPage() {
 
   return (
     <MainWrapper>
+      <ConsoleTopbar command="./summon --currency=coin" path="~/summon" showWallet />
       <div className="px-9 py-6 min-h-screen">
-        {/* terminal header */}
-        <div className="text-[13px] text-text-dim mb-6">
-          <span className="text-accent">hero@bugbash</span>
-          <span className="text-text-faint">:</span>
-          <span className="text-accent-2">~/summon</span>
-          <span className="text-text-faint">$ </span>
-          <span className="text-text">./gacha --pool NORMAL</span>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl">
           {/* ── Left: summon panel ── */}
           <div className="space-y-4">
