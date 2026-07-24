@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { ItemVisual } from "@/components/ItemVisual";
 import { MainWrapper } from "@/components/MainWrapper";
 import { useAuth } from "@/hooks/useAuth";
@@ -82,17 +83,8 @@ export default function ItemsPage() {
 
   return (
     <MainWrapper>
+      <ConsoleTopbar command="inv --grid" path="~/items" showWallet />
       <div className="px-9 py-6">
-        {/* prompt header */}
-        <div className="mb-5 text-[13px] text-text-dim">
-          <span className="text-accent">hero@bugbash</span>
-          <span className="text-text-faint">:</span>
-          <span className="text-blue">~/items</span>
-          <span className="text-text-faint">$ </span>
-          <span>inv --grid</span>
-          <span className="ml-0.5 inline-block h-[14px] w-2 animate-pulse bg-accent align-middle" />
-        </div>
-
         {/* page header */}
         <div className="mb-4">
           <h1 className="text-[28px] font-semibold tracking-[-0.015em]">Inventory</h1>

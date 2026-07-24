@@ -9,6 +9,7 @@ import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
 import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { useRewardNotification } from "@/hooks/useRewardNotification";
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { GameAssetFallback } from "@/components/GameAssetFallback";
 import { MainWrapper } from "@/components/MainWrapper";
 import { MonsterVisual } from "@/components/MonsterVisual";
@@ -135,21 +136,15 @@ export default function Home() {
   const username = user?.username ?? "hero";
   const pct = hero ? (hero.progressRatio * 100).toFixed(1) : "0.0";
   const filledSegments = hero ? Math.round(hero.progressRatio * 60) : 0;
+  const totalSpecies = monsters.length;
+  const discoveredSpecies = monsters.filter((m) => m.isOwned).length;
+  const ownedMonsters = discoveredSpecies;
 
   return (
     <>
     <MainWrapper>
+      <ConsoleTopbar command="./hero --render --interactive" path="~/home" showWallet />
       <div className="px-9 py-6 min-h-screen">
-        {/* prompt header */}
-        <div className="text-[13px] text-text-dim mb-4">
-          <span className="text-accent">{username}@bugbash</span>
-          <span className="text-text-faint">:</span>
-          <span className="text-accent-2">~/home</span>
-          <span className="text-text-faint">$ </span>
-          <span>./hero --render --interactive</span>
-          <span className="inline-block w-2 h-[14px] ml-0.5 bg-accent align-middle animate-pulse" />
-        </div>
-
         {process.env.NODE_ENV === "development" && (
           <DevPanel onSuccess={() => void refetchHero()} />
         )}
@@ -243,16 +238,16 @@ export default function Home() {
                     {hero.streakDays}d streak
                   </div>
 
-                  {/* ATK / DEF / LUCK */}
+                  {/* resource summary (real data) */}
                   <div className="flex gap-2.5 mt-4">
                     {[
-                      { k: "ATK", v: 42, c: "var(--gold)" },
-                      { k: "DEF", v: 46, c: "var(--accent-2)" },
-                      { k: "LUCK", v: 36, c: "var(--purple)" },
+                      { k: "GUILD COIN", v: hero.guildCoinBalance.toLocaleString("ja-JP"), c: "var(--coin)" },
+                      { k: "PRS MERGED", v: String(hero.totalPrsMerged), c: "var(--accent)" },
+                      { k: "STREAK", v: `${hero.streakDays}d`, c: "var(--accent-2)" },
                     ].map((s) => (
                       <div key={s.k} className="flex-1 px-3 py-2 bg-bg-elev-2 border border-line rounded">
                         <div className="text-[9px] text-text-faint tracking-[0.14em]">{s.k}</div>
-                        <div className="text-[22px] font-semibold leading-[1.1] mt-0.5" style={{ color: s.c }}>{s.v}</div>
+                        <div className="text-[22px] font-semibold leading-[1.1] mt-0.5 tabular-nums" style={{ color: s.c }}>{s.v}</div>
                       </div>
                     ))}
                   </div>
@@ -300,9 +295,9 @@ export default function Home() {
               {/* 2×2 stat boxes */}
               <div className="grid grid-cols-2 gap-2.5">
                 {[
-                  { label: "PRs merged",      value: String(hero.totalPrsMerged),  delta: "lifetime",                          color: "var(--accent)" },
-                  { label: "monsters caught",  value: String(monsters.length || 0), delta: `${monsters.length || 0}/20 dex`,    color: "var(--purple)" },
-                  { label: "SSR rate",         value: "4.2%",                       delta: "lifetime",                           color: "var(--gold)" },
+                  { label: "PRs merged",      value: String(hero.totalPrsMerged),  delta: "lifetime",                                     color: "var(--accent)" },
+                  { label: "monsters caught",  value: String(ownedMonsters),        delta: `${discoveredSpecies}/${totalSpecies || 20} dex`, color: "var(--purple)" },
+                  { label: "guild coin",       value: hero.guildCoinBalance.toLocaleString("ja-JP"), delta: "balance",                     color: "var(--coin)" },
                   { label: "streak",           value: `${hero.streakDays}d`,         delta: hero.streakDays > 1 ? "active" : "keep it up!", color: "var(--accent-2)" },
                 ].map((s) => (
                   <div key={s.label} className="bg-bg-elev border border-line rounded-[6px] px-3.5 py-3">

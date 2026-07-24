@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { MainWrapper } from "@/components/MainWrapper";
 import { MonsterVisual } from "@/components/MonsterVisual";
 import { RARITY_COLOR } from "@/constants/rarity";
@@ -131,19 +132,8 @@ export default function MonstersPage() {
 
   return (
     <MainWrapper>
+      <ConsoleTopbar command="cat dex/*.card --format=detailed" path="~/monsters" showWallet />
       <div className="px-9 py-6">
-        {/* prompt header */}
-        <div className="mb-5 text-[13px] text-text-dim">
-          <span className="text-accent">
-            {user?.username ?? (isAuthenticated ? "hero" : "guest")}@bugbash
-          </span>
-          <span className="text-text-faint">:</span>
-          <span className="text-blue">~/monsters</span>
-          <span className="text-text-faint">$ </span>
-          <span>cat dex/*.card --format=detailed</span>
-          <span className="ml-0.5 inline-block h-[14px] w-2 animate-pulse bg-accent align-middle" />
-        </div>
-
         {/* page header + filters */}
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
