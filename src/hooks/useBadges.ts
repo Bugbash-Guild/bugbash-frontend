@@ -7,6 +7,7 @@ import type {
   BadgeCatalogItem,
   BadgeProgress,
   ForgeLevelDef,
+  PublicHeroBadge,
 } from "@/types/badge";
 import { useRedirectOnUnauthorized } from "./useRedirectOnUnauthorized";
 
@@ -51,5 +52,20 @@ export function useBadges(enabled: boolean) {
     refetchAll: () =>
       Promise.all([catalog.mutate(), progress.mutate(), levelDefs.mutate()]),
     refetchProgress: () => progress.mutate(),
+  };
+}
+
+/** 公開プロフィール向けの獲得済みバッジ（認証不要 / GET /api/heroes/{id}/badges）。 */
+export function usePublicHeroBadges(heroId: string | null | undefined) {
+  const { data, error, isLoading } = useSWR<PublicHeroBadge[]>(
+    heroId ? `/api/heroes/${encodeURIComponent(heroId)}/badges` : null,
+    fetcher,
+    { shouldRetryOnError: false },
+  );
+
+  return {
+    badges: data ?? [],
+    error: visibleError(error),
+    loading: isLoading,
   };
 }
