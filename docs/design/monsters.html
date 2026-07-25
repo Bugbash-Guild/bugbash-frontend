@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>~/monsters — Monster Dex / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  .dex { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .mcard { position: relative; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 8px; padding: 12px; cursor: pointer; }
+  .mcard.hoverable:hover { border-color: var(--line-strong); }
+  .mcard .art { position: relative; aspect-ratio: 1/0.72; border-radius: 5px; background: var(--bg-elev-2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 54px; overflow: hidden; }
+  .mcard .art::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 42%, var(--rc, transparent) 0%, transparent 68%); opacity: .16; }
+  .mcard--ssr { border-color: rgba(227,179,65,.5); box-shadow: inset 0 0 22px rgba(227,179,65,.10); }
+  .mcard--sr  { border-color: rgba(210,168,255,.4); }
+  .mcard--fav { border-width: 2px; border-color: var(--rc2, var(--accent)); box-shadow: 0 0 0 1px var(--rc2), 0 8px 24px rgba(0,0,0,.4); }
+  .mcard .fav-tag { position: absolute; top: -9px; right: 10px; font-size: 9px; font-weight: 700; letter-spacing: .1em; color: #0b0f0d; padding: 2px 8px; border-radius: 2px; }
+  .mcard.undis { opacity: .5; border-style: dashed; cursor: not-allowed; }
+  .mcard .nm { font-size: 13px; font-weight: 600; margin-top: 9px; }
+  .mcard .meta { font-size: 10px; color: var(--text-faint); line-height: 1.6; margin-top: 2px; }
+  .favbanner { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--radius-btn); border: 1px solid; margin-top: 14px; font-size: 12px; }
+  /* D-5: 工房グレード（コスメ）と 進化/覚醒（活動由来）の重ね描画 */
+  .badgesrow { display: flex; gap: 4px; margin-top: 7px; flex-wrap: wrap; }
+  .art.fg2 { border-color: var(--grade-2); box-shadow: inset 0 0 12px rgba(201,162,74,.14); }
+  .art.fg3 { border-color: var(--grade-3); box-shadow: inset 0 0 16px rgba(240,180,41,.18); }
+  .art.awkA { border-color: var(--grade-5); box-shadow: inset 0 0 22px rgba(255,240,192,.26); }
+  .art.awkB { border-color: rgba(255,123,114,.55); box-shadow: inset 0 0 22px rgba(255,123,114,.2); }
+  .tag9 { display: inline-flex; align-items: center; gap: 3px; padding: 1px 7px; border-radius: 2px; font-size: 9px; font-weight: 700; letter-spacing: .08em; border: 1px solid; }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · v0.1.0</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a class="active"><span class="g">◆</span> ~/monsters</a>
+      <a href="items.html"><span class="g">▣</span> ~/items</a>
+      <a href="summon.html"><span class="g">≡</span> ~/summon</a>
+      <a href="summon-limited.html" class="is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Billing</div>
+    <nav class="nav">
+      <a href="d1-shop-runes.html" class="is-paid"><span class="g">▤</span> ~/shop/runes</a>
+      <a href="shop-skins.html" class="is-paid"><span class="g">◨</span> ~/shop/skins</a>
+      <a href="d1-pass.html" class="is-paid"><span class="g">✦</span> ~/pass</a>
+      <a href="forge.html" class="is-paid"><span class="g">⚒</span> ~/forge</a>
+      <a href="badges.html"><span class="g">◉</span> ~/badges</a>
+      <a href="mypage-billing.html"><span class="g">⛭</span> ~/mypage/billing</a>
+    </nav>
+    <div class="sidebar__label">Design docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/monsters</span><span class="s">$</span> cat dex/*.card --format=detailed</div>
+      <div class="wallet">
+        <span class="wallet__bal wallet__bal--coin"><span class="ic">🪙</span> 1,240</span>
+        <span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> 340</span>
+      </div>
+    </div>
+
+    <div class="page">
+      <div class="row between" style="align-items:flex-end">
+        <div>
+          <h1 class="h1">Monster Dex</h1>
+          <p class="sub">discovered <b style="color:var(--accent)">16</b> / 20 · owned <b style="color:var(--accent)">24</b> instances · 進化/覚醒＝活動由来（緑）、工房グレード＝<span class="rune-c">コスメ（琥珀・見た目のみ）</span></p>
+        </div>
+        <div class="row gap8" id="filters"></div>
+      </div>
+
+      <div class="favbanner" id="favbanner"></div>
+      <div style="margin-top:16px" id="dexroot"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var RC = { N:'#7a9c8c', R:'#79c0ff', SR:'#d2a8ff', SSR:'#e3b341' };
+  var DEX = [
+    {id:'01',n:'スライム',e:'🟢',r:'N',lv:1,own:3},{id:'02',n:'ゴブリン',e:'👹',r:'N',lv:1,own:2},{id:'03',n:'コウモリ',e:'🦇',r:'N',lv:1,own:1},
+    {id:'04',n:'スケルトン',e:'💀',r:'R',lv:5,own:2},{id:'05',n:'オーク',e:'🧌',r:'R',lv:5,own:1},{id:'06',n:'マーマン',e:'🐟',r:'R',lv:8,own:1},
+    {id:'07',n:'狼',e:'🐺',r:'R',lv:10,own:2},{id:'08',n:'魔女',e:'🧙',r:'R',lv:12,own:1},{id:'09',n:'ゾンビ',e:'🧟',r:'R',lv:15,own:1},
+    {id:'10',n:'ゴーレム',e:'🗿',r:'SR',lv:18,own:2,ilv:34,evo:1,awk:'B'},{id:'11',n:'マーメイド',e:'🧜',r:'SR',lv:20,own:1},{id:'12',n:'ケルベロス',e:'🐕',r:'SR',lv:22,own:1},
+    {id:'13',n:'サイクロプス',e:'👁',r:'SR',lv:25,own:1},{id:'14',n:'ユニコーン',e:'🦄',r:'SR',lv:28,own:1,fg:3},{id:'15',n:'ヴァンパイア',e:'🧛',r:'SR',lv:30,own:1},
+    {id:'16',n:'クラーケン',e:'🐙',r:'SR',lv:32,own:0},{id:'17',n:'グリフィン',e:'🦁',r:'SSR',lv:35,own:1},{id:'18',n:'フェニックス',e:'🦅',r:'SSR',lv:40,own:1,ilv:100,evo:3,awk:'A'},
+    {id:'19',n:'ドラゴン',e:'🐉',r:'SSR',lv:45,own:1,ilv:52,evo:2,fg:2},{id:'20',n:'リヴァイアサン',e:'🐊',r:'SSR',lv:50,own:0}
+  ];
+  var FAV = '19';
+
+  // filter chips
+  var F = ['all','SSR','SR','R','N'];
+  document.getElementById('filters').innerHTML = F.map(function(f,i){
+    return '<button class="btn" style="padding:6px 12px;font-size:11px;'+(i===0?'color:var(--accent);border-color:rgba(126,231,135,.4);background:rgba(126,231,135,.08)':'color:var(--text-dim)')+'">'+f+'</button>';
+  }).join('');
+
+  function favBanner(){
+    var m = DEX.find(function(x){return x.id===FAV});
+    var el = document.getElementById('favbanner');
+    el.style.borderColor = RC[m.r]+'88'; el.style.background = RC[m.r]+'14'; el.style.color = 'var(--text-dim)';
+    el.innerHTML = '<span class="micro" style="flex-shrink:0">FAVORITE / 連れている</span><span style="font-size:22px;flex-shrink:0">'+m.e+'</span><b style="color:'+RC[m.r]+';white-space:nowrap;flex-shrink:0">'+m.n+'</b><span class="faint" style="margin-left:auto;font-size:10px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">カードをクリックで変更（獲得済みのみ）</span>';
+  }
+
+  function render(){
+    var order = {SSR:0,SR:1,R:2,N:3};
+    var groups = ['SSR','SR','R','N'];
+    document.getElementById('dexroot').innerHTML = groups.map(function(g){
+      var items = DEX.filter(function(m){return m.r===g});
+      var got = items.filter(function(m){return m.own>0}).length;
+      var head = '<div class="section-label"><span class="rar rar--'+g.toLowerCase()+'">'+g+'</span><span style="font-size:11px;color:var(--text-dim)" class="tnum">'+got+'/'+items.length+' discovered</span><span class="rule"></span></div>';
+      var cards = '<div class="dex">' + items.map(function(m){
+        var dis = m.own>0, fav = m.id===FAV;
+        var cls = 'mcard hoverable' + (dis?'':' undis') + (m.r==='SSR'&&dis?' mcard--ssr':'') + (m.r==='SR'&&dis?' mcard--sr':'') + (fav?' mcard--fav':'');
+        var artCls = 'art' + (m.fg===2?' fg2':'') + (m.fg===3?' fg3':'') + (m.awk==='A'?' awkA':'') + (m.awk==='B'?' awkB':'');
+        var badges = '';
+        if (dis && (m.ilv || m.fg)) {
+          badges = '<div class="badgesrow">';
+          if (m.ilv) badges += '<span class="tag9" style="color:var(--accent);background:rgba(126,231,135,.08);border-color:rgba(126,231,135,.3)">Lv.'+m.ilv+' · 進化'+'★'.repeat(m.evo||0)+'</span>';
+          if (m.awk==='A') badges += '<span class="tag9" style="color:var(--grade-5);background:rgba(255,240,192,.08);border-color:rgba(255,240,192,.4)">覚醒</span>';
+          if (m.awk==='B') badges += '<span class="tag9" style="color:var(--pink);background:rgba(255,123,114,.08);border-color:rgba(255,123,114,.4)">暴走</span>';
+          if (m.fg) badges += '<span class="tag9" style="color:var(--rune);background:var(--rune-bg);border-color:var(--rune-border)">⚒ G'+m.fg+' · COSMETIC</span>';
+          badges += '</div>';
+        }
+        return '<div class="'+cls+'" style="--rc:'+RC[m.r]+';--rc2:'+RC[m.r]+'" '+(dis?'onclick="FAV=\''+m.id+'\';favBanner();render()"':'')+'>'
+          + (fav?'<span class="fav-tag" style="background:'+RC[m.r]+'">★ FAVORITE</span>':'')
+          + '<div class="row between" style="margin-bottom:8px"><span class="faint" style="font-size:10px">#'+m.id+'</span><span class="rar rar--'+m.r.toLowerCase()+'">'+m.r+'</span></div>'
+          + '<div class="'+artCls+'">'+(dis?m.e:'<span style="color:var(--text-faint)">?</span>')+'</div>'
+          + '<div class="nm" style="color:'+(dis?'var(--text)':'var(--text-faint)')+'">'+(dis?m.n:'???')+'</div>'
+          + '<div class="meta">Lv.'+m.lv+'+ required<br/>status: '+(dis?'<span style="color:var(--accent)">caught × '+m.own+'</span>':'<span style="color:var(--pink)">not_found</span>')+'</div>'
+          + badges
+          + '</div>';
+      }).join('') + '</div>';
+      return head + cards;
+    }).join('');
+  }
+  favBanner(); render();
+</script>
+</body>
+</html>

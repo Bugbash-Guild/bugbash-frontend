@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>@haseryo0403 — 公開プロフィール / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  :root {
+    --tier-std: #9DA9B5; --tier-std-bg: rgba(157,169,181,.08); --tier-std-bd: rgba(157,169,181,.34);
+    --tier-dx:  #C7D3DE; --tier-dx-bg:  rgba(199,211,222,.09); --tier-dx-bd:  rgba(199,211,222,.42);
+    --tier-lg:  #E2E9F1; --tier-lg-bg:  rgba(226,233,241,.10); --tier-lg-bd:  rgba(226,233,241,.52);
+  }
+  .tchip { display:inline-flex; align-items:center; padding:2px 8px; border-radius:2px; font-size:9px; font-weight:800; letter-spacing:.12em; border:1px solid; }
+  .tchip--lg { color:var(--tier-lg); background:var(--tier-lg-bg); border-color:var(--tier-lg-bd); }
+  .tchip--dx { color:var(--tier-dx); background:var(--tier-dx-bg); border-color:var(--tier-dx-bd); }
+
+  /* ── 公開ページ: サイドバーなし・センター1カラム ── */
+  .pub { max-width: 1080px; margin: 0 auto; padding: 0 28px 60px; }
+
+  /* Identity */
+  .idcard { display:flex; align-items:flex-end; gap:22px; padding:30px 0 22px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .avatar { width:76px; height:76px; border-radius:10px; flex-shrink:0; position:relative;
+    background:linear-gradient(135deg, var(--accent), var(--blue)); display:flex; align-items:center; justify-content:center;
+    color:var(--bg); font-size:30px; font-weight:800; box-shadow:0 10px 26px rgba(126,231,135,.22), inset 0 1px 0 rgba(255,255,255,.35); }
+  .avatar::after { content:''; position:absolute; inset:-5px; border-radius:13px; border:1px solid rgba(126,231,135,.35); pointer-events:none; }
+  .idmain { flex:1; min-width:240px; }
+  .handle { font-size:26px; font-weight:800; letter-spacing:-.01em; }
+  .handle .at { color:var(--text-faint); font-weight:400; }
+  .titlebar { display:flex; align-items:center; gap:8px; margin-top:6px; flex-wrap:wrap; }
+  .honor { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:2px; font-size:10px; font-weight:800; letter-spacing:.14em;
+    color:var(--accent); background:rgba(126,231,135,.08); border:1px solid rgba(126,231,135,.35); }
+  .lvblock { text-align:right; }
+  .lvblock .lv { font-size:44px; font-weight:800; line-height:1; color:var(--accent); text-shadow:0 0 22px rgba(126,231,135,.35); }
+  .lvblock .xp { font-size:11px; color:var(--text-faint); margin-top:4px; white-space:nowrap; }
+  .statrow { display:flex; gap:8px; margin-top:20px; flex-wrap:wrap; }
+  .stat { flex:1; min-width:150px; padding:12px 16px; border:1px solid var(--line); border-radius:var(--radius-btn); background:var(--bg-elev); }
+  .stat .k { font-size:9px; letter-spacing:.16em; color:var(--text-faint); }
+  .stat .v { font-size:20px; font-weight:700; color:var(--accent); margin-top:4px; font-variant-numeric:tabular-nums; }
+  .stat .s { font-size:10px; color:var(--text-dim); margin-top:2px; }
+
+  .sechd { display:flex; align-items:baseline; gap:12px; margin:34px 0 12px; }
+  .sechd h2 { margin:0; font-size:13px; font-weight:700; letter-spacing:.18em; color:var(--text-dim); }
+  .sechd .rule { flex:1; height:1px; background:var(--line); }
+  .sechd .n { font-size:10px; color:var(--text-faint); }
+
+  /* ── Apex殿堂カード ── */
+  .apexwrap { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:18px; align-items:stretch; }
+  @media (max-width:900px){ .apexwrap { grid-template-columns:1fr; } }
+  .apex { position:relative; border-radius:14px; min-height:420px; perspective:900px; }
+  .apex__ring { position:absolute; inset:0; border-radius:14px; overflow:hidden; }
+  .apex__ring::before { content:''; position:absolute; inset:-45%;
+    background:conic-gradient(from 0deg,#cfd8e3,#d9cbe9 18%,#c9e3da 37%,#e9dfc9 55%,#cbd6e8 74%,#d9cbe9 90%,#cfd8e3);
+    animation:apexspin 16s linear infinite; opacity:.6; }
+  .apex__card { position:absolute; inset:2px; border-radius:12px; overflow:hidden; display:flex; flex-direction:column;
+    background:linear-gradient(180deg,#12181a 0%,#0a0e0c 55%,#0d1113 100%);
+    transition:transform .18s ease-out; transform-style:preserve-3d; }
+  .apex__card::before { content:''; position:absolute; inset:0; pointer-events:none; z-index:4;
+    background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(126,231,135,.05) 3px 4px); }
+  .apex__card::after { content:''; position:absolute; inset:0; pointer-events:none; z-index:5;
+    background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.075) 50%,transparent 58%); }
+  .apex__hd { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; font-size:9px; letter-spacing:.24em; color:var(--tier-lg); z-index:6; }
+  .apex__stage { position:relative; flex:1; display:flex; align-items:center; justify-content:center; }
+  .apex__stage::before { content:''; position:absolute; top:0; left:50%; width:130%; height:75%; transform:translateX(-50%);
+    background:radial-gradient(ellipse 40% 55% at 50% 0%, rgba(226,233,241,.13), transparent 65%); pointer-events:none; }
+  .apex__subject { font-size:132px; line-height:1; position:relative; z-index:3;
+    filter:saturate(1.35) contrast(1.18); text-shadow:4px 0 rgba(255,90,90,.5),-4px 0 rgba(90,170,255,.5);
+    animation:apexidle 3.4s ease-in-out infinite; }
+  .apex__floor { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); width:240px; height:16px; border-radius:50%;
+    background:radial-gradient(ellipse, rgba(226,233,241,.2), transparent 70%); filter:blur(4px); }
+  .apex__parts { position:absolute; inset:0; overflow:hidden; z-index:2; pointer-events:none; }
+  .apex__parts i { position:absolute; bottom:-6px; width:3px; height:3px; border-radius:50%; background:var(--tier-lg); opacity:0;
+    animation:rise linear infinite; box-shadow:0 0 6px rgba(226,233,241,.8); }
+  .apex__plate { position:relative; z-index:6; margin:0 14px 14px; padding:12px 16px; border-radius:7px;
+    background:linear-gradient(160deg,#b8bcc4,#7e838d 55%,#a3a8b2); color:#1d2025;
+    box-shadow:0 8px 20px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.5); }
+  .apex__plate .r1 { display:flex; justify-content:space-between; gap:8px; font-size:9px; letter-spacing:.2em; opacity:.75; flex-wrap:wrap; }
+  .apex__plate .r1 span { white-space:nowrap; }
+  .apex__plate .r2 { display:flex; justify-content:space-between; align-items:baseline; margin-top:4px; }
+  .apex__plate .nm { font-size:16px; font-weight:800; letter-spacing:.02em; }
+  .apex__plate .meta { font-size:10px; font-variant-numeric:tabular-nums; text-align:right; line-height:1.6; }
+  @keyframes apexspin { to { transform:rotate(360deg); } }
+  @keyframes apexidle { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-10px) } }
+  @keyframes rise { 0% { opacity:0; transform:translateY(0) } 12% { opacity:.9 } 100% { opacity:0; transform:translateY(-300px) } }
+
+  .apexside { display:flex; flex-direction:column; gap:12px; }
+  .apexside .card { flex:1; }
+  .ledg { font-size:11.5px; color:var(--text-dim); line-height:2.0; }
+  .ledg b { color:var(--text); font-weight:600; }
+  .ledg .g { color:var(--accent); } .ledg .l { color:var(--tier-lg); }
+
+  /* ── Showcase party ── */
+  .party { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
+  .pc { background:var(--bg-elev); border:1px solid var(--line); border-radius:var(--radius-card); padding:12px; }
+  .pc__art { position:relative; height:120px; border-radius:6px; border:1px solid var(--line); overflow:hidden;
+    display:flex; align-items:center; justify-content:center; font-size:52px; background:var(--bg-elev-2); }
+  .pc__art.skin-kp { background:linear-gradient(180deg,#101614,#0b0f0d); border-color:var(--tier-lg-bd); }
+  .pc__art.skin-kp::before { content:''; position:absolute; inset:0; background:
+    repeating-linear-gradient(0deg,transparent 0 3px,rgba(126,231,135,.07) 3px 4px),
+    linear-gradient(90deg,transparent 40%,rgba(255,123,114,.13) 41% 42.5%,transparent 43%); }
+  .pc__art.skin-kp .e { filter:saturate(1.35) contrast(1.15); text-shadow:2px 0 rgba(255,90,90,.45),-2px 0 rgba(90,170,255,.45); }
+  .pc__art.awk { border-color:var(--grade-5); box-shadow:inset 0 0 22px rgba(255,240,192,.22); }
+  .pc__art.brk { border-color:rgba(255,123,114,.5); box-shadow:inset 0 0 22px rgba(255,123,114,.16); }
+  .pc__name { display:flex; align-items:center; justify-content:space-between; margin-top:10px; font-size:13px; font-weight:700; }
+  .pline { margin-top:6px; font-size:9.5px; display:flex; gap:4px; flex-wrap:wrap; }
+  .t9 { display:inline-flex; align-items:center; gap:3px; padding:1px 7px; border-radius:2px; font-weight:700; letter-spacing:.08em; border:1px solid; }
+  .t9--g { color:var(--accent); background:rgba(126,231,135,.08); border-color:rgba(126,231,135,.3); }
+  .t9--awk { color:var(--grade-5); background:rgba(255,240,192,.08); border-color:rgba(255,240,192,.4); }
+  .t9--brk { color:var(--pink); background:rgba(255,123,114,.08); border-color:rgba(255,123,114,.4); }
+  .t9--cos { color:var(--rune); background:var(--rune-bg); border-color:var(--rune-border); }
+
+  /* ── Badge wall ── */
+  .bwall { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:12px; }
+  .bw { display:flex; gap:13px; align-items:center; background:var(--bg-elev); border:1px solid var(--line); border-radius:var(--radius-card); padding:14px 16px; }
+  .bw__ic { width:48px; height:48px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:24px;
+    background:linear-gradient(160deg,#223328,#141d18); border:1px solid rgba(126,231,135,.4); }
+  .bw__ic.g2 { box-shadow:inset 0 0 14px rgba(240,180,41,.15); }
+  .bw__tier { font-size:9px; font-weight:800; letter-spacing:.14em; color:var(--accent); white-space:nowrap; }
+
+  /* ── Plate shelf ── */
+  .shelf { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:12px; }
+  .miniplate { border-radius:8px; position:relative; padding:14px 18px; min-height:96px; display:flex; flex-direction:column;
+    box-shadow:0 10px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.14), inset 0 -6px 14px rgba(0,0,0,.28); }
+  .miniplate::before { content:''; position:absolute; inset:6px; border:1px solid rgba(255,255,255,.16); border-radius:5px; pointer-events:none; }
+  .miniplate .t { font-size:8.5px; letter-spacing:.26em; opacity:.7; }
+  .miniplate .n { font-size:15px; font-weight:800; margin-top:4px; padding-right:52px; }
+  .miniplate .d { margin-top:auto; font-size:9px; opacity:.8; font-variant-numeric:tabular-nums; padding-right:52px; }
+  .miniplate .m { position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:30px; opacity:.85; filter:grayscale(.35); }
+  .mp--bronze { background:linear-gradient(160deg,#6e4a2a,#3c2817 55%,#57381f); color:#e8d5bd; }
+  .mp--steel { background:linear-gradient(160deg,#5d6a74,#333c44 55%,#4b5762); color:#dfe7ee; }
+
+  /* footer */
+  .pubfoot { margin-top:44px; padding-top:18px; border-top:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .apex__ring::before, .apex__subject, .apex__parts i { animation:none !important; }
+  }
+</style>
+</head>
+<body class="crt">
+<div class="app" style="display:block">
+  <div class="main" style="margin-left:0">
+    <div class="topbar">
+      <div class="prompt"><span class="u">visitor@github</span><span class="s">:</span><span class="p">~</span><span class="s">$</span> curl bugbash.dev/@haseryo0403<span class="caret"></span></div>
+      <a class="btn btn--ghost" style="padding:6px 12px;font-size:11px" href="index.html">design index</a>
+    </div>
+
+    <div class="pub">
+      <!-- Identity -->
+      <div class="idcard">
+        <div class="avatar">H</div>
+        <div class="idmain">
+          <div class="handle"><span class="at">@</span>haseryo0403</div>
+          <div class="titlebar">
+            <span class="honor">⚔ CENTURION — 100th MERGE</span>
+            <span class="honor" style="color:var(--purple);background:rgba(210,168,255,.08);border-color:rgba(210,168,255,.35)">◆ DEX 16/20</span>
+            <span class="faint" style="font-size:10px">称号は実績由来 — 購入では手に入りません</span>
+          </div>
+        </div>
+        <div class="lvblock">
+          <div class="lv">Lv.50</div>
+          <div class="xp">12,873 XP · since 2026-04</div>
+        </div>
+      </div>
+
+      <div class="statrow">
+        <div class="stat"><div class="k">PRS MERGED</div><div class="v">128</div><div class="s">+2 this week</div></div>
+        <div class="stat"><div class="k">STREAK</div><div class="v">7d</div><div class="s">best 14d</div></div>
+        <div class="stat"><div class="k">SSR RATE</div><div class="v" style="color:var(--gold)">4.2%</div><div class="s">lifetime</div></div>
+        <div class="stat"><div class="k">MONSTERS</div><div class="v" style="color:var(--purple)">24</div><div class="s">16 species</div></div>
+      </div>
+
+      <!-- Apex殿堂 -->
+      <div class="sechd"><h2>APEX HALL OF FAME</h2><div class="rule"></div><span class="n">St10 到達スキンのみ殿堂入り</span></div>
+      <div class="apexwrap">
+        <div class="apex" id="apex">
+          <div class="apex__ring"></div>
+          <div class="apex__card" id="apexCard">
+            <div class="apex__hd"><span>APEX — KERNEL PANIC線</span><span>CAST № 0007</span></div>
+            <div class="apex__stage">
+              <div class="apex__parts" id="parts"></div>
+              <span class="apex__subject">🐉</span>
+              <span class="apex__floor"></span>
+            </div>
+            <div class="apex__plate">
+              <div class="r1"><span>SEGFAULT SOVEREIGN — MASTERY St10</span><span>MINTED 2026-07</span></div>
+              <div class="r2">
+                <span class="nm">「セグフォルトの王」</span>
+                <span class="meta">粒子数 = 128 merged PRs<br/>haseryo0403 · Lv.50 · SSR ドラゴン</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="apexside">
+          <div class="card">
+            <div class="card__hd"><span class="micro">この殿堂カードについて</span></div>
+            <div class="card__bd ledg">
+              舞う粒子はこの勇者が<b>実際にマージした128本のPR</b>。買っただけでは殿堂に入れません — <b class="l">LGスキン</b>を<b>St10まで使い込み</b>、活動で粒子を灯した記録です。<br/>
+              <span class="g">名声（Lv・SSR・PR数）が主</span>・<span class="l">スキンは従</span> — プレートの刻印順もその順序です。
+            </div>
+          </div>
+          <div class="card">
+            <div class="card__bd" style="display:flex;align-items:center;gap:12px">
+              <span style="font-size:22px">◨</span>
+              <div style="flex:1;font-size:11px;color:var(--text-dim);line-height:1.7">同じスキンライン（Kernel Panic線）は現在も入手できます。復刻 2027-02・同一価格。</div>
+              <a class="btn btn--ghost" style="padding:7px 12px;font-size:11px;white-space:nowrap" href="skin-detail.html">ラインを見る →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Showcase party -->
+      <div class="sechd"><h2>SHOWCASE PARTY</h2><div class="rule"></div><span class="n">連れ歩き4体 · 名声→コスメの順で表示</span></div>
+      <div class="party">
+        <div class="pc">
+          <div class="pc__art skin-kp"><span class="e">🐉</span></div>
+          <div class="pc__name"><span>ドラゴン</span><span class="rar rar--ssr">SSR</span></div>
+          <div class="pline">
+            <span class="t9 t9--g">Lv.52 · 進化★★</span>
+            <span class="t9 t9--cos">◨「セグフォルトの王」 St10</span>
+          </div>
+        </div>
+        <div class="pc">
+          <div class="pc__art awk"><span>🦅</span></div>
+          <div class="pc__name"><span>フェニックス</span><span class="rar rar--ssr">SSR</span></div>
+          <div class="pline">
+            <span class="t9 t9--g">Lv.100 · 進化★★★</span>
+            <span class="t9 t9--awk">覚醒</span>
+          </div>
+        </div>
+        <div class="pc">
+          <div class="pc__art brk"><span>🗿</span></div>
+          <div class="pc__name"><span>ゴーレム</span><span class="rar rar--sr">SR</span></div>
+          <div class="pline">
+            <span class="t9 t9--g">Lv.34 · 進化★</span>
+            <span class="t9 t9--brk">暴走</span>
+          </div>
+        </div>
+        <div class="pc">
+          <div class="pc__art"><span>🦄</span></div>
+          <div class="pc__name"><span>ユニコーン</span><span class="rar rar--sr">SR</span></div>
+          <div class="pline">
+            <span class="t9 t9--g">Lv.28</span>
+            <span class="t9 t9--cos">◨「ムーンリンカ」 DX</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Badges -->
+      <div class="sechd"><h2>BADGES</h2><div class="rule"></div><span class="n">ティアは活動でのみ上昇</span></div>
+      <div class="bwall">
+        <div class="bw">
+          <div class="bw__ic g2">⚔️</div>
+          <div style="min-width:0">
+            <div style="font-size:13px;font-weight:700">マージ王 <span class="bw__tier">TIER 3</span></div>
+            <div class="pline"><span class="t9 t9--g">128 PRs</span><span class="t9 t9--cos">⚒ GRADE 2</span></div>
+          </div>
+        </div>
+        <div class="bw">
+          <div class="bw__ic">🔥</div>
+          <div style="min-width:0">
+            <div style="font-size:13px;font-weight:700">ストリーカー <span class="bw__tier">TIER 2</span></div>
+            <div class="pline"><span class="t9 t9--g">連続7日</span></div>
+          </div>
+        </div>
+        <div class="bw">
+          <div class="bw__ic">🧪</div>
+          <div style="min-width:0">
+            <div style="font-size:13px;font-weight:700">レビュー職人 <span class="bw__tier">TIER 1</span></div>
+            <div class="pline"><span class="t9 t9--g">12 reviews</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plates -->
+      <div class="sechd"><h2>COMMEMORATIVE CASTS</h2><div class="rule"></div><span class="n">記念鋳造 · 刻印は自動（偽造不可）</span></div>
+      <div class="shelf">
+        <div class="miniplate mp--bronze">
+          <div class="t">BUGBASH COMMEMORATIVE CAST</div>
+          <div class="n">CENTURION — 100th MERGE</div>
+          <span class="m">🐉</span>
+          <div class="d">2026-06-28 · bugbash-frontend · CAST № 0042</div>
+        </div>
+        <div class="miniplate mp--steel">
+          <div class="t">BUGBASH COMMEMORATIVE CAST</div>
+          <div class="n">FIRST SSR — フェニックス</div>
+          <span class="m">🦅</span>
+          <div class="d">2026-05-11 · bugbash-backend#87 · CAST № 0009</div>
+        </div>
+      </div>
+
+      <div class="pubfoot">
+        <div class="faint" style="font-size:10.5px">BugBash — GitHubの活動がそのまま冒険になる。このページの名声表示（Lv・ティア・実績）は購入で変化しません。</div>
+        <a class="btn" style="padding:8px 16px;font-size:12px" href="home.html">自分の冒険を始める →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 粒子 = merged PRs（128本 → 全部撒くと過密なので密度そのまま代表60粒・キャプションに実数）
+  (function(){
+    var box = document.getElementById('parts');
+    if (!box) return;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    for (var i = 0; i < 60; i++) {
+      var p = document.createElement('i');
+      var s = 2 + Math.random() * 2.5;
+      p.style.left = (3 + Math.random() * 94) + '%';
+      p.style.width = s + 'px'; p.style.height = s + 'px';
+      if (reduce) {
+        // 静的散布（アニメなし）— 粒子=実PRの物語を残す
+        p.style.animation = 'none';
+        p.style.bottom = (6 + Math.random() * 260) + 'px';
+        p.style.opacity = (0.15 + Math.random() * 0.5).toFixed(2);
+      } else {
+        p.style.animationDuration = (5 + Math.random() * 7) + 's';
+        p.style.animationDelay = (-Math.random() * 12) + 's';
+        p.style.opacity = 0;
+      }
+      box.appendChild(p);
+    }
+  })();
+  // ホバーチルト（subtle・reduced-motion時は無効）
+  (function(){
+    var wrap = document.getElementById('apex'), card = document.getElementById('apexCard');
+    if (!wrap || !card) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    wrap.addEventListener('mousemove', function(e){
+      var r = wrap.getBoundingClientRect();
+      var x = (e.clientX - r.left) / r.width - 0.5;
+      var y = (e.clientY - r.top) / r.height - 0.5;
+      card.style.transform = 'rotateY(' + (x * 6) + 'deg) rotateX(' + (-y * 5) + 'deg)';
+    });
+    wrap.addEventListener('mouseleave', function(){ card.style.transform = 'rotateY(0) rotateX(0)'; });
+  })();
+</script>
+</body>
+</html>

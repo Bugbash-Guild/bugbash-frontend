@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>~/summon — 通常召喚（コイン） / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  .layout { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); gap: 16px; align-items: start; }
+  @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+  /* 召喚ゲート */
+  .gate { position: relative; display: flex; flex-direction: column; align-items: center; padding: 34px 20px 26px; overflow: hidden; }
+  .gate::before { content: ''; position: absolute; inset: 0; background: radial-gradient(420px 260px at 50% 38%, rgba(126,231,135,0.10), transparent 70%); pointer-events: none; }
+  .gate .ring { position: relative; width: 148px; height: 148px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 64px;
+    border: 1px solid rgba(126,231,135,0.4); box-shadow: 0 0 30px rgba(126,231,135,0.18), inset 0 0 26px rgba(126,231,135,0.10); }
+  .gate .ring::before { content: ''; position: absolute; inset: -9px; border-radius: 50%; border: 1px dashed rgba(126,231,135,0.25); animation: rot 14s linear infinite; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+  .gate h2 { margin: 18px 0 2px; font-size: 19px; letter-spacing: .02em; }
+  .costline { font-size: 12px; color: var(--text-dim); }
+  .pullbtns { display: flex; gap: 10px; margin-top: 18px; width: 100%; max-width: 420px; }
+  .pullbtns .btn { flex: 1; padding: 13px 16px; font-size: 14px; }
+  /* 結果オーバーレイ */
+  .result-grid { display: grid; grid-template-columns: repeat(5, 92px); gap: 8px; justify-content: center; }
+  @media (prefers-reduced-motion: reduce) { .gate .ring::before { animation: none; } }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · v0.1.0</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="monsters.html"><span class="g">◆</span> ~/monsters</a>
+      <a href="items.html"><span class="g">▣</span> ~/items</a>
+      <a class="active"><span class="g">≡</span> ~/summon</a>
+      <a href="summon-limited.html" class="is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Billing</div>
+    <nav class="nav">
+      <a href="d1-shop-runes.html" class="is-paid"><span class="g">▤</span> ~/shop/runes</a>
+      <a href="shop-skins.html" class="is-paid"><span class="g">◨</span> ~/shop/skins</a>
+      <a href="d1-pass.html" class="is-paid"><span class="g">✦</span> ~/pass</a>
+      <a href="forge.html" class="is-paid"><span class="g">⚒</span> ~/forge</a>
+      <a href="badges.html"><span class="g">◉</span> ~/badges</a>
+      <a href="mypage-billing.html"><span class="g">⛭</span> ~/mypage/billing</a>
+    </nav>
+    <div class="sidebar__label">Design docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/summon</span><span class="s">$</span> ./summon --currency=coin<span class="caret"></span></div>
+      <div class="wallet">
+        <span class="wallet__bal wallet__bal--coin"><span class="ic">🪙</span> <span id="coinbal">1,240</span></span>
+        <span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> 340</span>
+      </div>
+    </div>
+
+    <div class="page">
+      <div class="row between" style="align-items:flex-end;gap:16px">
+        <div>
+          <h1 class="h1">通常召喚 <span class="chip chip--coin" style="vertical-align:middle">🪙 COIN</span></h1>
+          <p class="sub">ギルドコイン（活動で獲得）で相棒を召喚します。<a href="#" onclick="openDisc();return false" style="color:var(--blue)">提供割合について ▸</a></p>
+        </div>
+        <span class="chip chip--accent">PRESTIGE ZONE — 課金導線なし</span>
+      </div>
+
+      <div class="layout" style="margin-top:18px">
+        <!-- 召喚コンソール -->
+        <div class="card">
+          <div class="card__hd"><span class="micro">SUMMON ENGINE</span><span class="faint" style="font-size:10px">seed: PR node_id (deterministic)</span></div>
+          <div class="gate">
+            <div class="ring" id="ring">🥚</div>
+            <h2 class="glow-g">相棒召喚ゲート</h2>
+            <div class="costline">単発 <b style="color:var(--coin)">100 🪙</b> ・ 10連 <b style="color:var(--coin)">1,000 🪙</b>（値は API 由来）</div>
+            <div class="pullbtns">
+              <button class="btn btn--coin" id="b1" onclick="pull(1)">単発召喚 — 100 🪙</button>
+              <button class="btn btn--coin" id="b10" onclick="pull(10)">10連召喚 — 1,000 🪙</button>
+            </div>
+            <div class="faint" style="font-size:10.5px;margin-top:12px">コインが足りないときは — PR をマージして集めましょう（購入はできません）</div>
+          </div>
+          <div style="border-top:1px solid var(--line);padding:14px 18px">
+            <div class="micro" style="margin-bottom:8px">RUN LOG</div>
+            <div class="runlog" id="runlog">
+              <div class="ln"><span class="k">›</span><span class="dim">召喚待機中。ボタンで実行します…</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右カラム: pity + 履歴 -->
+        <div class="stack gap12">
+          <div class="card pity">
+            <div class="head"><span class="micro">PITY — SSR確定カウンタ</span><span class="chip chip--pass" style="font-size:9px">パスで 80 → 70</span></div>
+            <div class="n"><span style="color:var(--accent)" id="pityn">34</span><span class="dim" style="font-size:12px;font-weight:400"> / 80 回</span></div>
+            <div class="cellbar" id="pitybar" style="margin-top:8px"></div>
+            <div class="note">あと <b style="color:var(--text)" id="pityleft">46</b> 回で SSR確定（天井 80）。値は常に <span class="rune-c">GET /api/summon/pity</span> 由来・事実の進捗のみを表示（煽り演出なし）。</div>
+          </div>
+
+          <div class="card">
+            <div class="card__hd"><span class="micro">summon --history | tail -5</span><a href="#" onclick="openDisc();return false" style="font-size:11px;color:var(--blue);text-decoration:none">提供割合 ▸</a></div>
+            <div id="hist"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="legal-footer">
+        <div class="row"><a href="#" onclick="openDisc();return false">提供割合の開示</a><a href="d1-components.html#tokusho">特定商取引法に基づく表示</a><a href="d1-components.html#prepaid">資金決済法（前払式支払手段）</a></div>
+        <div class="note">通常召喚は無償通貨（ギルドコイン）のみ。ルーンでの代替購入はありません。確率・天井・価格は API から取得して表示します（ハードコード禁止）。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 結果オーバーレイ -->
+<div class="modal-scrim" id="resultOv" style="display:none">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:18px;max-width:640px" onclick="event.stopPropagation()">
+    <div class="micro" style="letter-spacing:.2em" id="rtitle">SUMMON RESULT</div>
+    <div id="rbody"></div>
+    <div class="row gap8">
+      <button class="btn btn--ghost" onclick="closeResult()">閉じる</button>
+      <button class="btn btn--coin" onclick="closeResult();pull(1)">もう一度 — 100 🪙</button>
+    </div>
+  </div>
+</div>
+
+<!-- 確率開示モーダル -->
+<div class="modal-scrim" id="discModal" style="display:none">
+  <div class="modal modal--wide">
+    <div class="modal__hd"><span class="micro" style="color:var(--blue)">▸ 提供割合について（通常召喚）</span><button class="x" onclick="closeDisc()">✕</button></div>
+    <div class="modal__bd">
+      <table class="log">
+        <tr><th>レアリティ</th><th>提供割合</th><th>天井</th><th>備考</th></tr>
+        <tr><td><span class="rar rar--ssr">SSR</span></td><td class="tnum">3.0%</td><td class="tnum">80回で確定（パス加入時 70回）</td><td>確率は全員一律</td></tr>
+        <tr><td><span class="rar rar--sr">SR</span></td><td class="tnum">12.0%</td><td>—</td><td>10連で R以上 1枠保証</td></tr>
+        <tr><td><span class="rar rar--r">R</span></td><td class="tnum">35.0%</td><td>—</td><td></td></tr>
+        <tr><td><span class="rar rar--n">N</span></td><td class="tnum">50.0%</td><td>—</td><td></td></tr>
+      </table>
+      <p style="font-size:11px;color:var(--text-faint);line-height:1.8;margin:12px 0 0">単発 100🪙 / 10連 1,000🪙。本表の値は <code style="color:var(--rune);font-family:var(--mono)">GET /api/summon/disclosure</code> のレスポンスをそのまま描画します（フロントに定数を持ちません）。数値はモック用ダミーです。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  var MON = [
+    {n:'スライム',e:'🟢',r:'n'},{n:'ゴブリン',e:'👹',r:'n'},{n:'コウモリ',e:'🦇',r:'n'},
+    {n:'スケルトン',e:'💀',r:'r'},{n:'オーク',e:'🧌',r:'r'},{n:'狼',e:'🐺',r:'r'},{n:'魔女',e:'🧙',r:'r'},
+    {n:'ゴーレム',e:'🗿',r:'sr'},{n:'ユニコーン',e:'🦄',r:'sr'},{n:'ケルベロス',e:'🐕',r:'sr'},
+    {n:'グリフィン',e:'🦁',r:'ssr'},{n:'フェニックス',e:'🦅',r:'ssr'},{n:'ドラゴン',e:'🐉',r:'ssr'}
+  ];
+  var coins = 1240, pity = 34, hist = [
+    {e:'🐺',n:'狼',r:'r',at:'3時間前'},{e:'🟢',n:'スライム',r:'n',at:'昨日'},{e:'🦄',n:'ユニコーン',r:'sr',at:'2日前'},
+    {e:'👹',n:'ゴブリン',r:'n',at:'2日前'},{e:'🦇',n:'コウモリ',r:'n',at:'3日前'}
+  ];
+  var running = false, skipNow = false;
+
+  function fm(n){ return n.toLocaleString('ja-JP'); }
+  function roll(){
+    var x = Math.random()*100;
+    var r = x < 3 ? 'ssr' : x < 15 ? 'sr' : x < 50 ? 'r' : 'n';
+    var pool = MON.filter(function(m){return m.r===r});
+    return pool[Math.floor(Math.random()*pool.length)];
+  }
+  function drawPity(){
+    document.getElementById('pityn').textContent = pity;
+    document.getElementById('pityleft').textContent = 80 - pity;
+    var bar = document.getElementById('pitybar'); bar.innerHTML = '';
+    for (var i=0;i<40;i++){ var c=document.createElement('i'); if(i < Math.round(pity/80*40)) c.className='on'; bar.appendChild(c); }
+  }
+  function drawHist(){
+    document.getElementById('hist').innerHTML = hist.slice(0,5).map(function(h){
+      return '<div class="actrow"><div class="ico">'+h.e+'</div><div style="flex:1;min-width:0">'
+        +'<div class="t1">'+h.n+' <span class="rar rar--'+h.r+'">'+h.r.toUpperCase()+'</span></div>'
+        +'<div class="t3">'+h.at+'</div></div></div>';
+    }).join('');
+  }
+  function log(lines){
+    document.getElementById('runlog').innerHTML = lines.map(function(l){
+      return '<div class="ln"><span class="k '+(l.c||'')+'">'+(l.k||'›')+'</span><span class="'+(l.c||'dim')+'">'+l.t+'</span></div>';
+    }).join('');
+  }
+  function setBtns(dis){
+    document.getElementById('b1').disabled = dis;
+    document.getElementById('b10').disabled = dis;
+  }
+
+  function pull(n){
+    if (running) return;
+    var cost = n === 1 ? 100 : 1000;
+    if (coins < cost) { log([{t:'ギルドコインが足りません。PR をマージして集めましょう。', c:'wait', k:'!'}]); return; }
+    running = true; skipNow = false; setBtns(true);
+    coins -= cost; document.getElementById('coinbal').textContent = fm(coins);
+    document.getElementById('ring').textContent = '🌀';
+
+    var seq = [
+      [{t:'spawning summon process… (×'+n+')'}],
+      [{t:'spawning summon process… (×'+n+')'},{t:'consumed '+fm(cost)+' 🪙 · balance '+fm(coins), c:'ok', k:'✓'}],
+      [{t:'spawning summon process… (×'+n+')'},{t:'consumed '+fm(cost)+' 🪙 · balance '+fm(coins), c:'ok', k:'✓'},{t:'rolling seed 0x'+Math.random().toString(16).slice(2,10)+'…', c:'info'}],
+      [{t:'spawning summon process… (×'+n+')'},{t:'consumed '+fm(cost)+' 🪙 · balance '+fm(coins), c:'ok', k:'✓'},{t:'rarity check… resolving', c:'wait', k:'…'}]
+    ];
+    var i = 0;
+    var showSkip = '<div class="ln"><span class="k"> </span><span><button class="btn btn--ghost" style="padding:4px 12px;font-size:11px" onclick="skipNow=true">スキップ ⏭</button></span></div>';
+    function step(){
+      if (skipNow || i >= seq.length) { finish(n); return; }
+      log(seq[i]); document.getElementById('runlog').innerHTML += showSkip;
+      i++; setTimeout(step, 520);
+    }
+    step();
+  }
+
+  function finish(n){
+    var res = []; for (var j=0;j<n;j++){ pity++; var m = roll(); if (m.r==='ssr') pity = 0; res.push(m); }
+    if (n === 10 && !res.some(function(m){return m.r!=='n'})) res[9] = MON[5]; // 10連: R以上1枠保証
+    drawPity();
+    res.slice(0,3).forEach(function(m){ hist.unshift({e:m.e,n:m.n,r:m.r,at:'たった今'}); });
+    drawHist();
+    document.getElementById('ring').textContent = '🥚';
+    log([{t:'summon complete — '+n+' 体', c:'ok', k:'✓'},{t:'pity: '+pity+'/80 · history updated'}]);
+    var body = document.getElementById('rbody');
+    if (n === 1) {
+      var m = res[0];
+      body.innerHTML = '<div class="pullcard pullcard--'+m.r+'"><span class="newtag">'+(Math.random()<.4?'NEW':'')+'</span>'
+        +'<div class="art">'+m.e+'</div><div class="nm">'+m.n+'</div><span class="rar rar--'+m.r+'">'+m.r.toUpperCase()+'</span></div>';
+    } else {
+      body.innerHTML = '<div class="result-grid">'+res.map(function(m,ix){
+        return '<div class="minicard r-'+m.r+'" style="animation-delay:'+(ix*60)+'ms"><span class="e">'+m.e+'</span><span class="rar rar--'+m.r+'">'+m.r.toUpperCase()+'</span></div>';
+      }).join('')+'</div>';
+    }
+    document.getElementById('rtitle').textContent = n === 1 ? 'SUMMON RESULT' : 'SUMMON RESULT ×10';
+    document.getElementById('resultOv').style.display = 'flex';
+    running = false; setBtns(false);
+  }
+  function closeResult(){ document.getElementById('resultOv').style.display='none'; }
+  function openDisc(){ document.getElementById('discModal').style.display='flex'; }
+  function closeDisc(){ document.getElementById('discModal').style.display='none'; }
+  document.querySelectorAll('.modal-scrim').forEach(function(s){ s.addEventListener('click', function(e){ if(e.target===s) s.style.display='none'; }); });
+  drawPity(); drawHist();
+</script>
+</body>
+</html>

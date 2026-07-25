@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>~/badges — バッジ / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  /* 上下2ゾーン分割（P2W視覚分離をレイアウトで強制） */
+  .zone { border-radius: var(--radius-card); border: 1px solid var(--line); overflow: hidden; }
+  .zone--prestige { border-color: rgba(126,231,135,.32); background: linear-gradient(180deg, rgba(126,231,135,.045), transparent 22%), var(--bg-elev); }
+  .zone--cosmetic { border-color: var(--rune-border); background: linear-gradient(180deg, rgba(240,180,41,.05), transparent 22%), var(--bg-elev); }
+  .zone__hd { padding: 13px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+  .zone__bd { padding: 18px; }
+  /* バッジ行（名声） */
+  .brow { display: grid; grid-template-columns: 56px minmax(0,1fr) 220px; gap: 14px; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--line); }
+  .brow:last-child { border-bottom: 0; }
+  .bicon { width: 52px; height: 52px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 26px;
+    background: linear-gradient(160deg, #223328, #141d18); border: 1px solid rgba(126,231,135,.4); box-shadow: inset 0 1px 0 rgba(220,239,229,.12); }
+  .tier { font-size: 10px; font-weight: 800; letter-spacing: .12em; color: var(--accent); }
+  /* バッジ行（コスメ） */
+  .crow { display: grid; grid-template-columns: 56px minmax(0,1fr) auto; gap: 14px; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--line); }
+  .crow:last-child { border-bottom: 0; }
+  .cicon { width: 52px; height: 52px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 26px; background: var(--bg-elev-2); border: 1px solid var(--grade-2); }
+  .cicon.g3 { border-color: var(--grade-3); box-shadow: inset 0 0 14px rgba(240,180,41,.16); }
+  /* 分離の説明帯 */
+  .divider-note { display: flex; align-items: center; gap: 12px; margin: 20px 0; font-size: 10.5px; color: var(--text-faint); }
+  .divider-note::before, .divider-note::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+  /* トグル */
+  .tgl { position: relative; width: 34px; height: 18px; border-radius: 9px; background: var(--accent-dim); border: 0; cursor: pointer; flex-shrink: 0; }
+  .tgl::after { content: ''; position: absolute; top: 2px; left: 18px; width: 14px; height: 14px; border-radius: 50%; background: var(--text); transition: left .12s; }
+  .tgl.off { background: var(--line-strong); } .tgl.off::after { left: 2px; }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · v0.1.0</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="monsters.html"><span class="g">◆</span> ~/monsters</a>
+      <a href="items.html"><span class="g">▣</span> ~/items</a>
+      <a href="summon.html"><span class="g">≡</span> ~/summon</a>
+      <a href="summon-limited.html" class="is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Billing</div>
+    <nav class="nav">
+      <a href="d1-shop-runes.html" class="is-paid"><span class="g">▤</span> ~/shop/runes</a>
+      <a href="shop-skins.html" class="is-paid"><span class="g">◨</span> ~/shop/skins</a>
+      <a href="d1-pass.html" class="is-paid"><span class="g">✦</span> ~/pass</a>
+      <a href="forge.html" class="is-paid"><span class="g">⚒</span> ~/forge</a>
+      <a class="active"><span class="g">◉</span> ~/badges</a>
+      <a href="mypage-billing.html"><span class="g">⛭</span> ~/mypage/billing</a>
+    </nav>
+    <div class="sidebar__label">Design docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/badges</span><span class="s">$</span> badges --progress --cosmetics<span class="caret"></span></div>
+      <div class="wallet">
+        <span class="wallet__bal wallet__bal--coin"><span class="ic">🪙</span> 1,240</span>
+        <span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> 340</span>
+      </div>
+    </div>
+
+    <div class="page">
+      <h1 class="h1">バッジ</h1>
+      <p class="sub">上＝<b style="color:var(--accent)">実績（名声・無料）</b>／下＝<b class="rune-c">工房（見た目・課金）</b>。ゾーンで完全分離し、ティアを常にコスメより先に描画します。</p>
+
+      <!-- 上ゾーン: 実績（名声） -->
+      <div class="zone zone--prestige" style="margin-top:16px">
+        <div class="zone__hd">
+          <span class="chip chip--accent">PRESTIGE</span>
+          <span class="micro" style="color:var(--accent)">実績 — バッジのティアは GitHub 活動でのみ上がります</span>
+          <span class="faint" style="font-size:10px;margin-left:auto">このゾーンに購入導線はありません</span>
+        </div>
+        <div class="zone__bd" style="padding-top:6px">
+          <div class="brow">
+            <div class="bicon">⚔️</div>
+            <div style="min-width:0">
+              <div style="font-size:14px;font-weight:700">マージ王 <span class="tier">TIER 3</span></div>
+              <div class="dim" style="font-size:11px;margin-top:2px">PRマージ数 128 / 次ティア 200</div>
+            </div>
+            <div>
+              <div class="cellbar" style="--n:26"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <div class="faint" style="font-size:10px;margin-top:4px;text-align:right" class="tnum">64%</div>
+            </div>
+          </div>
+          <div class="brow">
+            <div class="bicon">🔥</div>
+            <div style="min-width:0">
+              <div style="font-size:14px;font-weight:700">ストリーカー <span class="tier">TIER 2</span></div>
+              <div class="dim" style="font-size:11px;margin-top:2px">連続活動 7日 / 次ティア 14日</div>
+            </div>
+            <div>
+              <div class="cellbar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <div class="faint" style="font-size:10px;margin-top:4px;text-align:right">50%</div>
+            </div>
+          </div>
+          <div class="brow">
+            <div class="bicon">🧪</div>
+            <div style="min-width:0">
+              <div style="font-size:14px;font-weight:700">レビュー職人 <span class="tier">TIER 1</span></div>
+              <div class="dim" style="font-size:11px;margin-top:2px">レビュー 12 / 次ティア 50</div>
+            </div>
+            <div>
+              <div class="cellbar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <div class="faint" style="font-size:10px;margin-top:4px;text-align:right">24%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider-note">ここから下は見た目のカスタマイズ（課金）。ティア・順位には影響しません</div>
+
+      <!-- 下ゾーン: 工房（コスメ） -->
+      <div class="zone zone--cosmetic">
+        <div class="zone__hd">
+          <span class="chip chip--cosmetic">COSMETIC</span>
+          <span class="micro" style="color:var(--rune)">工房 — 獲得済みバッジの演出グレード（3段階）</span>
+          <span class="faint" style="font-size:10px;margin-left:auto">forge と同一機構（楽観ロック＋冪等キー）</span>
+        </div>
+        <div class="zone__bd" style="padding-top:6px">
+          <div class="crow">
+            <div class="cicon g3">⚔️</div>
+            <div style="min-width:0">
+              <div style="font-size:13px;font-weight:600">マージ王 <span class="tier" style="margin-right:4px">TIER 3</span><span class="chip chip--cosmetic" style="font-size:9px;padding:1px 6px">GRADE 2/3</span></div>
+              <div class="dim" style="font-size:11px;margin-top:2px">演出: グロー＋パーティクル → 次段階でフルホロ・ショーケース枠</div>
+              <div class="row gap8" style="margin-top:6px;font-size:10.5px;color:var(--text-faint)">
+                <span>公開する</span><button class="tgl" onclick="this.classList.toggle('off')" aria-label="公開設定"></button>
+                <span class="faint">既定で公開・いつでも非公開にできます</span>
+              </div>
+            </div>
+            <button class="btn btn--rune" onclick="openCos()">グレード3へ — 1,400 💎</button>
+          </div>
+          <div class="crow">
+            <div class="cicon">🔥</div>
+            <div style="min-width:0">
+              <div style="font-size:13px;font-weight:600">ストリーカー <span class="tier" style="margin-right:4px">TIER 2</span><span class="chip chip--cosmetic" style="font-size:9px;padding:1px 6px">GRADE 0/3</span></div>
+              <div class="dim" style="font-size:11px;margin-top:2px">演出グレード: 200 → 600 → 1,400 💎 の3段階（値は API 由来）</div>
+            </div>
+            <button class="btn btn--rune" onclick="openCos()">グレード1へ — 200 💎</button>
+          </div>
+          <div class="crow" style="opacity:.55">
+            <div class="cicon" style="border-color:var(--line)">🧪</div>
+            <div style="min-width:0">
+              <div style="font-size:13px;font-weight:600">レビュー職人 <span class="tier">TIER 1</span></div>
+              <div class="dim" style="font-size:11px;margin-top:2px">未獲得ティアのコスメは購入できません（獲得済みのみ対象・サーバ側でも拒否）</div>
+            </div>
+            <button class="btn" disabled>—</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="legal-footer">
+        <div class="row"><a href="d1-components.html#tokusho">特定商取引法に基づく表示</a><a href="d1-components.html#prepaid">資金決済法（前払式支払手段）</a></div>
+        <div class="note">リーダーボード・公開プロフィールでは常に「ティア数値が主・コスメ演出が従」の順で描画。コスメだけ豪華でも強そうに見えない配置を守ります。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- コスメ確認モーダル -->
+<div class="modal-scrim" id="cosModal" style="display:none">
+  <div class="modal">
+    <div class="modal__hd"><span class="micro" style="color:var(--rune)">▸ 見た目グレードの購入</span><button class="x" onclick="closeCos()">✕</button></div>
+    <div class="modal__bd">
+      <div class="row between" style="padding:12px 14px;background:var(--bg-elev-2);border:1px solid var(--line);border-radius:var(--radius-btn)">
+        <div class="row gap8"><span style="font-size:24px">⚔️</span><div><div style="font-size:13px;font-weight:600">マージ王</div><div class="faint" style="font-size:10px">GRADE 2 → 3（最終・フルホロ）</div></div></div>
+        <b class="runeval tnum" style="font-size:18px">1,400 💎</b>
+      </div>
+      <div style="margin-top:14px;padding:10px 12px;background:var(--rune-bg);border:1px solid var(--rune-border);border-radius:var(--radius-btn);font-size:12px;color:var(--rune);line-height:1.7">
+        この購入で変わるのは<b>見た目だけ</b>です。ティア・ステータス・順位には影響しません。
+      </div>
+    </div>
+    <div class="modal__ft">
+      <button class="btn btn--ghost" onclick="closeCos()">やめる</button>
+      <button class="btn btn--rune" disabled title="モック: 残高不足">購入を確定する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openCos(){ document.getElementById('cosModal').style.display='flex'; }
+  function closeCos(){ document.getElementById('cosModal').style.display='none'; }
+  document.querySelectorAll('.modal-scrim').forEach(function(s){ s.addEventListener('click', function(e){ if(e.target===s) s.style.display='none'; }); });
+</script>
+</body>
+</html>

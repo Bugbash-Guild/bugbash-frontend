@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>D-1 · スタイルガイド追補 — 課金・経済圏 / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  .swatch { border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+  .swatch__chip { height:56px; }
+  .swatch__meta { padding:8px 10px; background:var(--bg-elev); font-size:11px; }
+  .swatch__meta b { color:var(--text); font-weight:600; }
+  .do  { border-left:2px solid var(--accent); padding:10px 14px; background:rgba(126,231,135,0.05); font-size:12px; }
+  .dont{ border-left:2px solid var(--pink); padding:10px 14px; background:rgba(255,123,114,0.05); font-size:12px; }
+  code { font-family:var(--mono); color:var(--rune); font-size:12px; }
+  .spec { font-size:12px; color:var(--text-dim); line-height:1.8; }
+  .spec b { color:var(--text); font-weight:600; }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar__chrome">
+      <div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div>
+      <span class="sidebar__ver">bugbash · style</span>
+    </div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="monsters.html"><span class="g">◆</span> ~/monsters</a>
+      <a href="items.html"><span class="g">▣</span> ~/items</a>
+      <a href="summon.html"><span class="g">≡</span> ~/summon</a>
+      <a href="summon-limited.html" class="is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Design Docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a class="active"><span class="g">◈</span> style-guide</a>
+      <a href="d1-shop-runes.html"><span class="g">▤</span> /shop/runes</a>
+      <a href="shop-skins.html"><span class="g">◨</span> /shop/skins</a>
+      <a href="d1-billing-return.html"><span class="g">↺</span> /billing/return</a>
+      <a href="d1-pass.html"><span class="g">✦</span> /pass</a>
+      <a href="forge.html"><span class="g">⚒</span> /forge</a>
+      <a href="badges.html"><span class="g">◉</span> /badges</a>
+      <a href="mypage-billing.html"><span class="g">⛭</span> /mypage/billing</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+    <div style="margin-top:auto;padding:14px 16px;border-top:1px solid var(--line);font-size:11px;color:var(--text-faint);line-height:1.7">
+      D-1 追補<br/>Direction A を課金圏へ拡張
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/design</span><span class="s">$</span> cat style-guide.md<span class="caret"></span></div>
+    </div>
+
+    <div class="page">
+      <h1 class="h1">スタイルガイド追補 — 課金・経済圏</h1>
+      <p class="sub">Direction A「Console RPG」の実トークンを基底に、課金圏を拡張する。<b class="rune-c">最重要原則: 名声(緑) と 課金(琥珀) を色と形で分離する</b>（発注書 §1.1 / UX §5）。</p>
+
+      <!-- 1. 系統分離 -->
+      <div class="section-label"><span class="micro">01 — 系統分離の視覚言語</span><span class="rule"></span></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;">
+        <div class="card"><div class="card__hd"><span class="micro" style="color:var(--accent)">名声 / 強さ（無償・活動由来）</span><span class="chip chip--accent">PRESTIGE</span></div>
+          <div class="card__bd spec">
+            色 = <b style="color:var(--accent)">--accent 緑/CRT</b>。形 = メタル/シールド。<br/>
+            バッジのティア・リーダーボード・Lv・XP・ストリーク。<br/>
+            <b>この系統に 💎 ルーンアイコン・購入CTAを一切置かない。</b><br/>
+            通貨は <span class="chip chip--coin">🪙 コイン</span> のみ（活動でしか増えない）。
+          </div>
+        </div>
+        <div class="card"><div class="card__hd"><span class="micro" style="color:var(--rune)">課金コスメ / 時短（有償）</span><span class="chip chip--cosmetic">COSMETIC</span></div>
+          <div class="card__bd spec">
+            色 = <b class="rune-c">--rune 琥珀/金</b>。形 = エフェクト装飾＋COSMETICラベル。<br/>
+            工房グレード・限定バナー・ショーケース枠。<br/>
+            通貨は <span class="chip chip--rune">💎 ルーン</span>。パスは <span class="chip chip--pass">✦ 青</span>（時短枠）。<br/>
+            <b>買えるのは「見た目」と「時短」だけ</b>。強さ誤認を作らない。
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div class="do"><b style="color:var(--accent)">DO</b> — ティア数値を主(左/上)、コスメ演出を従。ティアが低いのにコスメだけ豪華で「強そう」に見えない配置。</div>
+        <div class="dont"><b style="color:var(--pink)">DON'T</b> — 「強くなる/有利/勝てる/効率アップ/差をつけろ」を課金文脈で使わない。代替: 飾る・彩る・時短・限定・コレクション。</div>
+      </div>
+
+      <!-- 2. トークン -->
+      <div class="section-label"><span class="micro">02 — カラートークン（新規）</span><span class="rule"></span></div>
+      <div class="grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="swatch"><div class="swatch__chip" style="background:var(--rune)"></div><div class="swatch__meta"><b>--rune</b> #f0b429<br/><span class="faint">有償通貨・課金主色</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:var(--coin)"></div><div class="swatch__meta"><b>--coin</b> #c9a24a<br/><span class="faint">無償通貨・真鍮</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:var(--pass)"></div><div class="swatch__meta"><b>--pass</b> #79c0ff<br/><span class="faint">サブスク・時短枠</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:var(--accent)"></div><div class="swatch__meta"><b>--accent</b> #7ee787<br/><span class="faint">名声(既存・不変)</span></div></div>
+      </div>
+      <p class="spec" style="margin-top:10px">ルーン琥珀(#f0b429)は名声緑(#7ee787)と<b>色相90°以上・暖寒で対比</b>。レアリティSSRの金(#e3b341)と近いが、課金文脈では必ず <code>💎</code> と <code>COSMETIC/RUNE</code> ワードマークを添えて用途を明示する。</p>
+
+      <!-- 3. グレード進行 -->
+      <div class="section-label"><span class="micro">03 — 課金コスメのグレード進行（G1→G5）</span><span class="rule"></span></div>
+      <p class="spec">工房 Lv1→20 を5段階の視覚グレードに写像。<b>アセット制作パイプライン (content-plan §3) の入力</b>。4レイヤー（パレット/フレーム/エフェクト/ショーケース）が段階的に豪華になる。能力は不変・見た目のみ。</p>
+      <div class="grid" style="grid-template-columns:repeat(5,1fr);margin-top:6px">
+        <div class="grade grade--g1"><div class="grade__emoji">🐉</div><div class="grade__lbl">G1 · Lv1–4</div></div>
+        <div class="grade grade--g2"><div class="grade__emoji">🐉</div><div class="grade__lbl">G2 · Lv5–9</div></div>
+        <div class="grade grade--g3"><div class="grade__emoji">🐉</div><div class="grade__lbl">G3 · Lv10–14</div></div>
+        <div class="grade grade--g4"><div class="grade__emoji">🐉</div><div class="grade__lbl">G4 · Lv15–19</div></div>
+        <div class="grade grade--g5"><div class="grade__emoji">🐉</div><div class="grade__lbl">G5 · Lv20</div></div>
+      </div>
+      <div class="grid" style="grid-template-columns:repeat(5,1fr);margin-top:8px;font-size:10px;color:var(--text-faint);line-height:1.6">
+        <div>パレット: 単色琥珀ティント / 細枠</div>
+        <div>+ 実線枠 + 内側グロー</div>
+        <div>+ 二重枠 + 四隅装飾 + グラデ台</div>
+        <div>+ シマー掃引 + ホロ地</div>
+        <div>+ ホロ全面 + 粒子 + ショーケース枠</div>
+      </div>
+
+      <!-- 4. 共通コンポーネント仕様 -->
+      <div class="section-label"><span class="micro">04 — 共通コンポーネント仕様</span><span class="rule"></span></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;">
+        <div class="card"><div class="card__bd">
+          <div class="row between"><b style="font-size:13px">WalletBadge</b><div class="wallet"><span class="wallet__bal wallet__bal--coin"><span class="ic">🪙</span> 1,240</span><span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> 340</span></div></div>
+          <p class="spec" style="margin:10px 0 0">ヘッダ常設。<code>GET /api/shop/items</code> の coin/rune 残高を SWR 共有。消費成功時 <code>mutate('wallet')</code>。ルーンは琥珀・コインは真鍮で並置分離。</p>
+        </div></div>
+        <div class="card"><div class="card__bd">
+          <div class="row between"><b style="font-size:13px">PendingGrantBanner</b><span class="chip chip--rune dotpulse">反映待ち</span></div>
+          <p class="spec" style="margin:10px 0 0"><code>bb.pendingOrder</code> がある間ヘッダ下に常設。15秒間隔で残高再取得、増分検知でトースト。30分で自動失効。<b>「付与済み」と断言しない</b>。</p>
+        </div></div>
+        <div class="card"><div class="card__bd">
+          <b style="font-size:13px">AgeVerificationModal</b>
+          <p class="spec" style="margin:8px 0 0">18歳以上 / 16–17歳 / 16歳未満 の自己申告 → <code>PUT /api/billing/age-verification</code>。直後に「あなたの30日上限 ¥{n}」を明示。サーバが正・localStorageは補助。</p>
+        </div></div>
+        <div class="card"><div class="card__bd">
+          <b style="font-size:13px">DisclosureModal / LegalFooter</b>
+          <p class="spec" style="margin:8px 0 0">確率開示は <code>disclosure API</code> の値を<b>そのまま</b>テーブル描画（ハードコード禁止）。LegalFooter は特商法/前払式/規約を課金5画面に常設。「隠さないが叫ばない」。</p>
+        </div></div>
+      </div>
+
+      <!-- 5. 数値の正典 -->
+      <div class="section-label"><span class="micro">05 — 数値の桁（正典・ダミー可）</span><span class="rule"></span></div>
+      <p class="spec">価格 ¥240〜¥12,000 ／ スターター ¥480(170ルーン・初回限定) ／ パス ¥780/月(150ルーン付与) ／ 限定召喚 30ルーン・10連300 ／ 天井 60(パス50)・通常80(パス70) ／ 工房 Lv1=64…Lv20=1,960(累計≒17,240)。<b>価格・確率・天井は本番では必ず API 由来</b>、モックは桁だけ合わせる。</p>
+
+            <div class="card" style="margin-top:16px">
+        <div class="card__hd"><span class="micro">07 · スキンティア（v4）— 第3系統: 金属質ニュートラル</span><span class="faint" style="font-size:10px">v4差分書 §3 · 決定値</span></div>
+        <div class="card__bd">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">
+            <div style="border:1px solid rgba(157,169,181,.34);border-radius:6px;padding:12px;background:rgba(157,169,181,.08)">
+              <div style="font-size:10px;font-weight:800;letter-spacing:.12em;color:#9DA9B5">STD — スタンダード</div>
+              <div style="font-size:11px;color:var(--text-dim);margin-top:6px;line-height:1.8">#9DA9B5 · マット鋼<br/>320ルーン · リカラー＋フレーム<br/>演出なし・バッジのみ</div>
+            </div>
+            <div style="border:1px solid rgba(199,211,222,.42);border-radius:6px;padding:12px;background:rgba(199,211,222,.09)">
+              <div style="font-size:10px;font-weight:800;letter-spacing:.12em;color:#C7D3DE">DX — デラックス</div>
+              <div style="font-size:11px;color:var(--text-dim);margin-top:6px;line-height:1.8">#C7D3DE · 磨き鋼<br/>880ルーン · 待機モーション付与<br/>薄いスペキュラ可</div>
+            </div>
+            <div style="border:1px solid rgba(226,233,241,.52);border-radius:6px;padding:12px;background:rgba(226,233,241,.10)">
+              <div style="font-size:10px;font-weight:800;letter-spacing:.12em;color:#E2E9F1">LG — レジェンダリー</div>
+              <div style="font-size:11px;color:var(--text-dim);margin-top:6px;line-height:1.8">#E2E9F1 · 鏡面＋玉虫リング<br/>1,800ルーン · 登場演出付き<br/>虹縁はLG専用（不透明度50%上限）</div>
+            </div>
+          </div>
+          <p style="font-size:10.5px;color:var(--text-faint);line-height:1.8;margin:12px 0 0">衝突回避: 名声＝緑CRT／課金通貨＝琥珀／レアリティ＝N灰・R青・SR紫・SSR金 のどれとも同系にならない<b style="color:var(--text)">無彩度の金属ニュートラル</b>のみ。ティアバッジは常に価格または COSMETIC ラベルと併記し、単独で強さを示唆しない。詳細な適用例は skin-lines.html（様式見本）。</p>
+        </div>
+      </div>
+      <div class="legal-footer">
+        <div class="row"><a href="d1-shop-runes.html">/shop/runes →</a><a href="d1-billing-return.html">/billing/return →</a><a href="d1-pass.html">/pass →</a><a href="d1-components.html">共有部品 →</a></div>
+        <div class="note">D-1 スタイルガイド追補 · Direction A Console RPG 準拠 · 構造は UX設計書から変更なし</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

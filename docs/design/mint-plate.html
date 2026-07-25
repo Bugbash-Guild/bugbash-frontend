@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>記念鋳造 — 100PR達成プレート / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  .cols { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:16px; align-items:start; }
+  @media (max-width:1100px) { .cols { grid-template-columns:1fr; } }
+  /* 実績コンテキスト帯（実績演出が主・鋳造は脇に静かに） */
+  .achv { display:flex; align-items:center; gap:14px; padding:14px 18px; border-radius:var(--radius-card); border:1px solid rgba(126,231,135,.32);
+    background:linear-gradient(180deg, rgba(126,231,135,.05), transparent 40%), var(--bg-elev); }
+  .achv .ic { width:44px; height:44px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:22px;
+    background:linear-gradient(160deg,#223328,#141d18); border:1px solid rgba(126,231,135,.4); }
+  .mintable { margin-left:auto; font-size:10px; font-weight:700; letter-spacing:.1em; color:var(--text-dim);
+    padding:4px 10px; border:1px solid var(--line-strong); border-radius:3px; background:var(--bg-elev-2); }
+  /* プレート */
+  .plate-wrap { padding:26px; display:flex; align-items:center; justify-content:center; }
+  .plate { width:100%; max-width:420px; aspect-ratio:16/10; border-radius:10px; position:relative; padding:22px 26px;
+    display:flex; flex-direction:column; box-shadow:0 14px 34px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.14), inset 0 -8px 18px rgba(0,0,0,.3);
+    font-family:inherit; transition:background .2s; }
+  .plate::before { content:''; position:absolute; inset:8px; border:1px solid rgba(255,255,255,.16); border-radius:6px; pointer-events:none; }
+  .plate .rivet { position:absolute; width:7px; height:7px; border-radius:50%; background:radial-gradient(circle at 35% 35%, rgba(255,255,255,.5), rgba(0,0,0,.55)); }
+  .plate .rivet:nth-child(1){top:12px;left:12px} .plate .rivet:nth-child(2){top:12px;right:12px}
+  .plate .rivet:nth-child(3){bottom:12px;left:12px} .plate .rivet:nth-child(4){bottom:12px;right:12px}
+  .plate--bronze { background:linear-gradient(160deg,#6e4a2a,#3c2817 55%,#57381f); color:#e8d5bd; }
+  .plate--steel { background:linear-gradient(160deg,#5d6a74,#333c44 55%,#4b5762); color:#dfe7ee; }
+  .plate--obsidian { background:linear-gradient(160deg,#2e3138,#17181d 55%,#25272e); color:#c9ccd6; }
+  .plate--platinum { background:linear-gradient(160deg,#b8bcc4,#7e838d 55%,#a3a8b2); color:#1d2025; }
+  .plate .ttl { font-size:10px; letter-spacing:.3em; opacity:.75; }
+  .plate .name { font-size:22px; font-weight:800; letter-spacing:.04em; margin-top:5px; }
+  .plate .mon { position:absolute; right:26px; top:50%; transform:translateY(-50%); font-size:52px; opacity:.9; filter:grayscale(.35) contrast(1.1); }
+  .plate .engra { margin-top:auto; font-size:10px; line-height:1.9; opacity:.85; font-variant-numeric:tabular-nums; }
+  .plate .no { position:absolute; top:20px; right:26px; font-size:10px; letter-spacing:.14em; opacity:.7; }
+  /* リカラー */
+  .recolor { display:flex; gap:8px; }
+  .rc { width:40px; height:40px; border-radius:5px; cursor:pointer; border:1px solid var(--line-strong); position:relative; }
+  .rc.on { outline:2px solid var(--text-dim); outline-offset:2px; }
+  .rc--bronze { background:linear-gradient(160deg,#6e4a2a,#3c2817); }
+  .rc--steel { background:linear-gradient(160deg,#5d6a74,#333c44); }
+  .rc--obsidian { background:linear-gradient(160deg,#2e3138,#17181d); }
+  .rc--platinum { background:linear-gradient(160deg,#b8bcc4,#7e838d); }
+  .kv { display:flex; justify-content:space-between; font-size:12.5px; padding:8px 0; border-bottom:1px solid var(--line); }
+  .kv:last-child { border-bottom:0; }
+  .forever { padding:10px 12px; border-radius:var(--radius-btn); border:1px solid var(--line-strong); background:var(--bg-elev-2); font-size:11.5px; color:var(--text-dim); line-height:1.7; }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · v0.1.0</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="monsters.html"><span class="g">◆</span> ~/monsters</a>
+      <a href="items.html"><span class="g">▣</span> ~/items</a>
+      <a href="summon.html"><span class="g">≡</span> ~/summon</a>
+      <a href="summon-limited.html" class="is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Billing</div>
+    <nav class="nav">
+      <a href="d1-shop-runes.html" class="is-paid"><span class="g">▤</span> ~/shop/runes</a>
+      <a href="shop-skins.html" class="is-paid"><span class="g">◨</span> ~/shop/skins</a>
+      <a href="d1-pass.html" class="is-paid"><span class="g">✦</span> ~/pass</a>
+      <a href="forge.html" class="is-paid"><span class="g">⚒</span> ~/forge</a>
+      <a href="badges.html"><span class="g">◉</span> ~/badges</a>
+      <a href="mypage-billing.html"><span class="g">⛭</span> ~/mypage/billing</a>
+    </nav>
+    <div class="sidebar__label">Design docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a href="skin-lines.html"><span class="g">◫</span> skin-lines 見本</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/mint</span><span class="s">$</span> forge --plate pr-100<span class="caret"></span></div>
+      <div class="wallet">
+        <span class="wallet__bal wallet__bal--coin"><span class="ic">🪙</span> 1,240</span>
+        <span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> 340</span>
+        <a class="btn wallet__add btn--rune" href="d1-shop-runes.html" title="ルーンを購入">+</a>
+      </div>
+    </div>
+
+    <div class="page">
+      <h1 class="h1">記念鋳造 <span class="chip chip--cosmetic" style="vertical-align:middle">COSMETIC</span></h1>
+      <p class="sub">達成の記録を金属プレートに。実績はすでにあなたのもの — 鋳造はその<b>記念品</b>です。</p>
+
+      <!-- 実績コンテキスト（主役）。鋳造バッジは脇に静かに -->
+      <div class="achv" style="margin-top:14px">
+        <div class="ic">⚔️</div>
+        <div style="min-width:0">
+          <div style="font-size:14px;font-weight:700;color:var(--accent)">実績解除 — 100PR目のマージ</div>
+          <div class="dim" style="font-size:11px;margin-top:2px">2026-06-28 · bugbash-frontend#142 「feat: redesign monster collection page」</div>
+        </div>
+        <span class="mintable">🔨 鋳造可能</span>
+      </div>
+
+      <div class="cols" style="margin-top:16px">
+        <!-- 左: プレートプレビュー -->
+        <div class="card">
+          <div class="card__hd"><span class="micro">PLATE PREVIEW — 刻印は自動（編集不可・偽造防止）</span></div>
+          <div class="plate-wrap">
+            <div class="plate plate--bronze" id="plate">
+              <span class="rivet"></span><span class="rivet"></span><span class="rivet"></span><span class="rivet"></span>
+              <div class="ttl">BUGBASH COMMEMORATIVE CAST</div>
+              <div class="name">CENTURION — 100th MERGE</div>
+              <div class="no">CAST № 0042</div>
+              <div class="mon">🐉</div>
+              <div class="engra">
+                達成日 2026-06-28<br/>
+                リポジトリ bugbash-frontend<br/>
+                勇者 haseryo0403 · Lv.50
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右: リカラー + 購入 -->
+        <div class="stack gap12">
+          <div class="card">
+            <div class="card__hd"><span class="micro">RECOLOR — 仕上げを選ぶ</span></div>
+            <div class="card__bd">
+              <div class="recolor">
+                <div class="rc rc--bronze on" data-f="bronze" title="青銅" onclick="setFinish(this)"></div>
+                <div class="rc rc--steel" data-f="steel" title="鋼" onclick="setFinish(this)"></div>
+                <div class="rc rc--obsidian" data-f="obsidian" title="黒曜" onclick="setFinish(this)"></div>
+                <div class="rc rc--platinum" data-f="platinum" title="白金" onclick="setFinish(this)"></div>
+              </div>
+              <div class="faint" style="font-size:10px;margin-top:8px">青銅 / 鋼 / 黒曜 / 白金。刻印内容はどの仕上げでも同一です。</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__hd"><span class="micro" style="color:var(--rune)">MINT — 鋳造</span></div>
+            <div class="card__bd">
+              <div class="kv"><span class="dim">価格</span><b class="runeval tnum" style="font-size:20px">200 💎</b></div>
+              <div class="kv"><span class="dim">保有ルーン</span><span class="tnum">340 💎 — <span style="color:var(--accent)">購入可能</span></span></div>
+              <div class="kv"><span class="dim">表示先</span><span style="text-align:right">モンスターカードのプレート装飾＋公開プロフィール</span></div>
+              <button class="btn btn--rune btn--block" style="margin-top:12px" onclick="openMint()">鋳造する — 200 💎</button>
+              <div class="forever" style="margin-top:10px">
+                ⏳ <b style="color:var(--text)">この鋳造権に期限はありません。</b>いつでも鋳造できます。今決める必要はありません。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="legal-footer">
+        <div class="row"><a href="legal-tokushoho.html">特定商取引法に基づく表示</a><a href="legal-prepaid.html">資金決済法（前払式支払手段）</a></div>
+        <div class="note">記念鋳造は実績画面・達成通知の脇に「🔨 鋳造可能」として静かに置かれます（割り込み販売はしない）。達成日・リポジトリ名・鋳造No.は自動刻印で、購入で変わるのは見た目だけです。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 鋳造確認モーダル -->
+<div class="modal-scrim" id="mintModal" style="display:none">
+  <div class="modal">
+    <div class="modal__hd"><span class="micro" style="color:var(--rune)">▸ 鋳造の確認</span><button class="x" onclick="closeMint()">✕</button></div>
+    <div class="modal__bd">
+      <div class="row between" style="padding:12px 14px;background:var(--bg-elev-2);border:1px solid var(--line);border-radius:var(--radius-btn)">
+        <div class="row gap8"><span style="font-size:24px">🔨</span><div><div style="font-size:13px;font-weight:600">CENTURION — 100th MERGE</div><div class="faint" style="font-size:10px" id="mintdesc">仕上げ: 青銅 · CAST № 0042</div></div></div>
+        <b class="runeval tnum" style="font-size:18px">200 💎</b>
+      </div>
+      <div style="margin-top:14px;padding:10px 12px;background:var(--rune-bg);border:1px solid var(--rune-border);border-radius:var(--radius-btn);font-size:12px;color:var(--rune);line-height:1.7">
+        この購入で変わるのは<b>見た目だけ</b>です。実績・ステータス・順位には影響しません。
+      </div>
+      <p class="faint" style="font-size:10.5px;line-height:1.7;margin:12px 0 0">鋳造しなくても実績は永久に記録されています。鋳造権に期限はありません。</p>
+    </div>
+    <div class="modal__ft">
+      <button class="btn btn--ghost" onclick="closeMint()">やめる</button>
+      <button class="btn btn--rune">鋳造を確定する — 200 💎</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  var FIN = { bronze:'青銅', steel:'鋼', obsidian:'黒曜', platinum:'白金' };
+  function setFinish(el){
+    document.querySelectorAll('.rc').forEach(function(r){ r.classList.remove('on'); });
+    el.classList.add('on');
+    var p = document.getElementById('plate');
+    p.className = 'plate plate--' + el.dataset.f;
+    document.getElementById('mintdesc').textContent = '仕上げ: ' + FIN[el.dataset.f] + ' · CAST № 0042';
+  }
+  function openMint(){ document.getElementById('mintModal').style.display='flex'; }
+  function closeMint(){ document.getElementById('mintModal').style.display='none'; }
+  document.querySelectorAll('.modal-scrim').forEach(function(s){ s.addEventListener('click', function(e){ if(e.target===s) s.style.display='none'; }); });
+</script>
+</body>
+</html>

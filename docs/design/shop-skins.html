@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>~/shop/skins — スキンカタログ / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  /* v4 §3: スキンティア第3系統（金属質ニュートラル・名声緑ともルーン琥珀とも衝突しない） */
+  :root {
+    --tier-std: #9DA9B5; --tier-std-bg: rgba(157,169,181,.08); --tier-std-bd: rgba(157,169,181,.34);
+    --tier-dx:  #C7D3DE; --tier-dx-bg:  rgba(199,211,222,.09); --tier-dx-bd:  rgba(199,211,222,.42);
+    --tier-lg:  #E2E9F1; --tier-lg-bg:  rgba(226,233,241,.10); --tier-lg-bd:  rgba(226,233,241,.52);
+  }
+  .tchip { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:2px; font-size:9px; font-weight:800; letter-spacing:.12em; border:1px solid; }
+  .tchip--std { color:var(--tier-std); background:var(--tier-std-bg); border-color:var(--tier-std-bd); }
+  .tchip--dx  { color:var(--tier-dx);  background:var(--tier-dx-bg);  border-color:var(--tier-dx-bd); }
+  .tchip--lg  { color:var(--tier-lg);  background:var(--tier-lg-bg);  border-color:var(--tier-lg-bd); }
+  .lgring { position:relative; }
+  .lgring::before { content:''; position:absolute; inset:-1px; border-radius:inherit; padding:1px;
+    background:conic-gradient(from 20deg,#cfd8e3,#d9cbe9,#c9e3da,#e9dfc9,#cfd8e3);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude;
+    opacity:.5; pointer-events:none; }
+
+  /* FEATURED — ギャラリーヒーロー（所有欲は演出で作る・煋り要素なし） */
+  .hero { position:relative; margin-top:16px; border-radius:var(--radius-card); border:1px solid var(--line); overflow:hidden;
+    background:linear-gradient(180deg,#111815,#0a0e0c 70%); display:grid; grid-template-columns:minmax(0,1fr) 330px; min-height:240px; }
+  @media (max-width:900px) { .hero { grid-template-columns:1fr; } }
+  .hero::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(126,231,135,.05) 3px 4px); pointer-events:none; }
+  .hero__txt { padding:26px 30px; position:relative; z-index:2; }
+  .hero__kicker { font-size:9px; letter-spacing:.22em; color:var(--text-faint); }
+  .hero__name { font-size:26px; font-weight:800; margin:8px 0 2px; }
+  .hero__skin { font-size:13px; color:var(--tier-lg); font-style:italic; }
+  .hero__fl { font-size:11px; color:var(--text-faint); margin-top:10px; line-height:1.8; }
+  .hero__row { display:flex; align-items:center; gap:12px; margin-top:18px; }
+  .hero__stage { position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:20px 0 40px; }
+  .hero__stage::before { content:''; position:absolute; top:-28%; left:50%; width:150%; height:120%; transform:translateX(-50%);
+    background:radial-gradient(ellipse 45% 58% at 50% 0%, rgba(226,233,241,.14), transparent 65%); pointer-events:none; }
+  .hero__stage::after { content:''; position:absolute; bottom:16px; left:50%; transform:translateX(-50%); width:160px; height:12px; border-radius:50%;
+    background:radial-gradient(ellipse, rgba(126,231,135,.24), transparent 70%); filter:blur(3px); }
+  .hero__subj { display:block; position:relative; z-index:1; font-size:104px; line-height:1; filter:saturate(1.35) contrast(1.15);
+    text-shadow:3px 0 rgba(255,90,90,.45),-3px 0 rgba(90,170,255,.45); }
+  .hero__refl { position:absolute; top:88%; left:0; font-size:104px; line-height:1; transform:scaleY(-1); opacity:.13; filter:blur(2px);
+    -webkit-mask-image:linear-gradient(transparent 35%, #000); mask-image:linear-gradient(transparent 35%, #000); pointer-events:none; }
+  @keyframes heroidle { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-9px) } }
+  .hero:hover .hero__subj { animation:heroidle 2.8s ease-in-out infinite; }
+
+  /* shopタブ */
+  .shoptabs { display:flex; gap:6px; }
+  .shoptabs .btn { padding:8px 18px; font-size:12px; }
+  .shoptabs .btn.on { border-color:var(--tier-dx-bd); color:var(--tier-dx); background:var(--tier-dx-bg); box-shadow:none; }
+
+  /* 復刻カレンダー帯（淡々・カウントダウン禁止） */
+  .reprint { display:flex; align-items:center; gap:0; padding:0; overflow:hidden; }
+  .reprint table { width:100%; border-collapse:collapse; font-size:11px; }
+  .reprint th { text-align:left; font-size:9px; letter-spacing:.12em; color:var(--text-faint); padding:8px 14px; border-bottom:1px solid var(--line); font-weight:600; }
+  .reprint td { padding:7px 14px; color:var(--text-dim); border-bottom:1px solid var(--line); }
+  .reprint tr:last-child td { border-bottom:0; }
+
+  /* ライン見出し */
+  .line-hd { display:flex; align-items:baseline; gap:12px; margin:26px 0 4px; flex-wrap:wrap; }
+  .line-hd h2 { font-size:17px; font-weight:700; margin:0; }
+  .line-hd .flavor { font-size:11px; color:var(--text-faint); }
+  .line-sub { font-size:10.5px; color:var(--text-faint); margin-bottom:10px; }
+
+  /* スキンカード */
+  .sgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:10px; }
+  .scard { background:var(--bg-elev); border:1px solid var(--line); border-radius:var(--radius-card); padding:12px; display:block; color:inherit; text-decoration:none; transition:border-color .12s; position:relative; }
+  .scard:hover { border-color:var(--line-strong); }
+  .scard.dimmed { opacity:.5; }
+  .thumbs { display:grid; grid-template-columns:1fr 22px 1fr; align-items:center; gap:2px; margin:10px 0; }
+  .thumb { aspect-ratio:1; border-radius:5px; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:34px; background:var(--bg-elev-2); position:relative; overflow:hidden; }
+  .arrow { text-align:center; color:var(--text-faint); font-size:12px; }
+  /* after-tile 系統別FX（プレースホルダ表現） */
+  .fx-kp::after { content:''; position:absolute; inset:0; background:
+    repeating-linear-gradient(0deg,transparent 0 3px,rgba(126,231,135,.08) 3px 4px),
+    linear-gradient(90deg,transparent 40%,rgba(255,123,114,.14) 41% 42.5%,transparent 43%),
+    linear-gradient(90deg,transparent 62%,rgba(121,192,255,.16) 63% 65%,transparent 66%); }
+  .fx-kp .e { filter:saturate(1.35) contrast(1.15); text-shadow:2px 0 rgba(255,90,90,.45),-2px 0 rgba(90,170,255,.45); }
+  .fx-ml { background:linear-gradient(180deg,#0d1420,#0b0f16); }
+  .fx-ml::after { content:''; position:absolute; top:6px; right:8px; width:14px; height:14px; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%,#e8ecf4,#9aa8c4); box-shadow:0 0 10px rgba(200,214,240,.5); }
+  .fx-ml .e { filter:hue-rotate(-20deg) saturate(.85) brightness(1.06); }
+  .fx-rb { background:linear-gradient(180deg,#160f0b,#0f0b08); }
+  .fx-rb::after { content:''; position:absolute; inset:0; background:
+    radial-gradient(circle at 20% 70%,rgba(191,106,58,.25),transparent 40%),
+    radial-gradient(circle at 75% 25%,rgba(150,84,46,.2),transparent 35%); }
+  .fx-rb .e { filter:sepia(.55) saturate(1.25); }
+  .srow { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .sname { font-size:12.5px; font-weight:700; }
+  .sskin { font-size:10.5px; color:var(--text-faint); font-style:italic; }
+  .sprice { font-size:13px; font-weight:700; color:var(--rune); font-variant-numeric:tabular-nums; }
+  .owned-chk { font-size:9px; font-weight:800; letter-spacing:.1em; color:var(--accent); }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · v0.1.0</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="monsters.html"><span class="g">◆</span> ~/monsters</a>
+      <a href="items.html"><span class="g">▣</span> ~/items</a>
+      <a href="summon.html"><span class="g">≡</span> ~/summon</a>
+      <a href="summon-limited.html" class="is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Billing</div>
+    <nav class="nav">
+      <a href="d1-shop-runes.html" class="is-paid"><span class="g">▤</span> ~/shop/runes</a>
+      <a class="active is-paid"><span class="g">◨</span> ~/shop/skins</a>
+      <a href="d1-pass.html" class="is-paid"><span class="g">✦</span> ~/pass</a>
+      <a href="forge.html" class="is-paid"><span class="g">⚒</span> ~/forge</a>
+      <a href="badges.html"><span class="g">◉</span> ~/badges</a>
+      <a href="mypage-billing.html"><span class="g">⛭</span> ~/mypage/billing</a>
+    </nav>
+    <div class="sidebar__label">Design docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a href="skin-lines.html"><span class="g">◫</span> skin-lines 見本</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/shop/skins</span><span class="s">$</span> ls --lines --demand-first<span class="caret"></span></div>
+      <div class="wallet">
+        <span class="wallet__bal wallet__bal--coin"><span class="ic">🪙</span> 1,240</span>
+        <span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> 340</span>
+        <a class="btn wallet__add btn--rune" href="d1-shop-runes.html" title="ルーンを購入">+</a>
+      </div>
+    </div>
+
+    <div class="page">
+      <div class="row between" style="align-items:flex-end;gap:16px;flex-wrap:wrap">
+        <div>
+          <h1 class="h1">スキンカタログ <span class="chip chip--cosmetic" style="vertical-align:middle">COSMETIC</span></h1>
+          <p class="sub">モンスター自身の<b>変身スキン</b>。装備しても名声（Lv・進化・ティア）の見え方は変わりません。</p>
+        </div>
+        <div class="shoptabs">
+          <a class="btn" href="d1-shop-runes.html">RUNES</a>
+          <button class="btn on">SKINS</button>
+          <button class="btn" disabled title="C-1確定後">ITEMS</button>
+        </div>
+      </div>
+
+      <!-- 復刻カレンダー帯: 淡々と。カウントダウン・残り時間表示は仕様として禁止 -->
+      <div class="card reprint" style="margin-top:14px">
+        <table>
+          <tr><th>復刻カレンダー</th><th>初出</th><th>次回復刻</th><th></th></tr>
+          <tr><td style="color:var(--text)">Kernel Panic線</td><td class="tnum">2026-08</td><td class="tnum">2027-02</td><td class="faint">同一価格・同一内容</td></tr>
+          <tr><td style="color:var(--text)">Moonlit Compile線</td><td class="tnum">2026-09</td><td class="tnum">2027-03</td><td class="faint">同一価格・同一内容</td></tr>
+          <tr><td style="color:var(--text)">Rust Belt線</td><td class="tnum">2026-10</td><td class="tnum">2027-04</td><td class="faint">同一価格・同一内容</td></tr>
+        </table>
+      </div>
+      <p class="faint" style="font-size:10px;margin:6px 2px 0">すべてのラインは初出時に復刻月を明記します。買い逃しても同じ条件で再入手できます（急かす表示はしない設計）。</p>
+
+      <!-- FEATURED（注目ライン・カウントダウン等の煋りなし） -->
+      <div class="hero lgring">
+        <div class="hero__txt">
+          <div class="hero__kicker">FEATURED LINE — 2026-08 初出</div>
+          <div class="hero__name">『Kernel Panic線』</div>
+          <div class="hero__skin">「セグフォルトの王」 — ドラゴン用 LG</div>
+          <div class="hero__fl">// panic: unrecoverable beauty at 0xDEADBEEF<br/>落ちる瞬間だけ、世界は最も美しくクラッシュする。</div>
+          <div class="hero__row">
+            <span class="tchip tchip--lg">LG</span>
+            <b class="sprice" style="font-size:16px">1,800 💎</b>
+            <a class="btn btn--rune" href="skin-detail.html" style="margin-left:auto">フルプレビュー →</a>
+          </div>
+          <div class="faint" style="font-size:9.5px;margin-top:10px">復刻 2027-02・同一価格 — 今買っても後で買っても同じ条件です</div>
+        </div>
+        <div class="hero__stage">
+          <div style="position:relative">
+            <span class="hero__subj">🐉</span>
+            <span class="hero__refl">🐉</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kernel Panic線 -->
+      <div class="line-hd"><h2>『Kernel Panic線』</h2><span class="flavor">// panic: unrecoverable beauty at 0xDEADBEEF</span></div>
+      <div class="line-sub">グリッチ・走査線・色収差 — 落ちる瞬間の美学。 <span class="tchip tchip--std">STD 320</span> <span class="tchip tchip--dx">DX 880</span> <span class="tchip tchip--lg">LG 1,800</span></div>
+      <div class="sgrid">
+        <a class="scard lgring" href="skin-detail.html">
+          <div class="srow"><span class="sname">ドラゴン</span><span class="owned-chk">✓ 対象所持</span></div>
+          <div class="sskin">「セグフォルトの王」</div>
+          <div class="thumbs">
+            <div class="thumb"><span class="e">🐉</span></div><div class="arrow">→</div>
+            <div class="thumb fx-kp"><span class="e">🐉</span></div>
+          </div>
+          <div class="srow"><span class="tchip tchip--lg">LG</span><span class="sprice">1,800 💎</span></div>
+        </a>
+        <a class="scard" href="skin-detail.html">
+          <div class="srow"><span class="sname">ゴーレム</span><span class="owned-chk">✓ 対象所持</span></div>
+          <div class="sskin">「コアダンプ」</div>
+          <div class="thumbs">
+            <div class="thumb"><span class="e">🗿</span></div><div class="arrow">→</div>
+            <div class="thumb fx-kp"><span class="e">🗿</span></div>
+          </div>
+          <div class="srow"><span class="tchip tchip--dx">DX</span><span class="sprice">880 💎</span></div>
+        </a>
+        <a class="scard" href="skin-detail.html">
+          <div class="srow"><span class="sname">コウモリ</span><span class="owned-chk" style="color:var(--tier-std)">✓ 所有済み</span></div>
+          <div class="sskin">「ビットフリップ」</div>
+          <div class="thumbs">
+            <div class="thumb"><span class="e">🦇</span></div><div class="arrow">→</div>
+            <div class="thumb fx-kp"><span class="e">🦇</span></div>
+          </div>
+          <div class="srow"><span class="tchip tchip--std">STD</span><span style="font-size:11px;color:var(--text-dim)">装備中 · <span style="color:var(--tier-std)">St3/10</span></span></div>
+        </a>
+      </div>
+
+      <!-- Moonlit Compile線 -->
+      <div class="line-hd"><h2>『Moonlit Compile線』</h2><span class="flavor">// built at 03:12 JST — zero warnings</span></div>
+      <div class="line-sub">夜間ビルドの静けさ。月光のパレット。 <span class="tchip tchip--std">STD 320</span> <span class="tchip tchip--dx">DX 880</span> <span class="tchip tchip--lg">LG 1,800</span></div>
+      <div class="sgrid">
+        <a class="scard" href="skin-detail.html">
+          <div class="srow"><span class="sname">フェニックス</span><span class="owned-chk">✓ 対象所持</span></div>
+          <div class="sskin">「暁のリビルド」</div>
+          <div class="thumbs">
+            <div class="thumb"><span class="e">🦅</span></div><div class="arrow">→</div>
+            <div class="thumb fx-ml"><span class="e">🦅</span></div>
+          </div>
+          <div class="srow"><span class="tchip tchip--lg">LG</span><span class="sprice">1,800 💎</span></div>
+        </a>
+        <a class="scard" href="skin-detail.html">
+          <div class="srow"><span class="sname">ユニコーン</span><span class="owned-chk">✓ 対象所持</span></div>
+          <div class="sskin">「ムーンリンカ」</div>
+          <div class="thumbs">
+            <div class="thumb"><span class="e">🦄</span></div><div class="arrow">→</div>
+            <div class="thumb fx-ml"><span class="e">🦄</span></div>
+          </div>
+          <div class="srow"><span class="tchip tchip--dx">DX</span><span class="sprice">880 💎</span></div>
+        </a>
+        <a class="scard" href="skin-detail.html">
+          <div class="srow"><span class="sname">マーメイド</span><span class="owned-chk">✓ 対象所持</span></div>
+          <div class="sskin">「ナイトリービルド」</div>
+          <div class="thumbs">
+            <div class="thumb"><span class="e">🧜</span></div><div class="arrow">→</div>
+            <div class="thumb fx-ml"><span class="e">🧜</span></div>
+          </div>
+          <div class="srow"><span class="tchip tchip--std">STD</span><span class="sprice">320 💎</span></div>
+        </a>
+      </div>
+
+      <!-- Rust Belt線 -->
+      <div class="line-hd"><h2>『Rust Belt線』</h2><span class="flavor">// unsafe &#123; beauty &#125; — 錆は履歴</span></div>
+      <div class="line-sub">酸化した金属。使い込まれた道具の色。 <span class="tchip tchip--std">STD 320</span> <span class="tchip tchip--dx">DX 880</span> <span class="tchip tchip--lg">LG 1,800</span></div>
+      <div class="sgrid">
+        <a class="scard" href="skin-detail.html">
+          <div class="srow"><span class="sname">オーク</span><span class="owned-chk">✓ 対象所持</span></div>
+          <div class="sskin">「ボロウチェッカ」</div>
+          <div class="thumbs">
+            <div class="thumb"><span class="e">🧌</span></div><div class="arrow">→</div>
+            <div class="thumb fx-rb"><span class="e">🧌</span></div>
+          </div>
+          <div class="srow"><span class="tchip tchip--std">STD</span><span class="sprice">320 💎</span></div>
+        </a>
+        <!-- 未所持モンスター対象 → 下段・薄く（demand-first） -->
+        <a class="scard dimmed" href="skin-detail.html">
+          <div class="srow"><span class="sname">クラーケン</span><span class="faint" style="font-size:9px">対象モンスター未所持</span></div>
+          <div class="sskin">「ライフタイム境界」</div>
+          <div class="thumbs">
+            <div class="thumb"><span class="e">🐙</span></div><div class="arrow">→</div>
+            <div class="thumb fx-rb"><span class="e">🐙</span></div>
+          </div>
+          <div class="srow"><span class="tchip tchip--dx">DX</span><span class="sprice">880 💎</span></div>
+        </a>
+        <a class="scard dimmed" href="skin-detail.html">
+          <div class="srow"><span class="sname">リヴァイアサン</span><span class="faint" style="font-size:9px">対象モンスター未所持</span></div>
+          <div class="sskin">「アンセーフの海」</div>
+          <div class="thumbs">
+            <div class="thumb"><span class="e">🐊</span></div><div class="arrow">→</div>
+            <div class="thumb fx-rb"><span class="e">🐊</span></div>
+          </div>
+          <div class="srow"><span class="tchip tchip--lg">LG</span><span class="sprice">1,800 💎</span></div>
+        </a>
+      </div>
+
+      <div class="legal-footer">
+        <div class="row"><a href="legal-tokushoho.html">特定商取引法に基づく表示</a><a href="legal-prepaid.html">資金決済法（前払式支払手段）</a></div>
+        <div class="note">並び順は demand-first（所有モンスター対象を先頭・未所持対象は下段に淡色）。スキンは見た目のみ — ステータス・報酬・順位に影響しません。ティア表記（STD/DX/LG）は金属質ニュートラルの第3系統で、名声（緑）・課金通貨（琥珀）と視覚衝突しません。</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

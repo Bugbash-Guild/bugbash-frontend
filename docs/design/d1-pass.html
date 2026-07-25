@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>D-1 · /pass — 冒険者パス / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  .perk { display:flex; gap:12px; align-items:flex-start; padding:12px 14px; background:var(--bg-elev-2); border:1px solid var(--line); border-radius:var(--radius-btn); }
+  .perk .pic { width:34px; height:34px; border-radius:4px; background:var(--pass-bg); border:1px solid var(--pass-border); display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
+  .perk b { font-size:13px; } .perk .d { font-size:11px; color:var(--text-dim); margin-top:2px; }
+  .price-tag { font-size:34px; font-weight:700; color:var(--pass); line-height:1; }
+  .kv { display:flex; justify-content:space-between; font-size:13px; padding:9px 0; border-bottom:1px solid var(--line); }
+  .kv:last-child { border-bottom:0; }
+  .kv .dim { color:var(--text-dim); }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · v0.1.0</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="monsters.html"><span class="g">◆</span> ~/monsters</a>
+      <a href="items.html"><span class="g">▣</span> ~/items</a>
+      <a href="summon.html"><span class="g">≡</span> ~/summon</a>
+      <a href="summon-limited.html" class="is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Billing</div>
+    <nav class="nav">
+      <a href="d1-shop-runes.html" class="is-paid"><span class="g">▤</span> ~/shop/runes</a>
+      <a href="shop-skins.html" class="is-paid"><span class="g">◨</span> ~/shop/skins</a>
+      <a class="active is-paid"><span class="g">✦</span> ~/pass</a>
+      <a href="d1-billing-return.html" class="is-paid"><span class="g">↺</span> ~/billing/return</a>
+      <a href="forge.html" class="is-paid"><span class="g">⚒</span> ~/forge</a>
+      <a href="badges.html"><span class="g">◉</span> ~/badges</a>
+      <a href="mypage-billing.html"><span class="g">⛭</span> ~/mypage/billing</a>
+    </nav>
+    <div class="sidebar__label">Design docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/pass</span><span class="s">$</span> subscription --status</div>
+      <div class="wallet"><span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> 340</span></div>
+    </div>
+
+    <div class="page" style="max-width:860px">
+      <div class="row gap8" style="align-items:center">
+        <h1 class="h1">冒険者パス</h1>
+        <span class="chip chip--pass">✦ SUBSCRIPTION</span>
+      </div>
+      <p class="sub">毎月ルーンと時短特典を受け取れる月額プラン。<b>買えるのは「時短」と特典だけ</b>——強さ・順位には影響しません。</p>
+
+      <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-top:18px">
+        <!-- LP: 特典一覧 -->
+        <div class="card"><div class="card__hd"><span class="micro">特典（4点）</span><span class="chip chip--pass">加入で有効</span></div>
+          <div class="card__bd stack gap8">
+            <div class="perk"><div class="pic">💎</div><div><b>毎月 150 ルーン付与</b><div class="d">加入中、30日ごとに自動付与</div></div></div>
+            <div class="perk"><div class="pic">🥚</div><div><b>PRマージ時 相棒魂 ×2</b><div class="d">育成の時短。ドロップ内容は変わりません</div></div></div>
+            <div class="perk"><div class="pic">≡</div><div><b>通常召喚 天井 80 → 70</b><div class="d">確定までの回数を短縮（確率は不変）</div></div></div>
+            <div class="perk"><div class="pic">✦</div><div><b>限定召喚 天井 60 → 50</b><div class="d">同上・限定バナー用</div></div></div>
+          </div>
+        </div>
+
+        <!-- 価格 + CTA -->
+        <div class="card"><div class="card__bd">
+          <div class="micro">月額（税込）</div>
+          <div class="price-tag" style="margin:4px 0 2px">¥780<span style="font-size:14px;color:var(--text-dim);font-weight:400"> / 月</span></div>
+          <div class="faint" style="font-size:11px">30日ごとに自動更新・日割返金なし</div>
+
+          <div style="margin-top:16px;padding:10px 12px;border:1px solid var(--pass-border);background:var(--pass-bg);border-radius:var(--radius-btn);font-size:11px;color:var(--pass);line-height:1.6">
+            成人（18歳以上）の方のみご加入いただけます。
+          </div>
+          <button class="btn btn--pass btn--block" style="margin-top:12px" onclick="openJoin()">加入する</button>
+          <p class="spec" style="font-size:11px;color:var(--text-faint);margin-top:10px">いつでもこのページから解約できます。解約後も期間末まで特典は有効です。</p>
+        </div></div>
+      </div>
+
+      <!-- 加入中カード（状態リファレンス）-->
+      <div class="section-label"><span class="micro">加入中の表示（実装リファレンス）</span><span class="rule"></span></div>
+      <div class="card"><div class="card__hd"><span class="row gap8"><span class="chip chip--pass chip--live" style="--accent:var(--pass)">ACTIVE</span><span class="micro">冒険者パス</span></span><span class="micro tnum">次回請求 2026-08-05</span></div>
+        <div class="card__bd">
+          <div class="kv"><span class="dim">プラン</span><span>ADVENTURER_PASS</span></div>
+          <div class="kv"><span class="dim">状態</span><span class="rune-c">有効 · 自動更新</span></div>
+          <div class="kv"><span class="dim">今月の付与</span><span class="tnum">150 ルーン（付与済み）</span></div>
+          <div class="kv"><span class="dim">次回請求日</span><span class="tnum">2026-08-05 · ¥780</span></div>
+          <div class="row between" style="margin-top:14px">
+            <span class="faint" style="font-size:11px">解約はいつでも・引き止めはありません</span>
+            <button class="btn btn--danger" onclick="openCancel()">解約する</button>
+          </div>
+        </div>
+      </div>
+      <p class="spec" style="font-size:11px;color:var(--text-faint);margin-top:8px">※ 解約予約中は「2026-08-05 まで特典は有効です。それ以降更新されません」を表示。特典表示値・価格は本番では正典/API 由来。</p>
+
+      <div class="legal-footer">
+        <div class="row"><a href="d1-components.html">特定商取引法に基づく表示</a><a href="d1-components.html">資金決済法（前払式支払手段）</a><a href="#">利用規約</a></div>
+        <div class="note">月額 ¥780（税込）・30日ごと自動更新・日割返金なし・このページからいつでも解約可。発行者: bocek.co.jp 運営法人。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 加入確認モーダル（特商法のサブスク確認画面要件） -->
+<div class="modal-scrim" id="joinModal" style="display:none">
+  <div class="modal"><div class="modal__hd"><span class="micro" style="color:var(--pass)">▸ 加入内容の確認</span><button class="x" onclick="closeJoin()">✕</button></div>
+    <div class="modal__bd">
+      <div class="kv"><span class="dim">金額</span><b>¥780 / 月（税込）</b></div>
+      <div class="kv"><span class="dim">課金周期</span><span>30日ごと・自動更新</span></div>
+      <div class="kv"><span class="dim">次回請求日</span><span class="tnum">2026-08-05</span></div>
+      <div class="kv"><span class="dim">解約方法</span><span>このページからいつでも（日割返金なし）</span></div>
+      <div class="kv"><span class="dim">特典</span><span>150ルーン/月・魂×2・天井短縮</span></div>
+      <label class="check" style="margin-top:14px"><input type="checkbox" id="jm-agree" onchange="document.getElementById('jm-go').disabled=!this.checked"/><span>上記の金額・周期・解約条件と <a href="d1-components.html" style="color:var(--blue)">特定商取引法に基づく表示</a> を確認しました（18歳以上）</span></label>
+    </div>
+    <div class="modal__ft"><button class="btn btn--ghost" onclick="closeJoin()">やめる</button><button class="btn btn--pass" id="jm-go" disabled>KOMOJU で決済へ進む →</button></div>
+  </div>
+</div>
+
+<!-- 解約確認モーダル（引き止めなし・1回のみ） -->
+<div class="modal-scrim" id="cancelModal" style="display:none">
+  <div class="modal"><div class="modal__hd"><span class="micro" style="color:var(--pink)">▸ 解約の確認</span><button class="x" onclick="closeCancel()">✕</button></div>
+    <div class="modal__bd">
+      <p class="spec" style="margin:0">冒険者パスを解約します。<b style="color:var(--text)">2026-08-05 まで特典は有効</b>で、それ以降は更新されません。日割返金はありません。</p>
+      <p class="spec" style="margin:10px 0 0;color:var(--text-faint)">※ 引き止めオファーは表示しません。再加入はいつでも可能です。</p>
+    </div>
+    <div class="modal__ft"><button class="btn btn--ghost" onclick="closeCancel()">続ける</button><button class="btn btn--danger" onclick="closeCancel()">解約を確定する</button></div>
+  </div>
+</div>
+
+<script>
+  function openJoin(){document.getElementById('jm-agree').checked=false;document.getElementById('jm-go').disabled=true;document.getElementById('joinModal').style.display='flex';}
+  function closeJoin(){document.getElementById('joinModal').style.display='none';}
+  function openCancel(){document.getElementById('cancelModal').style.display='flex';}
+  function closeCancel(){document.getElementById('cancelModal').style.display='none';}
+  document.querySelectorAll('.modal-scrim').forEach(function(s){s.addEventListener('click',function(e){if(e.target===s)s.style.display='none';});});
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>D-1 · 共有部品 + 法定ページ / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  .demo { padding:18px; background:var(--bg-elev-2); border:1px dashed var(--line-strong); border-radius:var(--radius-btn); display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; }
+  .spec { font-size:12px; color:var(--text-dim); line-height:1.8; }
+  .spec b { color:var(--text); } code { color:var(--rune); font-family:var(--mono); font-size:12px; }
+  .man { min-width:0; background:var(--bg-elev); border:1px solid var(--line); border-radius:var(--radius-card); padding:20px 24px; font-size:12.5px; line-height:1.9; }
+  .man h3 { font-size:12px; color:var(--rune); letter-spacing:0.1em; text-transform:uppercase; margin:18px 0 6px; }
+  .man h3:first-child { margin-top:0; }
+  .man .kv2 { display:grid; grid-template-columns:140px minmax(0,1fr); gap:2px 16px; }
+  .man .kv2 .dim { color:var(--text-dim); }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · parts</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="monsters.html"><span class="g">◆</span> ~/monsters</a>
+      <a href="items.html"><span class="g">▣</span> ~/items</a>
+      <a href="summon.html"><span class="g">≡</span> ~/summon</a>
+      <a href="summon-limited.html" class="is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Design Docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a href="d1-shop-runes.html" class="is-paid"><span class="g">▤</span> /shop/runes</a>
+      <a href="shop-skins.html"><span class="g">◨</span> /shop/skins</a>
+      <a href="d1-billing-return.html" class="is-paid"><span class="g">↺</span> /billing/return</a>
+      <a href="d1-pass.html" class="is-paid"><span class="g">✦</span> /pass</a>
+      <a href="forge.html" class="is-paid"><span class="g">⚒</span> /forge</a>
+      <a href="badges.html"><span class="g">◉</span> /badges</a>
+      <a href="mypage-billing.html"><span class="g">⛭</span> /mypage/billing</a>
+      <a class="active"><span class="g">◱</span> shared parts</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/design</span><span class="s">$</span> ls components/billing/<span class="caret"></span></div>
+    </div>
+
+    <div class="page">
+      <h1 class="h1">共有部品 <span class="chip chip--rune" style="vertical-align:middle">src/components/billing/</span></h1>
+      <p class="sub">課金5画面で再利用する部品。名声(緑)と課金(琥珀)の分離を部品レベルで担保する。</p>
+
+      <!-- WalletBadge -->
+      <div class="section-label"><span class="micro">WalletBadge — ヘッダ常設</span><span class="rule"></span></div>
+      <div class="demo"><span class="wallet__bal wallet__bal--coin"><span class="ic">🪙</span> 1,240</span><span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> 340</span><button class="btn wallet__add btn--rune">+</button></div>
+      <p class="spec"><code>GET /api/shop/items</code> の guildCoinBalance / runeBalance を SWR 共有。消費成功で <code>mutate('wallet')</code>。コイン=真鍮・ルーン=琥珀で並置しても用途が混ざらない。「+」は <code>/shop/runes</code> への唯一のヘッダ導線。</p>
+
+      <!-- PendingGrantBanner -->
+      <div class="section-label"><span class="micro">PendingGrantBanner — グローバル</span><span class="rule"></span></div>
+      <div class="pending-banner" style="border-radius:var(--radius-btn);border:1px solid var(--rune-border)"><span class="spin"></span> <span style="white-space:nowrap">ルーンの反映待ちです…</span> <a href="d1-billing-return.html" style="color:var(--rune);margin-left:auto;white-space:nowrap">状況を見る →</a></div>
+      <p class="spec" style="margin-top:10px"><code>bb.pendingOrder</code> がある間だけ表示。15秒間隔で残高再取得、増分検知でトースト「+{n}ルーン反映されました」を出して自動的に消える。30分で失効→問い合わせ導線。<b>付与済みと断言しない</b>。</p>
+
+      <!-- Chips -->
+      <div class="section-label"><span class="micro">通貨・状態チップ</span><span class="rule"></span></div>
+      <div class="demo">
+        <span class="chip chip--coin">🪙 ギルドコイン</span>
+        <span class="chip chip--rune">💎 ルーン</span>
+        <span class="chip chip--pass">✦ 冒険者パス</span>
+        <span class="chip chip--cosmetic">COSMETIC</span>
+        <span class="chip chip--accent">PRESTIGE</span>
+        <span class="chip chip--rune dotpulse">反映待ち</span>
+      </div>
+
+      <!-- LegalFooter -->
+      <div class="section-label"><span class="micro">LegalFooter — 課金5画面に常設</span><span class="rule"></span></div>
+      <div class="legal-footer" style="margin-top:0">
+        <div class="row"><a href="#tokusho">特定商取引法に基づく表示</a><a href="#prepaid">資金決済法（前払式支払手段）</a><a href="#">利用規約</a></div>
+        <div class="note">発行者: bocek.co.jp 運営法人 / JPY / Web専用 / 提供時期: 決済確認後ただちに（反映最大数分）/ 未使用残高は /mypage/billing で確認 / 払戻し原則不可。</div>
+      </div>
+      <p class="spec" style="margin-top:10px">「隠さないが叫ばない」——読める大きさの灰系テキスト。フッター極小で逃げず、購買を煽る装飾もしない。</p>
+
+      <!-- 法定ページ様式 -->
+      <div class="section-label"><span class="micro">法定ページ様式 — man page / README 風 (D-4先出し)</span><span class="rule"></span></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="man" id="prepaid">
+          <div class="micro" style="color:var(--text-faint);margin-bottom:8px">man 7 prepaid — /legal/prepaid</div>
+          <h3>NAME</h3><div>前払式支払手段（自家型）に基づく表示</div>
+          <h3>ISSUER</h3>
+          <div class="kv2"><span class="dim">発行者</span><span>bocek.co.jp 運営法人 ※法務確定待ち</span><span class="dim">支払可能額</span><span>1回 ¥240〜¥12,000</span><span class="dim">有効期限</span><span class="rune-c">※法務確定待ち（無期限/6ヶ月失効）</span><span class="dim">使用範囲</span><span>BugBash 内のルーン決済のみ</span><span class="dim">残高確認</span><span>/mypage/billing</span><span class="dim">払戻し</span><span>原則不可</span></div>
+          <p class="faint" style="font-size:11px;margin-top:12px">※ 記載値は MDX で差し替え可能に持つ（フロントデプロイ不要）。</p>
+        </div>
+        <div class="man" id="tokusho">
+          <div class="micro" style="color:var(--text-faint);margin-bottom:8px">man 7 tokushoho — /legal/tokushoho</div>
+          <h3>特定商取引法に基づく表示</h3>
+          <div class="kv2"><span class="dim">事業者</span><span>※正式表記 法務確定待ち</span><span class="dim">所在地/連絡先</span><span>※確定待ち</span><span class="dim">支払方法</span><span>KOMOJU（クレカ・コンビニ等）</span><span class="dim">提供時期</span><span>決済確認後ただちに（反映最大数分）</span><span class="dim">返品/キャンセル</span><span>デジタル商品につき不可</span><span class="dim">月額課金</span><span>¥780/月・いつでも解約可</span></div>
+          <p class="faint" style="font-size:11px;margin-top:12px">テキスト主体・等幅で可読性優先。装飾は最小。</p>
+        </div>
+      </div>
+
+      <div class="legal-footer">
+        <div class="row"><a href="d1-style-guide.html">← style-guide</a><a href="d1-shop-runes.html">/shop/runes</a>
+      <a href="shop-skins.html"><span class="g">◨</span> /shop/skins</a><a href="d1-billing-return.html">/billing/return</a><a href="d1-pass.html">/pass</a></div>
+        <div class="note">D-1 共有部品 · AgeVerificationModal / DisclosureModal の実体は /shop/runes・限定召喚(D-2)側に実装済みデモあり。</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

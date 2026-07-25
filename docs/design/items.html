@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>~/items — Inventory / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  .inv-wrap { display: grid; grid-template-columns: minmax(0,1fr) 260px; gap: 18px; align-items: start; }
+  @media (max-width: 1100px) { .inv-wrap { grid-template-columns: 1fr; } }
+  .slotgrid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 5px; min-width: 0; }
+  .slot { position: relative; min-width: 0; aspect-ratio: 1; border-radius: 4px; background: var(--bg-elev-2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; }
+  .slot.empty { border-style: dashed; background: transparent; cursor: default; }
+  .slot .qty { position: absolute; bottom: 2px; right: 5px; font-size: 11px; font-weight: 700; color: var(--text); text-shadow: 1px 1px 0 #000; font-variant-numeric: tabular-nums; }
+  .slot .idx { position: absolute; top: 2px; left: 5px; font-size: 9px; color: var(--text-faint); }
+  .slot.sel { border-color: rgba(126,231,135,.55); box-shadow: 0 0 0 2px rgba(126,231,135,.15), inset 0 0 12px rgba(126,231,135,.14); background: var(--bg-elev); }
+  .slot.rune-item { border-color: var(--rune-border); }
+  .slot.rune-item::after { content: '💎'; position: absolute; top: 1px; right: 3px; font-size: 8px; }
+  .selpanel .big { width: 100%; aspect-ratio: 1; max-height: 150px; border-radius: 5px; background: var(--bg-elev-2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 64px; }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · v0.1.0</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="monsters.html"><span class="g">◆</span> ~/monsters</a>
+      <a class="active"><span class="g">▣</span> ~/items</a>
+      <a href="summon.html"><span class="g">≡</span> ~/summon</a>
+      <a href="summon-limited.html" class="is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Billing</div>
+    <nav class="nav">
+      <a href="d1-shop-runes.html" class="is-paid"><span class="g">▤</span> ~/shop/runes</a>
+      <a href="shop-skins.html" class="is-paid"><span class="g">◨</span> ~/shop/skins</a>
+      <a href="d1-pass.html" class="is-paid"><span class="g">✦</span> ~/pass</a>
+      <a href="forge.html" class="is-paid"><span class="g">⚒</span> ~/forge</a>
+      <a href="badges.html"><span class="g">◉</span> ~/badges</a>
+      <a href="mypage-billing.html"><span class="g">⛭</span> ~/mypage/billing</a>
+    </nav>
+    <div class="sidebar__label">Design docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/items</span><span class="s">$</span> inv --grid</div>
+      <div class="wallet">
+        <span class="wallet__bal wallet__bal--coin"><span class="ic">🪙</span> 1,240</span>
+        <span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> 340</span>
+      </div>
+    </div>
+
+    <div class="page">
+      <div class="row between" style="align-items:flex-end">
+        <div>
+          <h1 class="h1">Inventory</h1>
+          <p class="sub">36 slots · <span id="occ"></span> occupied · <span class="chip chip--rune" style="font-size:9px;padding:1px 6px">💎</span> はルーン建てアイテム（D-5: 区別表示）</p>
+        </div>
+      </div>
+
+      <div class="inv-wrap" style="margin-top:16px">
+        <div>
+          <div class="card"><div class="card__hd"><span class="micro">STORAGE</span><span class="faint" style="font-size:10px" id="occ2"></span></div>
+            <div class="card__bd"><div class="slotgrid" id="storage"></div></div>
+          </div>
+          <div class="card" style="margin-top:12px"><div class="card__hd"><span class="micro">HOTBAR · 1–9</span><span class="faint" style="font-size:10px">[E] use</span></div>
+            <div class="card__bd"><div class="slotgrid" id="hotbar"></div></div>
+          </div>
+        </div>
+
+        <div class="card selpanel"><div class="card__hd"><span class="micro">SELECTED</span></div>
+          <div class="card__bd" id="selbody"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var ITEMS = [
+    { e:'🧪', n:'経験値の薬',   q:12,  k:'consumable', d:'使用すると +500 XP', rune:false },
+    { e:'💎', n:'覚醒の石',     q:3,   k:'evolve',     d:'モンスターを覚醒させる', rune:false },
+    { e:'🎟️', n:'進化チケット', q:5,   k:'evolve',     d:'モンスターを進化させる', rune:false },
+    { e:'🎫', n:'ガチャチケット', q:8,  k:'ticket',     d:'1回召喚を引ける', rune:false },
+    { e:'🪙', n:'金貨',         q:240, k:'currency',   d:'ショップで使える', rune:false },
+    { e:'🗝️', n:'宝箱の鍵',     q:2,   k:'key',        d:'宝箱を開けられる', rune:false },
+    { e:'🔥', n:'炎の魂パック', q:1,   k:'soul pack',  d:'属性指定の相棒魂（ルーン建て）', rune:true },
+    { e:'❄️', n:'氷の魂パック', q:2,   k:'soul pack',  d:'属性指定の相棒魂（ルーン建て）', rune:true },
+  ];
+  var SEL = 0;
+
+  function slotHtml(it, idx, opts){
+    opts = opts || {};
+    if (!it) return '<div class="slot empty"></div>';
+    return '<div class="slot'+(opts.sel?' sel':'')+(it.rune?' rune-item':'')+'" onclick="SEL='+idx+';draw()">' 
+      + (opts.hotIdx ? '<span class="idx">'+opts.hotIdx+'</span>' : '')
+      + it.e + '<span class="qty">'+it.q+'</span></div>';
+  }
+
+  function draw(){
+    var storage = [];
+    for (var i = 0; i < 27; i++) storage.push(slotHtml(ITEMS[i] || null, i, {sel: SEL===i}));
+    document.getElementById('storage').innerHTML = storage.join('');
+    var hot = [];
+    for (var j = 0; j < 9; j++) hot.push(slotHtml(ITEMS[j] || null, j, {sel: SEL===j, hotIdx: j+1}));
+    document.getElementById('hotbar').innerHTML = hot.join('');
+    var n = ITEMS.length;
+    document.getElementById('occ').textContent = n; document.getElementById('occ2').textContent = n + '/36';
+
+    var it = ITEMS[SEL];
+    document.getElementById('selbody').innerHTML =
+      '<div class="big">'+it.e+'</div>'
+      + '<div style="font-size:14px;font-weight:600;margin-top:12px">'+it.n
+      + (it.rune?' <span class="chip chip--rune" style="font-size:9px;padding:1px 6px">💎 RUNE</span>':'')+'</div>'
+      + '<div class="dim" style="font-size:11px;line-height:1.6;margin-top:6px">'+it.d+'</div>'
+      + '<div class="row between" style="margin-top:12px;font-size:11px;color:var(--text-faint)"><span>kind: <span style="color:var(--text)">'+it.k+'</span></span><span>qty: <span style="color:var(--accent)" class="tnum">×'+it.q+'</span></span></div>'
+      + '<button class="btn btn--block" style="margin-top:14px;background:var(--accent);color:#0b0f0d;border-color:var(--accent);font-weight:700">USE [E]</button>';
+  }
+  draw();
+</script>
+</body>
+</html>

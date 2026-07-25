@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>~/mypage/billing — 残高・履歴・管理 / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  .cols { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; align-items: start; }
+  @media (max-width: 1100px) { .cols { grid-template-columns: 1fr; } }
+  .balbig { display: flex; align-items: baseline; gap: 8px; }
+  .balbig .n { font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .kv { display: flex; justify-content: space-between; font-size: 13px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+  .kv:last-child { border-bottom: 0; }
+  table.log td.amt { text-align: right; font-variant-numeric: tabular-nums; }
+  table.log .plus { color: var(--rune); } table.log .minus { color: var(--text-dim); }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · v0.1.0</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="monsters.html"><span class="g">◆</span> ~/monsters</a>
+      <a href="items.html"><span class="g">▣</span> ~/items</a>
+      <a href="summon.html"><span class="g">≡</span> ~/summon</a>
+      <a href="summon-limited.html" class="is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Billing</div>
+    <nav class="nav">
+      <a href="d1-shop-runes.html" class="is-paid"><span class="g">▤</span> ~/shop/runes</a>
+      <a href="shop-skins.html" class="is-paid"><span class="g">◨</span> ~/shop/skins</a>
+      <a href="d1-pass.html" class="is-paid"><span class="g">✦</span> ~/pass</a>
+      <a href="forge.html" class="is-paid"><span class="g">⚒</span> ~/forge</a>
+      <a href="badges.html"><span class="g">◉</span> ~/badges</a>
+      <a class="active"><span class="g">⛭</span> ~/mypage/billing</a>
+    </nav>
+    <div class="sidebar__label">Design docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/mypage/billing</span><span class="s">$</span> billing --summary<span class="caret"></span></div>
+      <div class="wallet">
+        <span class="wallet__bal wallet__bal--coin"><span class="ic">🪙</span> 1,240</span>
+        <span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> 340</span>
+      </div>
+    </div>
+
+    <div class="page">
+      <h1 class="h1">残高・課金履歴・管理</h1>
+      <p class="sub">資金決済法の「未使用残高の確認方法」提供先。守りの導線（履歴・解約・退会）を1箇所に集約します。</p>
+
+      <div class="cols" style="margin-top:16px">
+        <!-- 残高 -->
+        <div class="card">
+          <div class="card__hd"><span class="micro">BALANCE — 未使用残高</span><span class="faint" style="font-size:10px">GET /api/shop/items</span></div>
+          <div class="card__bd">
+            <div class="row gap16" style="align-items:stretch">
+              <div style="flex:1;padding:12px 14px;background:var(--bg-elev-2);border:1px solid var(--rune-border);border-radius:var(--radius-btn)">
+                <div class="micro" style="color:var(--rune)">ルーン（有償通貨）</div>
+                <div class="balbig"><span class="n rune-c">340</span><span style="font-size:14px">💎</span></div>
+                <div class="faint" style="font-size:10px;margin-top:4px">有償/無償の内訳表示は wallet API 追補待ち（§7）</div>
+              </div>
+              <div style="flex:1;padding:12px 14px;background:var(--bg-elev-2);border:1px solid var(--coin-border);border-radius:var(--radius-btn)">
+                <div class="micro" style="color:var(--coin)">ギルドコイン（無償）</div>
+                <div class="balbig"><span class="n" style="color:var(--coin)">1,240</span><span style="font-size:14px">🪙</span></div>
+                <div class="faint" style="font-size:10px;margin-top:4px">活動でのみ獲得・購入不可</div>
+              </div>
+            </div>
+            <div class="row between" style="margin-top:12px;font-size:11px;color:var(--text-dim)">
+              <span>30日間の購入上限 <b class="tnum" style="color:var(--text)">¥50,000</b> / 利用済み <b class="tnum" style="color:var(--text)">¥3,400</b></span>
+              <a href="#" onclick="return false" style="color:var(--blue);text-decoration:none">年齢区分を再申告 →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- サブスク -->
+        <div class="card">
+          <div class="card__hd"><span class="row gap8"><span class="chip chip--pass chip--live" style="--accent:var(--pass)">ACTIVE</span><span class="micro">冒険者パス</span></span><span class="micro tnum">次回請求 2026-08-05</span></div>
+          <div class="card__bd">
+            <div class="kv"><span class="dim">プラン</span><span>ADVENTURER_PASS · ¥780/月（税込）</span></div>
+            <div class="kv"><span class="dim">今月の付与</span><span class="tnum">150 ルーン（付与済み）</span></div>
+            <div class="kv"><span class="dim">状態</span><span style="color:var(--pass)">有効 · 自動更新</span></div>
+            <div class="row between" style="margin-top:12px">
+              <a href="d1-pass.html" style="font-size:11px;color:var(--blue);text-decoration:none">パスの詳細 →</a>
+              <button class="btn btn--danger" style="padding:8px 14px;font-size:12px">解約する</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 課金履歴 -->
+      <div class="card" style="margin-top:16px">
+        <div class="card__hd"><span class="micro">TRANSACTION LOG — 課金履歴</span><span class="faint" style="font-size:10px">注文履歴APIは追補待ち（暫定: 召喚履歴＋残高）</span></div>
+        <div class="card__bd" style="padding:0">
+          <table class="log">
+            <tr><th>日時</th><th>種別</th><th>内容</th><th style="text-align:right">増減</th><th>状態</th></tr>
+            <tr><td class="tnum">2026-07-06 21:14</td><td><span class="chip chip--rune" style="font-size:9px;padding:1px 6px">PURCHASE</span></td><td>ルーン1,100（¥3,400・税込）</td><td class="amt plus">+1,100 💎</td><td style="color:var(--accent)">✓ 付与済み</td></tr>
+            <tr><td class="tnum">2026-07-06 21:13</td><td><span class="chip" style="font-size:9px;padding:1px 6px;color:var(--text-dim)">CHECKOUT</span></td><td>KOMOJU 決済受付 #ord_8f3a…c21</td><td class="amt minus">—</td><td style="color:var(--text-dim)">完了</td></tr>
+            <tr><td class="tnum">2026-07-05 10:02</td><td><span class="chip chip--pass" style="font-size:9px;padding:1px 6px">PASS</span></td><td>冒険者パス 月次付与</td><td class="amt plus">+150 💎</td><td style="color:var(--accent)">✓ 付与済み</td></tr>
+            <tr><td class="tnum">2026-07-04 19:44</td><td><span class="chip" style="font-size:9px;padding:1px 6px;color:var(--text-dim)">SUMMON</span></td><td>限定召喚 10連</td><td class="amt minus">−300 💎</td><td style="color:var(--text-dim)">消費</td></tr>
+            <tr><td class="tnum">2026-07-02 08:31</td><td><span class="chip" style="font-size:9px;padding:1px 6px;color:var(--text-dim)">FORGE</span></td><td>工房強化 ドラゴン Lv.6→7</td><td class="amt minus">−412 💎</td><td style="color:var(--text-dim)">消費</td></tr>
+          </table>
+        </div>
+        <div style="padding:10px 16px;border-top:1px solid var(--line);font-size:10.5px;color:var(--text-faint)">購入の領収情報は KOMOJU からの決済メールでもご確認いただけます。</div>
+      </div>
+
+      <!-- アカウント・法定 -->
+      <div class="card" style="margin-top:16px">
+        <div class="card__hd"><span class="micro">ACCOUNT — アカウントと法定情報</span></div>
+        <div class="card__bd">
+          <div class="kv"><span class="dim">年齢区分</span><span>18歳以上（上限 ¥50,000/30日）<a href="#" onclick="return false" style="color:var(--blue);margin-left:10px;text-decoration:none">再申告 →</a></span></div>
+          <div class="kv"><span class="dim">法定表示</span><span><a href="legal-tokushoho.html" style="color:var(--blue);text-decoration:none">特定商取引法 →</a><a href="legal-prepaid.html" style="color:var(--blue);margin-left:14px;text-decoration:none">前払式支払手段 →</a></span></div>
+          <div class="kv">
+            <span class="dim">退会</span>
+            <button class="btn btn--danger" style="padding:8px 14px;font-size:12px" onclick="openRetire()">退会する…</button>
+          </div>
+          <p class="faint" style="font-size:10.5px;margin:10px 0 0">退会・解約の導線は隠しません。退会時は未使用ルーンの失効に同意いただく必要があります。</p>
+        </div>
+      </div>
+
+      <div class="legal-footer">
+        <div class="row"><a href="legal-tokushoho.html">特定商取引法に基づく表示</a><a href="legal-prepaid.html">資金決済法（前払式支払手段）</a><a href="#">利用規約</a></div>
+        <div class="note">未使用残高はこのページと全画面ヘッダーの WalletBadge でいつでも確認できます。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 退会確認モーダル（失効同意） -->
+<div class="modal-scrim" id="retireModal" style="display:none">
+  <div class="modal">
+    <div class="modal__hd"><span class="micro" style="color:var(--pink)">▸ 退会の確認</span><button class="x" onclick="closeRetire()">✕</button></div>
+    <div class="modal__bd">
+      <p style="font-size:13px;color:var(--text-dim);line-height:1.8;margin:0">BugBash から退会します。ヒーロー・モンスター・バッジのデータは削除され、復元できません。</p>
+      <div style="margin-top:12px;padding:10px 12px;background:rgba(255,123,114,.07);border:1px solid rgba(255,123,114,.4);border-radius:var(--radius-btn);font-size:12px;color:var(--pink);line-height:1.7">
+        未使用のルーン <b class="tnum">340 💎</b> は退会と同時に<b>失効し、払い戻しできません</b>。
+      </div>
+      <label class="check" style="margin-top:14px"><input type="checkbox" id="rt-agree" onchange="document.getElementById('rt-go').disabled=!this.checked"/><span>未使用ルーンの失効と払戻し不可に同意します（<a href="legal-prepaid.html" style="color:var(--blue)">前払式支払手段の表示</a>）</span></label>
+    </div>
+    <div class="modal__ft">
+      <button class="btn btn--ghost" onclick="closeRetire()">やめる</button>
+      <button class="btn btn--danger" id="rt-go" disabled>退会を確定する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openRetire(){ document.getElementById('rt-agree').checked=false; document.getElementById('rt-go').disabled=true; document.getElementById('retireModal').style.display='flex'; }
+  function closeRetire(){ document.getElementById('retireModal').style.display='none'; }
+  document.querySelectorAll('.modal-scrim').forEach(function(s){ s.addEventListener('click', function(e){ if(e.target===s) s.style.display='none'; }); });
+</script>
+</body>
+</html>
