@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>skin-lines — スキンライン様式見本（パイロット選別用）/ Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  :root {
+    --tier-std: #9DA9B5; --tier-std-bg: rgba(157,169,181,.08); --tier-std-bd: rgba(157,169,181,.34);
+    --tier-dx:  #C7D3DE; --tier-dx-bg:  rgba(199,211,222,.09); --tier-dx-bd:  rgba(199,211,222,.42);
+    --tier-lg:  #E2E9F1; --tier-lg-bg:  rgba(226,233,241,.10); --tier-lg-bd:  rgba(226,233,241,.52);
+  }
+  .tchip { display:inline-flex; align-items:center; padding:2px 8px; border-radius:2px; font-size:9px; font-weight:800; letter-spacing:.12em; border:1px solid; }
+  .tchip--std { color:var(--tier-std); background:var(--tier-std-bg); border-color:var(--tier-std-bd); }
+  .tchip--dx { color:var(--tier-dx); background:var(--tier-dx-bg); border-color:var(--tier-dx-bd); }
+  .tchip--lg { color:var(--tier-lg); background:var(--tier-lg-bg); border-color:var(--tier-lg-bd); }
+  .swatches { display:flex; gap:4px; }
+  .sw { flex:1; height:26px; border-radius:3px; border:1px solid rgba(255,255,255,.08); }
+  .linegrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:14px; margin-top:16px; }
+  .linetile { background:var(--bg-elev); border:1px solid var(--line); border-radius:var(--radius-card); overflow:hidden; }
+  .linetile .hd { padding:14px 18px; border-bottom:1px solid var(--line); }
+  .linetile h2 { margin:0; font-size:16px; font-weight:700; }
+  .linetile .fl { font-size:10.5px; color:var(--text-faint); margin-top:3px; }
+  .art { height:150px; display:flex; align-items:center; justify-content:center; font-size:64px; position:relative; overflow:hidden; border-bottom:1px solid var(--line); }
+  .art .cap { position:absolute; bottom:6px; left:10px; font-size:8.5px; letter-spacing:.14em; color:rgba(255,255,255,.4); }
+  .art--kp { background:linear-gradient(180deg,#101614,#0b0f0d); }
+  .art--kp::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(126,231,135,.08) 3px 4px),linear-gradient(90deg,transparent 40%,rgba(255,123,114,.14) 41% 42.5%,transparent 43%),linear-gradient(90deg,transparent 62%,rgba(121,192,255,.16) 63% 65%,transparent 66%); }
+  .art--kp .e { filter:saturate(1.35) contrast(1.15); text-shadow:3px 0 rgba(255,90,90,.45),-3px 0 rgba(90,170,255,.45); }
+  .art--ml { background:linear-gradient(180deg,#0d1420,#0b0f16); }
+  .art--ml::before { content:''; position:absolute; top:10px; right:14px; width:22px; height:22px; border-radius:50%; background:radial-gradient(circle at 35% 35%,#e8ecf4,#9aa8c4); box-shadow:0 0 16px rgba(200,214,240,.5); }
+  .art--ml .e { filter:hue-rotate(-20deg) saturate(.85) brightness(1.05); }
+  .art--rb { background:linear-gradient(180deg,#160f0b,#0f0b08); }
+  .art--rb::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 20% 70%,rgba(191,106,58,.28),transparent 40%),radial-gradient(circle at 75% 25%,rgba(150,84,46,.22),transparent 35%); }
+  .art--rb .e { filter:sepia(.55) saturate(1.25); }
+  .bd { padding:14px 18px; }
+  .spec { font-size:11px; color:var(--text-dim); line-height:1.9; }
+  .spec b { color:var(--text); font-weight:600; }
+  .naming { margin-top:10px; padding:9px 12px; background:var(--bg-elev-2); border:1px solid var(--line); border-radius:var(--radius-btn); font-size:10.5px; color:var(--text-dim); line-height:1.8; }
+  .tokrow { display:grid; grid-template-columns:110px minmax(0,1fr) auto; gap:12px; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); font-size:12px; }
+  .tokrow:last-child { border-bottom:0; }
+  .tokchip { width:70px; height:26px; border-radius:4px; border:1px solid; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; letter-spacing:.1em; }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · design</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="shop-skins.html" class="is-paid"><span class="g">◨</span> ~/shop/skins</a>
+      <a href="skin-detail.html" class="is-paid"><span class="g">◧</span> skin-detail</a>
+      <a href="mint-plate.html" class="is-paid"><span class="g">🔨</span> mint-plate</a>
+    </nav>
+    <div class="sidebar__label">Design docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a class="active"><span class="g">◫</span> skin-lines 見本</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">design@bugbash</span><span class="s">:</span><span class="p">~/design</span><span class="s">$</span> cat skin-lines.spec<span class="caret"></span></div>
+    </div>
+
+    <div class="page">
+      <h1 class="h1">スキンライン様式見本</h1>
+      <p class="sub">供給パイロットの試作選別用。1ライン＝<b>パレット＋フレーム＋FX＋命名文法＋フレーバー</b>の5点セット。同一モンスター（ドラゴン）で比較できるようにしてあります。</p>
+
+      <!-- ティア第3系統トークン（§3） -->
+      <div class="card" style="margin-top:14px">
+        <div class="card__hd"><span class="micro">§3 スキンティア・トークン — 第3系統（金属質ニュートラル）</span><span class="faint" style="font-size:10px">style-guide にも追記済み</span></div>
+        <div class="card__bd">
+          <div class="tokrow">
+            <span class="tokchip" style="color:var(--tier-std);background:var(--tier-std-bg);border-color:var(--tier-std-bd)">STD</span>
+            <span class="spec"><b>スタンダード · 320ルーン</b> — マット鋼。静的リカラー＋フレーム。<code style="color:var(--tier-std)">#9DA9B5</code></span>
+            <span class="faint" style="font-size:10px">badge のみ・演出なし</span>
+          </div>
+          <div class="tokrow">
+            <span class="tokchip" style="color:var(--tier-dx);background:var(--tier-dx-bg);border-color:var(--tier-dx-bd)">DX</span>
+            <span class="spec"><b>デラックス · 880ルーン</b> — 磨き鋼。待機モーション付与。<code style="color:var(--tier-dx)">#C7D3DE</code></span>
+            <span class="faint" style="font-size:10px">カードで薄いスペキュラ可</span>
+          </div>
+          <div class="tokrow">
+            <span class="tokchip" style="color:var(--tier-lg);background:var(--tier-lg-bg);border-color:var(--tier-lg-bd)">LG</span>
+            <span class="spec"><b>レジェンダリー · 1,800ルーン</b> — 鏡面＋玉虫リング（conic虹の淡い縁取り・不透明度50%上限）。登場演出付き。<code style="color:var(--tier-lg)">#E2E9F1</code></span>
+            <span class="faint" style="font-size:10px">虹縁はLG専用・多用禁止</span>
+          </div>
+          <p class="faint" style="font-size:10.5px;margin:10px 0 0;line-height:1.7">衝突回避ルール: 名声＝緑CRT系／課金通貨＝琥珀／レアリティ＝N灰・R青・SR紫・SSR金。ティアは<b style="color:var(--text)">彩度を持たない金属ニュートラル</b>のみを使い、これらのどれとも同系色にならない。ティアバッジは常に価格またはCOSMETICラベルと併記。</p>
+        </div>
+      </div>
+
+      <!-- 3ライン比較 -->
+      <div class="linegrid">
+        <div class="linetile">
+          <div class="hd">
+            <h2>『Kernel Panic線』</h2>
+            <div class="fl">// panic: unrecoverable beauty at 0xDEADBEEF</div>
+          </div>
+          <div class="art art--kp"><span class="e">🐉</span><span class="cap">DRAGON — 「セグフォルトの王」LG</span></div>
+          <div class="bd">
+            <div class="swatches">
+              <div class="sw" style="background:#0b0f0d"></div>
+              <div class="sw" style="background:#7ee787"></div>
+              <div class="sw" style="background:#ff7b72"></div>
+              <div class="sw" style="background:#79c0ff"></div>
+              <div class="sw" style="background:#1f2a26"></div>
+            </div>
+            <div class="spec" style="margin-top:10px">
+              <b>パレット:</b> CRT緑＋色収差の赤/青<br/>
+              <b>フレーム:</b> 走査線＋グリッチスライス<br/>
+              <b>FX:</b> ±2pxの色ズレ・ノイズ走査<br/>
+              <b>展開:</b> <span class="tchip tchip--std">STD</span> <span class="tchip tchip--dx">DX</span> <span class="tchip tchip--lg">LG</span>
+            </div>
+            <div class="naming"><b style="color:var(--text)">命名文法:</b> システム障害の擬人化 —「セグフォルトの王」「コアダンプ」「ビットフリップ」。フレーバーは必ず <code>// panic:</code> 形式のコメント1行。</div>
+          </div>
+        </div>
+
+        <div class="linetile">
+          <div class="hd">
+            <h2>『Moonlit Compile線』</h2>
+            <div class="fl">// built at 03:12 JST — zero warnings</div>
+          </div>
+          <div class="art art--ml"><span class="e">🐉</span><span class="cap">DRAGON — 「月下の帰納」DX</span></div>
+          <div class="bd">
+            <div class="swatches">
+              <div class="sw" style="background:#0d1420"></div>
+              <div class="sw" style="background:#9aa8c4"></div>
+              <div class="sw" style="background:#e8ecf4"></div>
+              <div class="sw" style="background:#3d4a66"></div>
+              <div class="sw" style="background:#0b0f16"></div>
+            </div>
+            <div class="spec" style="margin-top:10px">
+              <b>パレット:</b> 藍夜＋月光の寒色白<br/>
+              <b>フレーム:</b> 細线＋月相アイコン<br/>
+              <b>FX:</b> 寒色トーンシフト・淡い月暈<br/>
+              <b>展開:</b> <span class="tchip tchip--std">STD</span> <span class="tchip tchip--dx">DX</span> <span class="tchip tchip--lg">LG</span>
+            </div>
+            <div class="naming"><b style="color:var(--text)">命名文法:</b> 夜間ビルドの静謐 —「暁のリビルド」「ムーンリンカ」「ナイトリービルド」。フレーバーは <code>// built at HH:MM</code> 形式。</div>
+          </div>
+        </div>
+
+        <div class="linetile">
+          <div class="hd">
+            <h2>『Rust Belt線』</h2>
+            <div class="fl">// unsafe &#123; beauty &#125; — 錆は履歴</div>
+          </div>
+          <div class="art art--rb"><span class="e">🐉</span><span class="cap">DRAGON — 「酸化の竜」STD</span></div>
+          <div class="bd">
+            <div class="swatches">
+              <div class="sw" style="background:#160f0b"></div>
+              <div class="sw" style="background:#bf6a3a"></div>
+              <div class="sw" style="background:#96542e"></div>
+              <div class="sw" style="background:#e8d5bd"></div>
+              <div class="sw" style="background:#0f0b08"></div>
+            </div>
+            <div class="spec" style="margin-top:10px">
+              <b>パレット:</b> 酸化鉄＋古い真鍮<br/>
+              <b>フレーム:</b> リベット付き鋼板<br/>
+              <b>FX:</b> セピア質感・錆の斑点<br/>
+              <b>展開:</b> <span class="tchip tchip--std">STD</span> <span class="tchip tchip--dx">DX</span> <span class="tchip tchip--lg">LG</span>
+            </div>
+            <div class="naming"><b style="color:var(--text)">命名文法:</b> Rust用語×経年美 —「ボロウチェッカ」「ライフタイム境界」「アンセーフの海」。フレーバーは <code>// unsafe &#123; &#125;</code> 形式。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="card__hd"><span class="micro">選別の観点（経営者往復用）</span></div>
+        <div class="card__bd spec" style="font-size:12px">
+          1. <b>視認性</b> — 小サムネ（Monster Boxカード内）でもライン判別できるか<br/>
+          2. <b>名声分離</b> — 緑CRT・琥珀・レアリティ4色と混同しないか（Kernel Panicは緑を使うが走査線テクスチャで区別 — 判断要）<br/>
+          3. <b>Console RPG整合</b> — ターミナル世界観の内側の言葉で命名できているか<br/>
+          4. <b>拡張性</b> — 同文法で20体すべてに展開可能か・季節/イベント亜種を作れるか
+        </div>
+      </div>
+
+      <div class="legal-footer">
+        <div class="note">本ページは設計ドキュメント（販売画面ではありません）。数値の正: STD 320 / DX 880 / LG 1,800ルーン。</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

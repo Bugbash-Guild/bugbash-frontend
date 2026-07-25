@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>~/forge — 累進工房 / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  .layout { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); gap: 16px; align-items: start; }
+  @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+  .tabs { display: flex; gap: 6px; }
+  .tabs .btn { padding: 8px 18px; font-size: 12px; }
+  .tabs .btn.on { border-color: var(--rune-border); color: var(--rune); background: var(--rune-bg); box-shadow: none; }
+  /* 対象カード */
+  .target { display: flex; gap: 16px; align-items: center; padding: 18px; }
+  .target .art { width: 92px; height: 92px; flex-shrink: 0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 52px;
+    background: var(--bg-elev-2); border: 1px solid var(--grade-2); box-shadow: inset 0 0 16px rgba(201,162,74,.14); }
+  /* グレードプレビュー帯 */
+  .ramp { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
+  .ramp .grade { aspect-ratio: 1/1.05; }
+  .ramp .grade.cur::after { content: 'NOW'; position: absolute; top: 6px; left: 6px; font-size: 8px; font-weight: 800; letter-spacing: .1em; color: var(--accent); animation: none; background: none; transform: none; }
+  .ramp .grade.lock { opacity: .45; }
+  /* レベル台帳 */
+  .ledger td.cost { text-align: right; font-variant-numeric: tabular-nums; color: var(--rune); }
+  .ledger td.cum { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-faint); }
+  .ledger tr.cur td { background: rgba(240,180,41,.06); color: var(--text); }
+  .ledger tr.done td { color: var(--text-faint); }
+  /* 累計バー */
+  .cumbar { height: 8px; border-radius: 4px; background: var(--bg-elev-2); overflow: hidden; border: 1px solid var(--line); }
+  .cumbar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--rune-dim), var(--rune)); }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · v0.1.0</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="monsters.html"><span class="g">◆</span> ~/monsters</a>
+      <a href="items.html"><span class="g">▣</span> ~/items</a>
+      <a href="summon.html"><span class="g">≡</span> ~/summon</a>
+      <a href="summon-limited.html" class="is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Billing</div>
+    <nav class="nav">
+      <a href="d1-shop-runes.html" class="is-paid"><span class="g">▤</span> ~/shop/runes</a>
+      <a href="d1-pass.html" class="is-paid"><span class="g">✦</span> ~/pass</a>
+      <a class="active is-paid"><span class="g">⚒</span> ~/forge</a>
+      <a href="badges.html"><span class="g">◉</span> ~/badges</a>
+      <a href="mypage-billing.html"><span class="g">⛭</span> ~/mypage/billing</a>
+    </nav>
+    <div class="sidebar__label">Design docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/forge</span><span class="s">$</span> ./forge --track=monster<span class="caret"></span></div>
+      <div class="wallet">
+        <span class="wallet__bal wallet__bal--coin"><span class="ic">🪙</span> 1,240</span>
+        <span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> 340</span>
+        <a class="btn wallet__add btn--rune" href="d1-shop-runes.html" title="ルーンを購入">+</a>
+      </div>
+    </div>
+
+    <div class="page">
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 14px;margin-bottom:14px;border:1px dashed var(--line-strong);border-radius:var(--radius-btn);font-size:11px;color:var(--text-faint)">
+        <span style="font-weight:800;letter-spacing:.1em;color:var(--text-dim)">⚠ v4 PARK</span>
+        <span>本画面は「スキンマスタリー（St1〜10・累計約6,000ルーン/着）」へ改訂予定。画面構造は流用・コスト表はパイロット後確定。現表示は旧仕様の参考版です（v4差分書 §2.3/§4）</span>
+        <a href="shop-skins.html" style="margin-left:auto;color:var(--blue);text-decoration:none;white-space:nowrap">スキンカタログ →</a>
+      </div>
+      <div class="row between" style="align-items:flex-end;gap:16px">
+        <div>
+          <h1 class="h1">累進工房 <span class="chip chip--cosmetic" style="vertical-align:middle">COSMETIC</span></h1>
+          <p class="sub">ルーンで<b>見た目のグレード</b>を進行させます。ステータス・報酬・順位には一切影響しません。</p>
+        </div>
+        <div class="tabs">
+          <button class="btn on">MONSTER</button>
+          <button class="btn">BADGE</button>
+        </div>
+      </div>
+
+      <div class="layout" style="margin-top:16px">
+        <!-- 左: 対象 + グレードプレビュー + 台帳 -->
+        <div class="stack gap12">
+          <div class="card">
+            <div class="card__hd"><span class="micro">TARGET — MONSTER_INSTANCE</span><span class="chip chip--rune" style="font-size:9px">Lv.7 · G2</span></div>
+            <div class="target">
+              <div class="art">🐉</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:16px;font-weight:700">ドラゴン <span class="rar rar--ssr">SSR</span></div>
+                <div class="dim" style="font-size:11px;margin-top:2px">#19 · FAVORITE · 図鑑から対象変更</div>
+                <div style="margin-top:10px">
+                  <div class="row between" style="font-size:10.5px;color:var(--text-faint);margin-bottom:5px"><span>ここまでの強化に使用</span><b class="rune-c tnum">1,378 💎</b></div>
+                  <div class="cumbar"><i style="width:8%"></i></div>
+                  <div class="faint" style="font-size:10px;margin-top:5px">Lv20 到達の総コスト ≒ <span class="tnum">17,240 💎</span>（累計を常時表示 — 1段ずつ隠して課金させない）</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__hd"><span class="micro">GRADE PREVIEW — G1→G5（見た目レイヤー4系統）</span></div>
+            <div class="card__bd">
+              <div class="ramp">
+                <div class="grade grade--g1 lock"><div class="grade__emoji">🐉</div><div class="grade__lbl">G1 · Lv1–4</div></div>
+                <div class="grade grade--g2 cur"><div class="grade__emoji">🐉</div><div class="grade__lbl">G2 · Lv5–9</div></div>
+                <div class="grade grade--g3 lock"><div class="grade__emoji">🐉</div><div class="grade__lbl">G3 · Lv10–14</div></div>
+                <div class="grade grade--g4 lock"><div class="grade__emoji">🐉</div><div class="grade__lbl">G4 · Lv15–19</div></div>
+                <div class="grade grade--g5 lock"><div class="grade__emoji">🐉</div><div class="grade__lbl">G5 · Lv20</div></div>
+              </div>
+              <div class="faint" style="font-size:10px;margin-top:10px">パレット / フレーム / エフェクト / ショーケース の4レイヤーが段階的に豪華に（スタイルガイド §03）。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右: 強化パネル + 台帳 -->
+        <div class="stack gap12">
+          <div class="card">
+            <div class="card__hd"><span class="micro">UPGRADE — Lv.7 → Lv.8</span><span class="faint" style="font-size:10px">expectedFromRank: 7</span></div>
+            <div class="card__bd">
+              <div class="row between" style="font-size:13px"><span class="dim">コスト</span><b class="runeval tnum" style="font-size:22px">512 💎</b></div>
+              <div class="row between" style="font-size:11px;color:var(--text-faint);margin-top:4px"><span>保有ルーン</span><span class="tnum">340 💎 — <span style="color:var(--pink)">172 不足</span></span></div>
+              <button class="btn btn--rune btn--block" style="margin-top:14px" onclick="openUp()">強化する — 512 💎</button>
+              <div class="faint" style="font-size:10px;margin-top:10px;line-height:1.7">この強化で変わるのは<b style="color:var(--text)">見た目だけ</b>です。ステータス・報酬・順位には影響しません（確認モーダルにも毎回固定文で表示）。</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__hd"><span class="micro">forge level-defs — MONSTER track</span><span class="faint" style="font-size:10px">値は API 由来</span></div>
+            <div class="card__bd" style="padding:0">
+              <table class="log ledger">
+                <tr><th>Lv</th><th style="text-align:right">コスト</th><th style="text-align:right">累計</th><th>グレード</th></tr>
+                <tr class="done"><td>1</td><td class="cost">64</td><td class="cum">64</td><td>G1</td></tr>
+                <tr class="done"><td>5</td><td class="cost">224</td><td class="cum">660</td><td>G2</td></tr>
+                <tr class="cur"><td>7 → 8</td><td class="cost">512</td><td class="cum">1,890</td><td>G2</td></tr>
+                <tr><td>10</td><td class="cost">742</td><td class="cum">3,804</td><td>G3 解放</td></tr>
+                <tr><td>15</td><td class="cost">1,306</td><td class="cum">9,027</td><td>G4 解放</td></tr>
+                <tr><td>20</td><td class="cost">1,960</td><td class="cum">17,240</td><td>G5 · 最終</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="legal-footer">
+        <div class="row"><a href="d1-components.html#tokusho">特定商取引法に基づく表示</a><a href="d1-components.html#prepaid">資金決済法（前払式支払手段）</a></div>
+        <div class="note">コストは GET /api/forge/level-defs を唯一の真実として表示（Lv1=64 … Lv20=1,960・ハードコード禁止）。楽観ロック（expectedFromRank）＋冪等キーで二重強化を防止。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 強化確認モーダル -->
+<div class="modal-scrim" id="upModal" style="display:none">
+  <div class="modal">
+    <div class="modal__hd"><span class="micro" style="color:var(--rune)">▸ 強化の確認</span><button class="x" onclick="closeUp()">✕</button></div>
+    <div class="modal__bd">
+      <div class="row between" style="padding:12px 14px;background:var(--bg-elev-2);border:1px solid var(--line);border-radius:var(--radius-btn)">
+        <div class="row gap8"><span style="font-size:26px">🐉</span><div><div style="font-size:13px;font-weight:600">ドラゴン</div><div class="faint" style="font-size:10px">Lv.7 → Lv.8（G2 のまま・G3 は Lv.10）</div></div></div>
+        <b class="runeval tnum" style="font-size:18px">512 💎</b>
+      </div>
+      <div style="margin-top:14px;padding:10px 12px;background:var(--rune-bg);border:1px solid var(--rune-border);border-radius:var(--radius-btn);font-size:12px;color:var(--rune);line-height:1.7">
+        この強化で変わるのは<b>見た目だけ</b>です。ステータス・報酬・順位には影響しません。
+      </div>
+      <p class="faint" style="font-size:10.5px;line-height:1.7;margin:12px 0 0">ここまでの累計 1,378 💎 ＋ 今回 512 💎 = 1,890 💎。Lv20 まで進めた場合の総額は ≒17,240 💎（≒¥43,100 相当）です。</p>
+    </div>
+    <div class="modal__ft">
+      <button class="btn btn--ghost" onclick="closeUp()">やめる</button>
+      <button class="btn btn--rune" disabled title="モック: 残高不足">強化を確定する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openUp(){ document.getElementById('upModal').style.display='flex'; }
+  function closeUp(){ document.getElementById('upModal').style.display='none'; }
+  document.querySelectorAll('.modal-scrim').forEach(function(s){ s.addEventListener('click', function(e){ if(e.target===s) s.style.display='none'; }); });
+</script>
+</body>
+</html>

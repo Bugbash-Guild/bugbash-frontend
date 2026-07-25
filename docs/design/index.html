@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>BugBash · 課金・経済圏デザイン (D-1) — index</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  .idx { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; max-width:820px; }
+  .idx a { text-decoration:none; color:inherit; }
+  .idx .card { transition:transform .12s, border-color .15s; }
+  .idx a:hover .card { transform:translateY(-2px); border-color:var(--rune-border); }
+  .idx .tag { font-size:11px; color:var(--rune); }
+  .idx h3 { margin:6px 0 4px; font-size:15px; }
+  .idx p { margin:0; font-size:12px; color:var(--text-dim); line-height:1.6; }
+</style>
+</head>
+<body class="crt">
+<div class="page" style="margin:0 auto;padding-top:40px">
+  <div class="row gap8" style="align-items:center"><h1 class="h1">課金・経済圏デザイン</h1><span class="chip chip--rune">D-1</span></div>
+  <p class="sub">Direction A「Console RPG」を課金圏へ拡張。構造は UX設計書から変更なし・世界観は既存4画面が正。数値はダミー（桁は正典準拠）。</p>
+
+  <div class="idx" style="margin-top:20px">
+    <a href="home.html"><div class="card"><div class="card__bd"><span class="tag" style="color:var(--accent)">⌂ ~/home</span><h3>既存画面 · Home</h3><p>勇者ホロカード + ステータス盤。WalletBadge 常設（D-5先出し）</p></div></div></a>
+    <a href="monsters.html"><div class="card"><div class="card__bd"><span class="tag" style="color:var(--accent)">◆ ~/monsters</span><h3>既存画面 · Monster Dex</h3><p>TCGカード図鑑・レアリティ別・FAVORITE選択</p></div></div></a>
+    <a href="items.html"><div class="card"><div class="card__bd"><span class="tag" style="color:var(--accent)">▣ ~/items</span><h3>既存画面 · Inventory</h3><p>Hotbar/Storage グリッド。ルーン建てアイテムの区別表示（D-5先出し）</p></div></div></a>
+    <a href="summon.html"><div class="card"><div class="card__bd"><span class="tag" style="color:var(--accent)">≡ ~/summon</span><h3>通常召喚（コイン）</h3><p>召喚ゲート＋実行ログ演出・PityMeter(80/70)・確率開示・課金導線なし</p></div></div></a>
+    <a href="summon-limited.html"><div class="card"><div class="card__bd"><span class="tag">☄ /summon/limited</span><h3>限定召喚（ルーン）D-2</h3><p>限定バナー・単発/10連・SSR確定演出・PityMeter(60/50)・復刻表示・残高不足導線</p></div></div></a>
+    <a href="profile.html"><div class="card"><div class="card__bd"><span class="tag">@ /@handle</span><h3>公開プロフィール（トロフィールーム）</h3><p>Apex殿堂カード（粒子=実PR数・ホバーチルト）・ショーケース4体・バッジ壁・鋳造棚 — 名声主/コスメ従の誇示先</p></div></div></a>
+    <a href="shop-skins.html"><div class="card"><div class="card__bd"><span class="tag">◨ /shop/skins</span><h3>スキンカタログ v4</h3><p>ライン単位グルーピング・変身前→後サムネ・STD/DX/LG・demand-first・復刻カレンダー（煋りなし）</p></div></div></a>
+    <a href="skin-detail.html"><div class="card"><div class="card__bd"><span class="tag">◧ skin-detail</span><h3>スキン詳細 v4</h3><p>購入前フルプレビュー（前/後トグル・LG登場演出）・所有状態・マスタリー導線</p></div></div></a>
+    <a href="mint-plate.html"><div class="card"><div class="card__bd"><span class="tag">🔨 mint</span><h3>記念鋳造 v4</h3><p>自動刻印プレート・リカラー4種・200ルーン・無期限明記（急かさない）</p></div></div></a>
+    <a href="skin-lines.html"><div class="card"><div class="card__bd"><span class="tag">◫ design doc</span><h3>スキンライン様式見本 v4</h3><p>ティア第3系統トークン・3ライン比較・命名文法・選別観点（パイロット用）</p></div></div></a>
+    <a href="forge.html"><div class="card"><div class="card__bd"><span class="tag">⚒ /forge</span><h3>累進工房 D-3 <span style="font-size:10px;color:var(--text-faint)">⚠ v4 PARK</span></h3><p>スキンマスタリーへ改訂予定（構造流用・パイロット後）。旧仕様参考版</p></div></div></a>
+    <a href="badges.html"><div class="card"><div class="card__bd"><span class="tag">◉ /badges</span><h3>バッジ D-3</h3><p>実績ゾーン（名声・緑・購入CTA無し）と工房ゾーン（コスメ・琥珀）の上下分離・公開設定</p></div></div></a>
+    <a href="mypage-billing.html"><div class="card"><div class="card__bd"><span class="tag">⛭ /mypage/billing</span><h3>マイページ課金 D-4</h3><p>残高（有償/無償）・サブスク管理・トランザクションログ・退会（失効同意）</p></div></div></a>
+    <a href="legal-tokushoho.html"><div class="card"><div class="card__bd"><span class="tag">§ /legal/*</span><h3>法定ページ D-4</h3><p>特商法・前払式支払手段（man page 様式・MDX差し替え前提）</p></div></div></a>
+    <a href="d1-style-guide.html"><div class="card"><div class="card__bd"><span class="tag">◈ STYLE GUIDE</span><h3>スタイルガイド追補</h3><p>名声(緑)/課金(琥珀)の系統分離・グレード進行 G1→G5・共通部品仕様</p></div></div></a>
+    <a href="d1-shop-runes.html"><div class="card"><div class="card__bd"><span class="tag">▤ /shop/runes</span><h3>ルーン購入</h3><p>SKU6種＋スターター・税込/単価表示・年齢確認・購入確認モーダル</p></div></div></a>
+    <a href="d1-billing-return.html"><div class="card"><div class="card__bd"><span class="tag">↺ /billing/return</span><h3>付与待ち</h3><p>ビルド実行メタファー・ポーリング・付与済みと断言しない3状態</p></div></div></a>
+    <a href="d1-pass.html"><div class="card"><div class="card__bd"><span class="tag">✦ /pass</span><h3>冒険者パス</h3><p>特典4点・¥780/月・加入確認・解約導線（隠さない）</p></div></div></a>
+    <a href="d1-components.html"><div class="card"><div class="card__bd"><span class="tag">◱ SHARED</span><h3>共有部品 + 法定様式</h3><p>WalletBadge・PendingGrantBanner・チップ・LegalFooter・man page風法定ページ</p></div></div></a>
+  </div>
+
+  <div class="legal-footer">
+    <div class="note">発注書: bugbash-backend <code style="color:var(--rune)">docs/superpowers/specs/2026-07-05-design-work-order.md</code> / 構造: <code style="color:var(--rune)">2026-07-05-frontend-ux-billing-design.md</code></div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>~/summon/limited — 限定召喚（ルーン） / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  .layout { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); gap: 16px; align-items: start; }
+  @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+  /* 限定バナー */
+  .banner { position: relative; overflow: hidden; border-radius: var(--radius-card); border: 1px solid var(--rune-border);
+    background:
+      radial-gradient(560px 300px at 78% 20%, rgba(240,180,41,0.16), transparent 65%),
+      linear-gradient(180deg, rgba(220,239,229,0.02), transparent 24%),
+      linear-gradient(115deg, #161309 0%, var(--bg-elev) 58%);
+    box-shadow: var(--bevel), inset 0 0 40px rgba(240,180,41,0.05); }
+  .banner__bd { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 18px; padding: 24px 28px; align-items: center; }
+  .banner .feat { font-size: 96px; line-height: 1; filter: drop-shadow(0 0 26px rgba(240,180,41,0.45)); }
+  .banner h2 { margin: 6px 0 4px; font-size: 24px; letter-spacing: .01em; }
+  .banner .period { font-size: 11px; color: var(--text-dim); }
+  .pullbtns { display: flex; gap: 10px; margin-top: 16px; }
+  .pullbtns .btn { padding: 12px 20px; font-size: 14px; }
+  .result-grid { display: grid; grid-template-columns: repeat(5, 92px); gap: 8px; justify-content: center; }
+  /* SSR確定フラッシュ */
+  .flash { position: fixed; inset: 0; z-index: 99; pointer-events: none; background: radial-gradient(circle, rgba(240,180,41,0.5), transparent 70%); animation: flashout .8s ease-out forwards; }
+  @keyframes flashout { from { opacity: 1; } to { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .flash { display: none; } }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · v0.1.0</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="monsters.html"><span class="g">◆</span> ~/monsters</a>
+      <a href="items.html"><span class="g">▣</span> ~/items</a>
+      <a href="summon.html"><span class="g">≡</span> ~/summon</a>
+      <a class="active is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Billing</div>
+    <nav class="nav">
+      <a href="d1-shop-runes.html" class="is-paid"><span class="g">▤</span> ~/shop/runes</a>
+      <a href="shop-skins.html" class="is-paid"><span class="g">◨</span> ~/shop/skins</a>
+      <a href="d1-pass.html" class="is-paid"><span class="g">✦</span> ~/pass</a>
+      <a href="forge.html" class="is-paid"><span class="g">⚒</span> ~/forge</a>
+      <a href="badges.html"><span class="g">◉</span> ~/badges</a>
+      <a href="mypage-billing.html"><span class="g">⛭</span> ~/mypage/billing</a>
+    </nav>
+    <div class="sidebar__label">Design docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/summon/limited</span><span class="s">$</span> ./summon --banner=leviathan --currency=rune<span class="caret"></span></div>
+      <div class="wallet">
+        <span class="wallet__bal wallet__bal--coin"><span class="ic">🪙</span> 1,240</span>
+        <span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> <span id="runebal">340</span></span>
+        <a class="btn wallet__add btn--rune" href="d1-shop-runes.html" title="ルーンを購入">+</a>
+      </div>
+    </div>
+
+    <div class="page">
+      <div class="row between" style="align-items:flex-end;gap:16px">
+        <div>
+          <h1 class="h1">限定召喚 <span class="chip chip--rune" style="vertical-align:middle">💎 RUNE</span></h1>
+          <p class="sub">ルーン建ての限定バナー。<a href="#" onclick="openDisc();return false" style="color:var(--blue)">提供割合について ▸</a>　通常召喚（コイン建て）は <a href="summon.html" style="color:var(--blue)">~/summon</a> へ。</p>
+        </div>
+      </div>
+
+      <!-- バナー -->
+      <div class="banner" style="margin-top:16px">
+        <div class="banner__bd">
+          <div style="min-width:0">
+            <div class="row gap8"><span class="chip chip--rune">LIMITED BANNER</span><span class="chip" style="color:var(--text-dim);border-color:var(--line)">⟳ シーズン復刻予定あり</span></div>
+            <h2 class="glow-r">深淵の主 リヴァイアサン</h2>
+            <div class="period">開催期間 2026-07-01 〜 2026-07-31（JST）・期間はテキスト表示のみ／カウントダウン演出は行いません</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-top:10px">目玉 <span class="rar rar--ssr">SSR</span> <b style="color:var(--text)">リヴァイアサン</b> の提供割合 UP。SSR排出時 50% でピックアップ対象。</div>
+            <div class="pullbtns">
+              <button class="btn btn--rune" id="b1" onclick="pull(1)">単発 — 30 💎</button>
+              <button class="btn btn--rune" id="b10" onclick="pull(10)">10連 — 300 💎</button>
+              <button class="btn btn--ghost" onclick="openDisc()">提供割合 ▸</button>
+            </div>
+          </div>
+          <div class="feat">🐊</div>
+        </div>
+        <div style="border-top:1px solid rgba(240,180,41,0.2);padding:12px 28px">
+          <div class="runlog" id="runlog"><div class="ln"><span class="k">›</span><span class="dim">召喚待機中。10連は R以上1枠保証（詳細は提供割合を参照）…</span></div></div>
+        </div>
+      </div>
+
+      <div class="layout" style="margin-top:16px">
+        <!-- pity -->
+        <div class="card pity">
+          <div class="head"><span class="micro">PITY — SSR確定カウンタ（本バナー）</span><span class="chip chip--pass" style="font-size:9px">パス加入中: 天井 60 → 50</span></div>
+          <div class="n"><span class="rune-c" id="pityn">42</span><span class="dim" style="font-size:12px;font-weight:400"> / <span id="pitycap">50</span> 回</span></div>
+          <div class="cellbar cellbar--rune" id="pitybar" style="margin-top:8px"></div>
+          <div class="note">あと <b style="color:var(--text)" id="pityleft">8</b> 回で SSR確定。天井値は <span class="rune-c">GET /api/summon/limited/pity</span> 由来（パス加入で自動的に 50 表示）。進捗は事実のみ・通知や点滅による煽りは行いません。</div>
+        </div>
+
+        <!-- 最近の結果 -->
+        <div class="card">
+          <div class="card__hd"><span class="micro">limited --history | tail -5</span></div>
+          <div id="hist"></div>
+        </div>
+      </div>
+
+      <div class="legal-footer">
+        <div class="row"><a href="#" onclick="openDisc();return false">提供割合の開示</a><a href="d1-components.html#tokusho">特定商取引法に基づく表示</a><a href="d1-components.html#prepaid">資金決済法（前払式支払手段）</a></div>
+        <div class="note">価格・確率・天井はすべて API から取得して表示（ハードコード禁止）。本バナーは復刻予定があり「二度と手に入らない」ものではありません。ルーン残高が不足する場合のみ /shop/runes への導線を表示します。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 結果オーバーレイ -->
+<div class="modal-scrim" id="resultOv" style="display:none">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:18px;max-width:640px" onclick="event.stopPropagation()">
+    <div class="micro" style="letter-spacing:.2em" id="rtitle">LIMITED SUMMON RESULT</div>
+    <div id="rbody"></div>
+    <div class="row gap8">
+      <button class="btn btn--ghost" onclick="closeResult()">閉じる</button>
+      <button class="btn btn--rune" onclick="closeResult();pull(1)">もう一度 — 30 💎</button>
+    </div>
+  </div>
+</div>
+
+<!-- 残高不足モーダル（許可ゾーンにつき購入導線あり） -->
+<div class="modal-scrim" id="poorModal" style="display:none">
+  <div class="modal">
+    <div class="modal__hd"><span class="micro" style="color:var(--rune)">▸ ルーンが足りません</span><button class="x" onclick="closePoor()">✕</button></div>
+    <div class="modal__bd">
+      <p style="font-size:13px;color:var(--text-dim);line-height:1.8;margin:0">必要 <b class="rune-c tnum" id="needn">30</b> 💎 / 保有 <b class="tnum" style="color:var(--text)" id="haven">—</b> 💎。<br/>ルーンはショップで購入できます（見た目/時短にのみ使えます）。</p>
+    </div>
+    <div class="modal__ft">
+      <button class="btn btn--ghost" onclick="closePoor()">やめる</button>
+      <a class="btn btn--rune" href="d1-shop-runes.html">ルーンを購入する →</a>
+    </div>
+  </div>
+</div>
+
+<!-- 確率開示モーダル -->
+<div class="modal-scrim" id="discModal" style="display:none">
+  <div class="modal modal--wide">
+    <div class="modal__hd"><span class="micro" style="color:var(--blue)">▸ 提供割合について（限定召喚）</span><button class="x" onclick="closeDisc()">✕</button></div>
+    <div class="modal__bd">
+      <table class="log">
+        <tr><th>項目</th><th>値</th><th>備考</th></tr>
+        <tr><td><span class="rar rar--ssr">SSR</span> 提供割合</td><td class="tnum">3.0%</td><td>SSR排出時、50% で目玉（リヴァイアサン）</td></tr>
+        <tr><td><span class="rar rar--sr">SR</span> / <span class="rar rar--r">R</span> / <span class="rar rar--n">N</span></td><td class="tnum">12.0% / 35.0% / 50.0%</td><td>10連で R以上 1枠保証（guaranteeType）</td></tr>
+        <tr><td>singlePullCost / tenPullCost</td><td class="tnum">30 💎 / 300 💎</td><td>ルーン建て（有償通貨）</td></tr>
+        <tr><td>hardPityPull</td><td class="tnum">60回</td><td>SSR確定</td></tr>
+        <tr><td>adventurerPassHardPityPull</td><td class="tnum">50回</td><td>冒険者パス加入中の短縮天井</td></tr>
+        <tr><td>stockPolicy</td><td>SEASONAL_RERUN</td><td>⟳ 本バナーはシーズン復刻予定です</td></tr>
+      </table>
+      <p style="font-size:11px;color:var(--text-faint);line-height:1.8;margin:12px 0 0">本表は <code style="color:var(--rune);font-family:var(--mono)">GET /api/summon/limited/disclosure</code> のレスポンスをそのまま描画します（フロントに確率定数を持ちません）。数値はモック用ダミーです。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  var MON = [
+    {n:'スライム',e:'🟢',r:'n'},{n:'ゴブリン',e:'👹',r:'n'},{n:'コウモリ',e:'🦇',r:'n'},
+    {n:'スケルトン',e:'💀',r:'r'},{n:'オーク',e:'🧌',r:'r'},{n:'狼',e:'🐺',r:'r'},{n:'魔女',e:'🧙',r:'r'},
+    {n:'ゴーレム',e:'🗿',r:'sr'},{n:'ユニコーン',e:'🦄',r:'sr'},{n:'マーメイド',e:'🧜',r:'sr'},
+    {n:'リヴァイアサン',e:'🐊',r:'ssr',feat:true},{n:'グリフィン',e:'🦁',r:'ssr'},{n:'フェニックス',e:'🦅',r:'ssr'}
+  ];
+  var runes = 340, pity = 42, CAP = 50, running = false, skipNow = false;
+  var hist = [
+    {e:'🧜',n:'マーメイド',r:'sr',at:'昨日'},{e:'🐺',n:'狼',r:'r',at:'昨日'},
+    {e:'🟢',n:'スライム',r:'n',at:'2日前'},{e:'🧌',n:'オーク',r:'r',at:'3日前'},{e:'🦇',n:'コウモリ',r:'n',at:'4日前'}
+  ];
+  function fm(n){ return n.toLocaleString('ja-JP'); }
+  function roll(forceSSR){
+    var x = Math.random()*100;
+    var r = forceSSR ? 'ssr' : (x < 3 ? 'ssr' : x < 15 ? 'sr' : x < 50 ? 'r' : 'n');
+    if (r === 'ssr' && Math.random() < .5) return MON[10]; /* pickup 50% */
+    var pool = MON.filter(function(m){ return m.r===r; });
+    return pool[Math.floor(Math.random()*pool.length)];
+  }
+  function drawPity(){
+    document.getElementById('pityn').textContent = pity;
+    document.getElementById('pityleft').textContent = Math.max(CAP - pity, 0);
+    var bar = document.getElementById('pitybar'); bar.innerHTML = '';
+    for (var i=0;i<40;i++){ var c=document.createElement('i'); if(i < Math.round(pity/CAP*40)) c.className='on'; bar.appendChild(c); }
+  }
+  function drawHist(){
+    document.getElementById('hist').innerHTML = hist.slice(0,5).map(function(h){
+      return '<div class="actrow"><div class="ico">'+h.e+'</div><div style="flex:1;min-width:0">'
+        +'<div class="t1">'+h.n+' <span class="rar rar--'+h.r+'">'+h.r.toUpperCase()+'</span>'+(h.pick?' <span class="chip chip--rune" style="font-size:9px;padding:1px 6px">PICKUP</span>':'')+'</div>'
+        +'<div class="t3">'+h.at+'</div></div></div>';
+    }).join('');
+  }
+  function log(lines){
+    document.getElementById('runlog').innerHTML = lines.map(function(l){
+      return '<div class="ln"><span class="k '+(l.c||'')+'">'+(l.k||'›')+'</span><span class="'+(l.c||'dim')+'">'+l.t+'</span></div>';
+    }).join('');
+  }
+  function setBtns(d){ document.getElementById('b1').disabled=d; document.getElementById('b10').disabled=d; }
+
+  function pull(n){
+    if (running) return;
+    var cost = n === 1 ? 30 : 300;
+    if (runes < cost) { document.getElementById('needn').textContent = cost; document.getElementById('haven').textContent = runes; document.getElementById('poorModal').style.display='flex'; return; }
+    running = true; skipNow = false; setBtns(true);
+    runes -= cost; document.getElementById('runebal').textContent = fm(runes);
+    var skipBtn = '<div class="ln"><span class="k"> </span><span><button class="btn btn--ghost" style="padding:4px 12px;font-size:11px" onclick="skipNow=true">スキップ ⏭</button></span></div>';
+    var seq = [
+      [{t:'invoking limited banner… (×'+n+')'}],
+      [{t:'invoking limited banner… (×'+n+')'},{t:'consumed '+cost+' 💎 · balance '+fm(runes), c:'ok', k:'✓'}],
+      [{t:'invoking limited banner… (×'+n+')'},{t:'consumed '+cost+' 💎 · balance '+fm(runes), c:'ok', k:'✓'},{t:'channeling abyss seed 0x'+Math.random().toString(16).slice(2,10)+'…', c:'info'}],
+      [{t:'invoking limited banner… (×'+n+')'},{t:'consumed '+cost+' 💎 · balance '+fm(runes), c:'ok', k:'✓'},{t:'rarity check… resolving', c:'wait', k:'…'}]
+    ];
+    var i = 0;
+    (function step(){
+      if (skipNow || i >= seq.length) { finish(n); return; }
+      log(seq[i]); document.getElementById('runlog').innerHTML += skipBtn;
+      i++; setTimeout(step, 520);
+    })();
+  }
+
+  function finish(n){
+    var res = [], gotSSR = false;
+    for (var j=0;j<n;j++){
+      pity++;
+      var force = pity >= CAP;
+      var m = roll(force);
+      if (m.r === 'ssr') { pity = 0; gotSSR = true; }
+      res.push(m);
+    }
+    if (n === 10 && !res.some(function(m){return m.r!=='n'})) res[9] = MON[5];
+    drawPity();
+    res.slice(0,3).forEach(function(m){ hist.unshift({e:m.e,n:m.n,r:m.r,at:'たった今',pick:!!m.feat}); });
+    drawHist();
+    log([{t:'summon complete — '+n+' 体', c:'ok', k:'✓'},{t:'pity: '+pity+'/'+CAP+' · history updated'}]);
+    if (gotSSR) { var f = document.createElement('div'); f.className='flash'; document.body.appendChild(f); setTimeout(function(){ f.remove(); }, 850); }
+    var body = document.getElementById('rbody');
+    if (n === 1) {
+      var m = res[0];
+      body.innerHTML = '<div class="pullcard pullcard--'+m.r+'">'+(m.feat?'<span class="newtag" style="color:var(--rune)">★ PICKUP</span>':'')
+        +'<div class="art">'+m.e+'</div><div class="nm">'+m.n+'</div><span class="rar rar--'+m.r+'">'+m.r.toUpperCase()+'</span></div>';
+    } else {
+      body.innerHTML = '<div class="result-grid">'+res.map(function(m,ix){
+        return '<div class="minicard r-'+m.r+'" style="animation-delay:'+(ix*60)+'ms"><span class="e">'+m.e+'</span><span class="rar rar--'+m.r+'">'+m.r.toUpperCase()+'</span></div>';
+      }).join('')+'</div>';
+    }
+    document.getElementById('rtitle').textContent = gotSSR ? '★ SSR — LIMITED SUMMON RESULT' : 'LIMITED SUMMON RESULT' + (n>1?' ×10':'');
+    document.getElementById('resultOv').style.display = 'flex';
+    running = false; setBtns(false);
+  }
+  function closeResult(){ document.getElementById('resultOv').style.display='none'; }
+  function openDisc(){ document.getElementById('discModal').style.display='flex'; }
+  function closeDisc(){ document.getElementById('discModal').style.display='none'; }
+  function closePoor(){ document.getElementById('poorModal').style.display='none'; }
+  document.querySelectorAll('.modal-scrim').forEach(function(s){ s.addEventListener('click', function(e){ if(e.target===s) s.style.display='none'; }); });
+  drawPity(); drawHist();
+</script>
+</body>
+</html>

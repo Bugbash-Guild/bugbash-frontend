@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>D-1 · /billing/return — 反映待ち / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  .term { background:var(--bg-elev); border:1px solid var(--line); border-radius:var(--radius-card); overflow:hidden; }
+  .term__hd { padding:10px 14px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px; background:var(--bg-elev-2); }
+  .term__bd { padding:20px 22px; font-size:13px; line-height:2; }
+  .ln { display:flex; gap:10px; }
+  .ln .k { color:var(--text-faint); width:14px; flex-shrink:0; }
+  .ok { color:var(--accent); } .wait { color:var(--rune); } .info { color:var(--blue); }
+  .buildbar { display:flex; gap:2px; margin:10px 0 4px; }
+  .buildbar > i { flex:1; height:12px; border-radius:1px; background:var(--bg-elev-2); }
+  .buildbar > i.on { background:var(--rune); box-shadow:0 0 5px var(--rune-glow); }
+  .stateflip { margin-top:22px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .stateflip .card__bd { font-size:11px; color:var(--text-dim); line-height:1.7; }
+  .stateflip .micro { display:block; margin-bottom:6px; }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · v0.1.0</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="monsters.html"><span class="g">◆</span> ~/monsters</a>
+      <a href="items.html"><span class="g">▣</span> ~/items</a>
+      <a href="summon.html"><span class="g">≡</span> ~/summon</a>
+      <a href="summon-limited.html" class="is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Billing</div>
+    <nav class="nav">
+      <a href="d1-shop-runes.html" class="is-paid"><span class="g">▤</span> ~/shop/runes</a>
+      <a href="shop-skins.html" class="is-paid"><span class="g">◨</span> ~/shop/skins</a>
+      <a href="d1-pass.html" class="is-paid"><span class="g">✦</span> ~/pass</a>
+      <a class="active is-paid"><span class="g">↺</span> ~/billing/return</a>
+      <a href="forge.html" class="is-paid"><span class="g">⚒</span> ~/forge</a>
+      <a href="badges.html"><span class="g">◉</span> ~/badges</a>
+      <a href="mypage-billing.html"><span class="g">⛭</span> ~/mypage/billing</a>
+    </nav>
+    <div class="sidebar__label">Design docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/billing/return</span><span class="s">$</span> ./await-grant</div>
+      <div class="wallet"><span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> 340</span></div>
+    </div>
+    <div class="pending-banner"><span class="spin"></span> ルーンの反映待ちです…</div>
+
+    <div class="page" style="max-width:720px">
+      <h1 class="h1">決済を受け付けました</h1>
+      <p class="sub">ルーンの反映には少し時間がかかります（通常数秒〜1分）。この画面を閉じても、反映され次第 残高に反映されます。</p>
+
+      <!-- ビルド実行メタファーの進捗（付与済みと断言しない） -->
+      <div class="term" style="margin-top:18px">
+        <div class="term__hd">
+          <div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div>
+          <span class="sidebar__ver">grant · deploy log</span>
+          <span class="chip chip--rune dotpulse" style="margin-left:auto">反映待ち</span>
+        </div>
+        <div class="term__bd">
+          <div class="ln"><span class="k">$</span><span>checkout order <span class="info">#ord_8f3a…c21</span></span></div>
+          <div class="ln"><span class="k ok">✓</span><span class="ok">payment accepted @ KOMOJU</span></div>
+          <div class="ln"><span class="k ok">✓</span><span class="ok">order queued for grant</span></div>
+          <div class="ln"><span class="k wait">…</span><span class="wait">waiting for settlement webhook <span class="dim">(retry 25x max)</span></span></div>
+          <div class="buildbar" aria-label="反映プログレス">
+            <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="ln" style="margin-top:6px"><span class="k">›</span><span class="dim">経過 12s · 残高を監視中（2s→10s バックオフ）…</span></div>
+          <div class="ln"><span class="k">›</span><span class="faint">※「付与済み」は残高の増分を検知してから表示します（決済＝付与ではありません）。</span></div>
+        </div>
+      </div>
+
+      <div class="row gap12" style="margin-top:16px">
+        <button class="btn btn--ghost">← ショップに戻って待つ</button>
+        <button class="btn">再確認する</button>
+      </div>
+
+      <!-- 3つの終端状態を並記（実装リファレンス） -->
+      <div class="section-label"><span class="micro">この画面が遷移する3状態（実装リファレンス）</span><span class="rule"></span></div>
+      <div class="stateflip">
+        <div class="card"><div class="card__bd"><span class="micro" style="color:var(--accent)">✓ 反映完了</span>残高の増分を検知 →「<b class="rune-c">+340 ルーン 反映されました🎉</b>」に切替。元画面への導線を出す。ここで初めて付与を断言する。</div></div>
+        <div class="card"><div class="card__bd"><span class="micro" style="color:var(--rune)">⏱ 90秒超過</span>「反映に時間がかかっています。付与され次第 残高に反映されます」＋<a href="#" style="color:var(--blue)">/mypage/billing</a> 導線。<b>エラーにしない</b>（決済は成功の可能性大）。</div></div>
+        <div class="card"><div class="card__bd"><span class="micro" style="color:var(--pink)">△ 決済未完了の可能性</span>キャンセル/失敗で戻った場合。「決済が完了していない可能性があります。決済メールをご確認のうえ、必要なら再度お試しください」。<b>成否を断定しない</b>。</div></div>
+      </div>
+
+      <div class="legal-footer">
+        <div class="row"><a href="d1-components.html">特定商取引法に基づく表示</a><a href="d1-components.html">資金決済法（前払式支払手段）</a></div>
+        <div class="note">反映が数分たっても確認できない場合は <a href="#">/mypage/billing</a> またはお問い合わせへ。KOMOJU は Webhook を最大25回再送します。</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

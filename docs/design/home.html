@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>~/home — BugBash / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  .hero-row { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+  /* 勇者ホロカード */
+  .holo {
+    position: relative; min-height: 430px; border-radius: 10px; overflow: hidden;
+    background: linear-gradient(180deg, var(--bg-elev-2) 0%, var(--bg) 100%);
+    border: 1px solid var(--line-strong); cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4), inset 0 0 30px rgba(126,231,135,.07);
+    display: flex; flex-direction: column;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .holo:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(0,0,0,.5), 0 0 0 1px rgba(126,231,135,.4), inset 0 0 30px rgba(126,231,135,.14); }
+  .holo .pill { position: absolute; z-index: 2; font-size: 9px; font-weight: 700; letter-spacing: .12em; padding: 3px 8px; border-radius: 2px; background: rgba(11,15,13,.8); }
+  .holo .stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 44px 16px 20px; }
+  .holo .stage::before { content: ''; position: absolute; top: 42%; left: 50%; width: 210px; height: 210px; transform: translate(-50%,-50%); background: radial-gradient(circle, rgba(126,231,135,.16) 0%, transparent 70%); }
+  .holo .plate { padding: 10px 14px; border-top: 1px solid var(--line); background: rgba(11,15,13,.66); }
+  /* ASCII 勇者 */
+  .ascii { position: relative; font: 600 13px/1.2 var(--mono); color: var(--accent); white-space: pre; text-align: center; text-shadow: 0 0 8px rgba(126,231,135,.4); }
+  .ascii .fx { position: absolute; font-size: 22px; filter: drop-shadow(0 0 7px rgba(126,231,135,.55)); }
+  /* ステータス盤 */
+  .board { display: flex; flex-direction: column; }
+  .lv { font-size: 78px; font-weight: 700; line-height: 1; letter-spacing: -.04em; }
+  .lv em { color: var(--accent); font-style: normal; }
+  .statbox2 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+  .statbox2 .card__bd { padding: 12px 14px; }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · v0.1.0</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a class="active"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="monsters.html"><span class="g">◆</span> ~/monsters</a>
+      <a href="items.html"><span class="g">▣</span> ~/items</a>
+      <a href="summon.html"><span class="g">≡</span> ~/summon</a>
+      <a href="summon-limited.html" class="is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Billing</div>
+    <nav class="nav">
+      <a href="d1-shop-runes.html" class="is-paid"><span class="g">▤</span> ~/shop/runes</a>
+      <a href="shop-skins.html" class="is-paid"><span class="g">◨</span> ~/shop/skins</a>
+      <a href="d1-pass.html" class="is-paid"><span class="g">✦</span> ~/pass</a>
+      <a href="forge.html" class="is-paid"><span class="g">⚒</span> ~/forge</a>
+      <a href="badges.html"><span class="g">◉</span> ~/badges</a>
+      <a href="mypage-billing.html"><span class="g">⛭</span> ~/mypage/billing</a>
+    </nav>
+    <div class="sidebar__label">Design docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+    <div style="margin-top:auto;padding:12px;border-top:1px solid var(--line);background:var(--bg-elev-2)">
+      <div class="micro" style="margin-bottom:6px">HERO_STATUS</div>
+      <div class="row gap8"><div style="width:32px;height:32px;border-radius:4px;background:linear-gradient(135deg,var(--accent),var(--blue));display:flex;align-items:center;justify-content:center;color:#0b0f0d;font-weight:700">H</div><div style="flex:1"><div style="font-size:12px">haseryo0403</div><div style="font-size:10px;color:var(--text-dim)">Lv.50</div></div></div>
+      <div style="height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin-top:8px"><i style="display:block;height:100%;width:26.5%;background:linear-gradient(90deg,var(--accent),var(--blue))"></i></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/home</span><span class="s">$</span> hero --render --interactive<span class="caret"></span></div>
+      <div class="wallet">
+        <span class="wallet__bal wallet__bal--coin"><span class="ic">🪙</span> 1,240</span>
+        <span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> 340</span>
+        <a class="btn wallet__add btn--rune" href="d1-shop-runes.html" title="ルーンを購入">+</a>
+      </div>
+    </div>
+
+    <div class="page">
+      <div class="hero-row">
+        <!-- 勇者ホロカード -->
+        <div class="holo" title="クリックで装備 (プロトタイプでは省略)">
+          <span class="pill" style="top:10px;left:10px;color:var(--accent);border:1px solid rgba(126,231,135,.5)">Lv.50</span>
+          <span class="pill" style="top:10px;right:10px;color:var(--gold);border:1px solid rgba(227,179,65,.5)">HERO</span>
+          <div class="stage">
+            <div class="ascii">
+  ___
+ /###\
+ | • • |
+ \  ‿ /
+╱ ___ ╲
+║/#####\║
+║|## <span style="color:var(--gold)">◆</span> ##|║
+ |_____|
+  |  |
+  |  |
+  L__J
+<span style="color:var(--text-faint)">════════════</span><span class="fx" style="left:-18px;top:34%">⚔️</span><span class="fx" style="right:-16px;top:36%">🛡️</span><span class="fx" style="left:50%;top:-14px;transform:translateX(-50%);font-size:18px">🪖</span></div>
+          </div>
+          <div class="plate">
+            <div style="font-size:13px;font-weight:600">haseryo0403</div>
+            <div class="faint" style="font-size:10px;letter-spacing:.05em;margin-top:2px">click to equip →</div>
+          </div>
+        </div>
+
+        <!-- ステータス盤 -->
+        <div class="card board"><div class="card__bd" style="display:flex;flex-direction:column;flex:1;padding:22px 26px">
+          <div class="row between">
+            <span class="micro">HERO STATUS</span>
+            <span class="chip chip--accent chip--live">ACTIVE</span>
+          </div>
+          <div class="lv glow-g" style="margin-top:8px">Lv<em>.50</em></div>
+          <div class="dim" style="font-size:13px;margin-top:6px">12,873 XP earned <span class="faint">·</span> 128 PRs merged <span class="faint">·</span> 7d streak</div>
+
+          <div class="statrow" style="margin-top:18px;max-width:420px">
+            <div class="cell"><div class="k">ATK</div><div class="v" style="color:var(--gold)">248</div></div>
+            <div class="cell"><div class="k">DEF</div><div class="v" style="color:var(--blue)">164</div></div>
+            <div class="cell"><div class="k">LUCK</div><div class="v" style="color:var(--purple)">32</div></div>
+          </div>
+
+          <div style="margin-top:auto;padding-top:20px">
+            <div class="row between" style="font-size:12px;color:var(--text-dim);margin-bottom:8px">
+              <span><b style="color:var(--text)">272</b> / 1,028 XP</span><span style="color:var(--accent)" class="tnum">26.5%</span>
+            </div>
+            <div class="cellbar" id="xpbar"></div>
+            <div class="faint" style="font-size:11px;margin-top:8px">&gt; ETA 756 XP · ≈ 8 PRs to Lv.51</div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 下段: 統計 + アクティビティ -->
+      <div style="display:grid;grid-template-columns:1fr 1.35fr;gap:16px;margin-top:16px">
+        <div class="statbox2" style="grid-template-columns:1fr 1fr">
+          <div class="card"><div class="card__bd"><div class="micro">PRS MERGED</div><div style="font-size:22px;font-weight:600;color:var(--accent)" class="tnum">128</div><div class="dim" style="font-size:11px">+2 today</div></div></div>
+          <div class="card"><div class="card__bd"><div class="micro">MONSTERS</div><div style="font-size:22px;font-weight:600;color:var(--purple)" class="tnum">24</div><div class="dim" style="font-size:11px">16/20 dex</div></div></div>
+          <div class="card"><div class="card__bd"><div class="micro">SSR RATE</div><div style="font-size:22px;font-weight:600;color:var(--gold)" class="tnum">4.2%</div><div class="dim" style="font-size:11px">lifetime</div></div></div>
+          <div class="card"><div class="card__bd"><div class="micro">STREAK</div><div style="font-size:22px;font-weight:600;color:var(--blue)" class="tnum">7d</div><div class="dim" style="font-size:11px">best: 14d</div></div></div>
+        </div>
+
+        <div class="card">
+          <div class="card__hd"><span class="micro">git log --activity</span><span style="font-size:11px;color:var(--accent)">● 3 unread</span></div>
+          <div id="act"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // XP bar (60 cells, 26.5%)
+  var bar = document.getElementById('xpbar');
+  for (var i = 0; i < 60; i++) { var c = document.createElement('i'); if (i < 16) c.className = 'on'; bar.appendChild(c); }
+
+  // activity feed
+  var acts = [
+    { e:'🐉', xp:100, name:'ドラゴン', r:'ssr', lv:true,  pr:'frontend#142', t:'feat: redesign monster collection page', at:'2分前' },
+    { e:'🐺', xp:100, name:'狼',       r:'r',   lv:false, pr:'backend#89',   t:'fix: race condition in XP gain', at:'3時間前' },
+    { e:'🟢', xp:100, name:'スライム', r:'n',   lv:true,  pr:'backend#88',   t:'feat: rarity weighting (N:40 R:30 SR:22 SSR:8)', at:'昨日' },
+    { e:'🧟', xp:100, name:'ゾンビ',   r:'r',   lv:false, pr:'frontend#141', t:'chore: bump dependencies', at:'2日前' },
+    { e:'🦅', xp:100, name:'フェニックス', r:'ssr', lv:true, pr:'backend#87', t:'feat: webhook signature validation', at:'3日前' },
+  ];
+  document.getElementById('act').innerHTML = acts.map(function(a){
+    return '<div class="actrow"><div class="ico">'+a.e+'</div><div style="flex:1;min-width:0">'
+      + '<div class="t1"><span style="color:var(--gold)">+'+a.xp+' XP</span> <span class="faint">·</span> caught <b>'+a.name+'</b> <span class="rar rar--'+a.r+'">'+a.r.toUpperCase()+'</span>'
+      + (a.lv ? ' <span class="chip chip--accent" style="font-size:9px;padding:1px 6px">LV UP</span>' : '') + '</div>'
+      + '<div class="t2"><span style="color:var(--blue)">'+a.pr+'</span> <span class="faint">·</span> '+a.t+'</div>'
+      + '<div class="t3">'+a.at+'</div></div></div>';
+  }).join('');
+</script>
+</body>
+</html>

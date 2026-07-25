@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>D-1 · /shop/runes — ルーン購入 / Console RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="_console-billing.css" />
+<style>
+  .sku-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .sku { position:relative; background:var(--bg-elev); border:1px solid var(--line); border-radius:8px; padding:20px 18px 16px; display:flex; flex-direction:column; gap:10px; }
+  .sku:hover { border-color:var(--rune-border); box-shadow: 0 10px 26px rgba(0,0,0,.35), inset 0 0 22px rgba(240,180,41,.05); }
+  .sku__total { font-size:30px; line-height:1; }
+  .sku__total .u { font-size:12px; color:var(--text-dim); font-weight:400; margin-left:4px; }
+  .sku__break { font-size:11px; color:var(--text-dim); }
+  .sku__price { font-size:16px; font-weight:600; white-space:nowrap; }
+  .sku__unit { font-size:11px; color:var(--text-faint); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .sku__best { position:absolute; top:-9px; right:12px; }
+  .save { display:flex; align-items:center; gap:8px; }
+  .save .val-bar { flex:1; height:4px; border-radius:2px; background:var(--bg-elev-2); overflow:hidden; }
+  .save .val-bar > i { display:block; height:100%; background:linear-gradient(90deg,var(--rune-dim),var(--rune)); }
+  .save .pct { font-size:10px; color:var(--rune); font-variant-numeric:tabular-nums; width:58px; text-align:right; }
+  .sku--starter { flex-direction:row; align-items:center; gap:22px; border-color:var(--rune-border);
+    background: linear-gradient(100deg, rgba(240,180,41,.09) 0%, var(--bg-elev) 55%);
+    box-shadow: inset 0 0 30px rgba(240,180,41,.06); }
+  .sku--starter:hover { box-shadow: 0 10px 26px rgba(0,0,0,.35), inset 0 0 30px rgba(240,180,41,.12); }
+  .sku--starter .sku__total { font-size:36px; }
+  .gem { font-size:38px; filter: drop-shadow(0 0 10px var(--rune-glow)); }
+</style>
+</head>
+<body class="crt">
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__chrome"><div class="dots"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span></div><span class="sidebar__ver">bugbash · v0.1.0</span></div>
+    <div class="sidebar__label">Navigation</div>
+    <nav class="nav">
+      <a href="home.html"><span class="g">⌂</span> ~/home</a>
+      <a href="profile.html"><span class="g">@</span> ~/@haseryo0403</a>
+      <a href="monsters.html"><span class="g">◆</span> ~/monsters</a>
+      <a href="items.html"><span class="g">▣</span> ~/items</a>
+      <a href="summon.html"><span class="g">≡</span> ~/summon</a>
+      <a href="summon-limited.html" class="is-paid"><span class="g">☄</span> ~/summon/limited</a>
+    </nav>
+    <div class="sidebar__label">Billing</div>
+    <nav class="nav">
+      <a class="active is-paid"><span class="g">▤</span> ~/shop/runes</a>
+      <a href="shop-skins.html" class="is-paid"><span class="g">◨</span> ~/shop/skins</a>
+      <a href="d1-pass.html" class="is-paid"><span class="g">✦</span> ~/pass</a>
+      <a href="d1-billing-return.html" class="is-paid"><span class="g">↺</span> ~/billing/return</a>
+      <a href="forge.html" class="is-paid"><span class="g">⚒</span> ~/forge</a>
+      <a href="badges.html"><span class="g">◉</span> ~/badges</a>
+      <a href="mypage-billing.html"><span class="g">⛭</span> ~/mypage/billing</a>
+    </nav>
+    <div class="sidebar__label">Design docs</div>
+    <nav class="nav">
+      <a href="index.html"><span class="g">☰</span> index</a>
+      <a href="d1-style-guide.html"><span class="g">◈</span> style-guide</a>
+      <a href="d1-components.html"><span class="g">◱</span> shared parts</a>
+    </nav>
+    <div style="margin-top:auto;padding:12px;border-top:1px solid var(--line);background:var(--bg-elev-2)">
+      <div class="micro" style="margin-bottom:6px">HERO_STATUS</div>
+      <div class="row gap8"><div style="width:32px;height:32px;border-radius:4px;background:linear-gradient(135deg,var(--accent),var(--blue));display:flex;align-items:center;justify-content:center;color:#0b0f0d;font-weight:700">H</div><div><div style="font-size:12px">haseryo0403</div><div style="font-size:10px;color:var(--text-dim)">Lv.50</div></div></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="prompt"><span class="u">haseryo0403@bugbash</span><span class="s">:</span><span class="p">~/shop/runes</span><span class="s">$</span> ls --products<span class="caret"></span></div>
+      <div class="wallet">
+        <span class="wallet__bal wallet__bal--coin"><span class="ic">🪙</span> 1,240</span>
+        <span class="wallet__bal wallet__bal--rune"><span class="ic">💎</span> 340</span>
+      </div>
+    </div>
+
+    <div class="pending-banner"><span class="spin"></span> ルーンの反映待ちです… 決済は受け付けました（通常数秒〜1分）。<a href="d1-billing-return.html" style="color:var(--rune);margin-left:auto">状況を見る →</a></div>
+
+    <div class="page">
+      <div class="row between" style="align-items:flex-end">
+        <div>
+          <h1 class="h1">ルーン購入 <span class="chip chip--rune" style="vertical-align:middle">💎 RUNE</span></h1>
+          <p class="sub">ルーンは限定召喚・工房での<b>見た目/時短</b>に使えます。強さ・順位には影響しません。</p>
+        </div>
+      </div>
+
+      <div class="row between" style="margin-top:14px;padding:8px 12px;border:1px solid var(--line);border-radius:var(--radius-btn);background:var(--bg-elev);font-size:12px;color:var(--text-dim)">
+        <span>30日間の購入上限: <b class="runeval tnum" style="font-size:12px">¥50,000</b>（18歳以上）— 今月の利用 <span class="tnum">¥3,400</span></span>
+        <a href="#" onclick="openAge();return false" style="color:var(--blue);text-decoration:none">年齢区分を変更 →</a>
+      </div>
+
+      <!-- スターター -->
+      <div class="section-label"><span class="micro">初回限定 · おひとり様1回</span><span class="rule"></span></div>
+      <div class="sku sku--starter hoverable">
+        <div class="gem">💎</div>
+        <div style="flex:1">
+          <div class="row gap8" style="margin-bottom:6px"><span class="chip chip--rune">STARTER</span><span class="chip chip--accent">生涯1回</span></div>
+          <div class="sku__total runeval">170<span class="u">ルーン</span></div>
+          <div class="sku__break">150 + <span class="rune-c">ボーナス 20</span> · ¥2.8/ルーン</div>
+        </div>
+        <div style="text-align:right">
+          <div class="sku__price">¥480 <span class="faint" style="font-weight:400;font-size:11px">(税込)</span></div>
+          <button class="btn btn--rune" style="margin-top:8px" onclick="openBuy('スターターパック','170','¥480')">購入する</button>
+        </div>
+      </div>
+
+      <!-- 通常SKU: レート逓減 = 大きいパックほど1ルーン単価が安い -->
+      <div class="section-label"><span class="micro">ルーンパック · 6種 — 大きいパックほど1ルーン単価がお得（¥4.0 → ¥2.4）</span><span class="rule"></span></div>
+      <div class="sku-grid" id="skus"></div>
+      <p style="font-size:11px;color:var(--text-faint);margin-top:12px">※ 全パックに1ルーン単価と「お得度」（最小パック比の割引率）を明示。数値は本番では <code style="color:var(--rune);font-family:var(--mono)">GET /api/billing/rune-products</code> 由来（本モックはダミー・桁は正典準拠）。</p>
+
+      <div class="legal-footer">
+        <div class="row"><a href="d1-components.html#tokusho">特定商取引法に基づく表示</a><a href="d1-components.html#prepaid">資金決済法（前払式支払手段）</a><a href="#">利用規約</a></div>
+        <div class="note">発行者: bocek.co.jp 運営法人 / JPY / 決済: KOMOJU ホスト画面 / 提供時期: 決済確認後ただちに（反映まで最大数分）。未使用ルーンの残高は /mypage/billing で確認できます。払戻しは原則不可。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 購入確認モーダル -->
+<div class="modal-scrim" id="buyModal" style="display:none">
+  <div class="modal">
+    <div class="modal__hd"><span class="micro" style="color:var(--rune)">▸ 購入確認</span><button class="x" onclick="closeBuy()">✕</button></div>
+    <div class="modal__bd">
+      <div class="row between" style="padding:12px 14px;background:var(--bg-elev-2);border:1px solid var(--line);border-radius:var(--radius-btn)">
+        <div><div class="micro">商品</div><div id="bm-name" style="font-size:15px;font-weight:600;margin-top:2px">—</div></div>
+        <div style="text-align:right"><div class="micro">取得</div><div class="runeval" style="font-size:20px"><span id="bm-rune">—</span> 💎</div></div>
+      </div>
+      <div class="row between" style="margin-top:14px;font-size:14px"><span class="dim">お支払い総額（税込）</span><b class="tnum" id="bm-price" style="font-size:18px">—</b></div>
+      <p style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-top:14px">決済後、ルーンの付与は<b style="color:var(--text)">決済確認（Webhook）後ただちに</b>行われます（反映まで最大数分）。この購入で強さ・順位は変わりません。</p>
+      <label class="check" style="margin-top:14px"><input type="checkbox" id="bm-agree" onchange="document.getElementById('bm-go').disabled=!this.checked"/><span><a href="d1-components.html#prepaid" style="color:var(--blue)">前払式支払手段の表示</a>・<a href="d1-components.html#tokusho" style="color:var(--blue)">特定商取引法に基づく表示</a>を確認しました</span></label>
+    </div>
+    <div class="modal__ft">
+      <button class="btn btn--ghost" onclick="closeBuy()">やめる</button>
+      <button class="btn btn--rune" id="bm-go" disabled>KOMOJU で決済へ進む →</button>
+    </div>
+  </div>
+</div>
+
+<!-- 年齢確認モーダル -->
+<div class="modal-scrim" id="ageModal" style="display:none">
+  <div class="modal">
+    <div class="modal__hd"><span class="micro" style="color:var(--rune)">▸ 年齢確認</span><button class="x" onclick="closeAge()">✕</button></div>
+    <div class="modal__bd">
+      <p style="font-size:12px;color:var(--text-dim);line-height:1.7;margin:0 0 14px">ルーンの購入には年齢確認が必要です。生年区分を選択してください（自己申告）。区分により30日間の購入上限が決まります。</p>
+      <div class="stack gap8">
+        <button class="btn btn--block" style="justify-content:space-between" onclick="pickAge('18歳以上','¥50,000')">18歳以上 <span class="faint">上限 ¥50,000</span></button>
+        <button class="btn btn--block" style="justify-content:space-between" onclick="pickAge('16〜17歳','¥20,000')">16〜17歳 <span class="faint">上限 ¥20,000</span></button>
+        <button class="btn btn--block" style="justify-content:space-between" onclick="pickAge('16歳未満','¥5,000')">16歳未満 <span class="faint">上限 ¥5,000</span></button>
+      </div>
+      <div id="age-result" style="display:none;margin-top:14px;padding:10px 12px;background:var(--rune-bg);border:1px solid var(--rune-border);border-radius:var(--radius-btn);color:var(--rune);font-size:12px;line-height:1.7"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // レート逓減: 大パックほど安い（¥4.0 → ¥2.4/ルーン）。お得度 = 最小パック(¥4.0)比の割引率。
+  var SKUS = [
+    { total:60,    base:60,    bonus:0,    price:240,   unit:4.0, best:null },
+    { total:340,   base:310,   bonus:30,   price:1200,  unit:3.5, best:null },
+    { total:600,   base:530,   bonus:70,   price:2000,  unit:3.3, best:null },
+    { total:1100,  base:940,   bonus:160,  price:3400,  unit:3.1, best:null },
+    { total:2100,  base:1750,  bonus:350,  price:6000,  unit:2.9, best:'🔥 人気' },
+    { total:5000,  base:4000,  bonus:1000, price:12000, unit:2.4, best:'最安単価' },
+  ];
+  var yen = function(n){ return '¥' + n.toLocaleString('ja-JP'); };
+  document.getElementById('skus').innerHTML = SKUS.map(function(s){
+    var save = Math.round((1 - s.unit / 4.0) * 100);
+    return '<div class="sku hoverable">'
+      + (s.best ? '<div class="sku__best"><span class="chip chip--rune">'+s.best+'</span></div>' : '')
+      + '<div class="sku__total runeval tnum">'+s.total.toLocaleString('ja-JP')+'<span class="u">ルーン</span></div>'
+      + '<div class="sku__break tnum">'+s.base.toLocaleString('ja-JP')+' + <span class="rune-c">ボーナス '+s.bonus.toLocaleString('ja-JP')+'</span></div>'
+      + '<hr class="sep" style="margin:4px 0"/>'
+      + '<div class="row between"><span class="sku__price tnum">'+yen(s.price)+' <span class="faint" style="font-weight:400;font-size:10px">(税込)</span></span><span class="sku__unit">¥'+s.unit.toFixed(1)+'/ルーン</span></div>'
+      + '<div class="save"><div class="val-bar"><i style="width:'+Math.max(save,4)+'%"></i></div><span class="pct tnum">'+(save>0?'-'+save+'%':'基準')+'</span></div>'
+      + '<button class="btn btn--rune btn--block" onclick="openBuy(\'ルーン'+s.total+'\',\''+s.total.toLocaleString('ja-JP')+'\',\''+yen(s.price)+'\')">購入</button>'
+      + '</div>';
+  }).join('');
+
+  function openBuy(name, rune, price){ document.getElementById('bm-name').textContent=name; document.getElementById('bm-rune').textContent=rune; document.getElementById('bm-price').textContent=price+'（税込）'; document.getElementById('bm-agree').checked=false; document.getElementById('bm-go').disabled=true; document.getElementById('buyModal').style.display='flex'; }
+  function closeBuy(){ document.getElementById('buyModal').style.display='none'; }
+  function openAge(){ document.getElementById('ageModal').style.display='flex'; document.getElementById('age-result').style.display='none'; }
+  function closeAge(){ document.getElementById('ageModal').style.display='none'; }
+  function pickAge(label, cap){ var r=document.getElementById('age-result'); r.style.display='block'; r.textContent='「'+label+'」で登録しました。あなたの30日間の購入上限は '+cap+' です。'; }
+  document.querySelectorAll('.modal-scrim').forEach(function(s){ s.addEventListener('click', function(e){ if(e.target===s) s.style.display='none'; }); });
+</script>
+</body>
+</html>
