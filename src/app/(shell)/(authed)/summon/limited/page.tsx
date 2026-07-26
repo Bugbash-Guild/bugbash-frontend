@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { mutate } from "swr";
 
 import { DisclosureModal } from "@/components/billing/DisclosureModal";
 import { ItemVisual } from "@/components/ItemVisual";
@@ -109,7 +110,12 @@ export default function LimitedSummonPage() {
     prerequisiteError == null;
 
   async function refreshLimitedState() {
-    await Promise.all([refetchPity(), refetchHistory(), refetchWallet()]);
+    await Promise.all([
+      refetchPity(),
+      refetchHistory(),
+      refetchWallet(),
+      mutate("monsters-compendium"),
+    ]);
   }
 
   async function reconcileUnknownResult(
