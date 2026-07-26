@@ -17,11 +17,15 @@ export function usePartner() {
     });
 
     const setPartner = async (monsterId: string): Promise<void> => {
-        await fetch('/api/hero/partner', {
+        const res = await fetch('/api/hero/partner', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ monsterId }),
         });
+        if (!res.ok) {
+            const body = (await res.json().catch(() => ({}))) as { error?: string };
+            throw new Error(body.error ?? `パートナー設定に失敗しました (HTTP ${res.status})`);
+        }
         await mutate();
     };
 

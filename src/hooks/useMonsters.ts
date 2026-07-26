@@ -34,12 +34,24 @@ type OwnedMonstersDto = {
     }[];
 };
 
-const fetchCompendium = async (): Promise<Monster[]> => {
+type Compendium = {
+    monsters: Monster[];
+    /**
+     * owned の取得に失敗した状態（401以外）。この間 isOwned は信頼できない。
+     * 以前は黙って空配列にフォールバックしており、エラー表示なしで
+     * 「全モンスター未所持」に見えていた（issue #122）。
+     */
+    ownedDegraded: boolean;
+};
+
+const fetchCompendium = async (): Promise<Compendium> => {
+    let ownedDegraded = false;
     const [allData, ownedData] = await Promise.all([
         fetchJson<AllMonstersDto>('/api/monsters/all', undefined, 'monsters/all'),
         fetchJson<OwnedMonstersDto>('/api/monsters/owned', undefined, 'monsters/owned').catch(
             (error: unknown) => {
                 if (isUnauthorizedApiError(error)) throw error;
+                ownedDegraded = true;
                 return { monsters: [] };
             },
         ),
@@ -47,7 +59,7 @@ const fetchCompendium = async (): Promise<Monster[]> => {
 
     const ownedMap = new Map(ownedData.monsters.map((m) => [m.id, m]));
 
-    return allData.monsters.map((m) => {
+    const monsters = allData.monsters.map((m) => {
         const owned = ownedMap.get(m.id);
         return {
             id: m.id,
@@ -68,10 +80,12 @@ const fetchCompendium = async (): Promise<Monster[]> => {
             artworkByStage: owned?.artworkByStage ?? m.artworkByStage,
         };
     });
+
+    return { monsters, ownedDegraded };
 };
 
 export function useMonsters() {
-    const { data, error, isLoading, mutate } = useSWR<Monster[]>(
+    const { data, error, isLoading, mutate } = useSWR<Compendium>(
         'monsters-compendium',
         fetchCompendium,
         { revalidateOnFocus: true },
@@ -79,7 +93,8 @@ export function useMonsters() {
     useRedirectOnUnauthorized(error);
 
     return {
-        monsters: data ?? [],
+        monsters: data?.monsters ?? [],
+        ownedDegraded: data?.ownedDegraded ?? false,
         loading: isLoading,
         error: error && !isUnauthorizedApiError(error) ? String(error) : null,
         refetch: () => mutate(),

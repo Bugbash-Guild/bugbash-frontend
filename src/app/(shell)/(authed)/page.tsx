@@ -108,7 +108,7 @@ function DevPanel({ onSuccess }: { onSuccess: () => void }) {
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
   const { hero, loading: heroLoading, refetch: refetchHero } = useHero(isAuthenticated);
-  const { monsters } = useMonsters();
+  const { monsters, ownedDegraded } = useMonsters();
   const { activities, loading: activitiesLoading } = useActivities();
   const { mints: commemorativeMints } = usePublicCommemorativeMints(user?.githubId);
 
@@ -276,7 +276,7 @@ export default function Home() {
               <div className="grid grid-cols-2 gap-2.5">
                 {[
                   { label: "PRs merged",      value: String(hero.totalPrsMerged),  delta: "lifetime",                                     color: "var(--accent)" },
-                  { label: "monsters caught",  value: String(ownedMonsters),        delta: `${discoveredSpecies}/${totalSpecies || 20} dex`, color: "var(--purple)" },
+                  { label: "monsters caught",  value: ownedDegraded ? "—" : String(ownedMonsters), delta: ownedDegraded ? "取得エラー" : `${discoveredSpecies}/${totalSpecies || 20} dex`, color: "var(--purple)" },
                   { label: "guild coin",       value: hero.guildCoinBalance.toLocaleString("ja-JP"), delta: "balance",                     color: "var(--coin)" },
                   { label: "streak",           value: `${hero.streakDays}d`,         delta: hero.streakDays > 1 ? "active" : "keep it up!", color: "var(--accent-2)" },
                 ].map((s) => (

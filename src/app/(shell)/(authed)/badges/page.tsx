@@ -67,7 +67,7 @@ export default function BadgesPage() {
     null,
   );
   const [cosmeticInFlight, setCosmeticInFlight] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ tone: "success" | "error"; message: string } | null>(null);
   const [settingsInFlight, setSettingsInFlight] = useState<string | null>(null);
   const [showVisibilityTip, setShowVisibilityTip] = useState(false);
   const [slotDrafts, setSlotDrafts] = useState<Record<string, string>>({});
@@ -149,7 +149,7 @@ export default function BadgesPage() {
         if (mapped.action === "refresh") {
           await refetchProgress();
           setConfirmBadge(null);
-          setNotice(mapped.message);
+          setNotice({ tone: "error", message: mapped.message });
           return;
         }
         setCosmeticError(mapped);
@@ -160,9 +160,10 @@ export default function BadgesPage() {
       clearBadgeCosmeticIdempotencyKey(window.sessionStorage, badgeCode);
       await Promise.all([refetchProgress(), refetchWallet()]);
       setConfirmBadge(null);
-      setNotice(
-        `${confirmBadge.displayName}の見た目をコスメLv.${result.forgeRank}に更新しました。`,
-      );
+      setNotice({
+        tone: "success",
+        message: `${confirmBadge.displayName}の見た目をコスメLv.${result.forgeRank}に更新しました。`,
+      });
     } catch {
       setCosmeticError({
         action: "retry",
@@ -201,18 +202,20 @@ export default function BadgesPage() {
           router.replace("/login");
           return;
         }
-        setNotice(mapped.message);
+        setNotice({ tone: "error", message: mapped.message });
         return;
       }
 
       await refetchProgress();
-      setNotice(
-        kind === "display"
-          ? "プロフィールへの表示設定を更新しました。"
-          : "プロフィールの装備スロットを更新しました。",
-      );
+      setNotice({
+        tone: "success",
+        message:
+          kind === "display"
+            ? "プロフィールへの表示設定を更新しました。"
+            : "プロフィールの装備スロットを更新しました。",
+      });
     } catch {
-      setNotice("設定を保存できませんでした。時間をおいて再度お試しください。");
+      setNotice({ tone: "error", message: "設定を保存できませんでした。時間をおいて再度お試しください。" });
     } finally {
       setSettingsInFlight(null);
     }
@@ -223,7 +226,7 @@ export default function BadgesPage() {
       slotDrafts[badge.code] ?? badge.equippedSlot?.toString() ?? "";
     const slot = draft === "" ? null : Number(draft);
     if (slot != null && (!Number.isInteger(slot) || slot < 1)) {
-      setNotice("装備スロットには1以上の整数を入力してください。");
+      setNotice({ tone: "error", message: "装備スロットには1以上の整数を入力してください。" });
       return;
     }
     void updateBadgeSetting(badge, "equip", { slot });
@@ -318,9 +321,21 @@ export default function BadgesPage() {
           )}
 
           {notice && (
-            <div className="mt-4 flex items-start gap-2 border border-accent/30 bg-accent/10 px-3 py-3 text-[11px] leading-5 text-accent">
-              <FiCheck aria-hidden className="mt-0.5 shrink-0" size={14} />
-              {notice}
+            <div
+              className={[
+                "mt-4 flex items-start gap-2 border px-3 py-3 text-[11px] leading-5",
+                notice.tone === "success"
+                  ? "border-accent/30 bg-accent/10 text-accent"
+                  : "border-pink/30 bg-pink/10 text-pink",
+              ].join(" ")}
+              role={notice.tone === "error" ? "alert" : "status"}
+            >
+              {notice.tone === "success" ? (
+                <FiCheck aria-hidden className="mt-0.5 shrink-0" size={14} />
+              ) : (
+                <FiX aria-hidden className="mt-0.5 shrink-0" size={14} />
+              )}
+              {notice.message}
             </div>
           )}
 
