@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { SkinMasteryCostTable } from "@/components/forge/SkinMasteryCostTable";
+import { BalanceShortfall } from "@/components/BalanceShortfall";
 import { SkinMasteryPanel } from "@/components/forge/SkinMasteryPanel";
 import { SkinTargetList } from "@/components/forge/SkinTargetList";
 import { useAuth } from "@/hooks/useAuth";
@@ -115,17 +116,30 @@ export default function ForgePage() {
             />
             <div className="min-w-0">
               {selectedSkin ? (
-                <SkinMasteryPanel
-                  apex={stages.apex}
-                  current={stages.current}
-                  disabled={upgradeDisabled}
-                  error={mutationError?.action === "refresh" ? null : mutationError?.message ?? null}
-                  next={stages.next}
-                  onUpgrade={() => void handleUpgrade()}
-                  skin={selectedSkin}
-                  totalPrsMerged={hero?.totalPrsMerged ?? 0}
-                  upgrading={upgradingSkinId === selectedSkin.skinId}
-                />
+                <>
+                  <SkinMasteryPanel
+                    apex={stages.apex}
+                    current={stages.current}
+                    disabled={upgradeDisabled}
+                    error={mutationError?.action === "refresh" ? null : mutationError?.message ?? null}
+                    next={stages.next}
+                    onUpgrade={() => void handleUpgrade()}
+                    skin={selectedSkin}
+                    totalPrsMerged={hero?.totalPrsMerged ?? 0}
+                    upgrading={upgradingSkinId === selectedSkin.skinId}
+                  />
+                  {stages.next != null &&
+                    wallet != null &&
+                    wallet.runeBalance < stages.next.runeCost && (
+                      <div className="mt-3">
+                        <BalanceShortfall
+                          balance={wallet.runeBalance}
+                          currency="rune"
+                          required={stages.next.runeCost}
+                        />
+                      </div>
+                    )}
+                </>
               ) : (
                 <div className="border border-dashed border-line-strong bg-bg-elev px-5 py-12 text-center text-[12px] text-text-dim">
                   スキンを入手すると、ここで見た目を強化できます。

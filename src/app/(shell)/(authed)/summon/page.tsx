@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { mutate } from "swr";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
@@ -98,7 +99,13 @@ export default function SummonPage() {
     try {
       const data = await pullOnce();
       setResult({ type: "once", data });
-      await Promise.all([refetchPity(), refetchHistory(), refetchHero()]);
+      await Promise.all([
+        refetchPity(),
+        refetchHistory(),
+        refetchHero(),
+        mutate("/api/billing/wallet"),
+        mutate("monsters-compendium"),
+      ]);
     } catch {
       // error displayed via summonError state
     }
@@ -110,7 +117,13 @@ export default function SummonPage() {
     try {
       const data = await pullTen();
       setResult({ type: "ten", data });
-      await Promise.all([refetchPity(), refetchHistory(), refetchHero()]);
+      await Promise.all([
+        refetchPity(),
+        refetchHistory(),
+        refetchHero(),
+        mutate("/api/billing/wallet"),
+        mutate("monsters-compendium"),
+      ]);
     } catch {
       // error displayed via summonError state
     }
@@ -297,12 +310,20 @@ export default function SummonPage() {
                 </div>
               </div>
 
-              <button
-                onClick={() => setResult(null)}
-                className="mt-4 w-full py-2 rounded border border-line text-text-dim text-[13px] hover:border-accent hover:text-accent transition-colors"
-              >
-                [ 閉じる ]
-              </button>
+              <div className="mt-4 flex gap-2">
+                <Link
+                  className="flex-1 rounded border border-accent/40 py-2 text-center text-[13px] text-accent transition-colors hover:bg-accent/[0.08]"
+                  href="/monsters"
+                >
+                  [ 図鑑で確認 → ]
+                </Link>
+                <button
+                  onClick={() => setResult(null)}
+                  className="flex-1 py-2 rounded border border-line text-text-dim text-[13px] hover:border-accent hover:text-accent transition-colors"
+                >
+                  [ 閉じる ]
+                </button>
+              </div>
             </div>
           </div>
         )}

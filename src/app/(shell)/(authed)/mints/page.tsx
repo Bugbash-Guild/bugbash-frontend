@@ -6,6 +6,7 @@ import { FiCheck, FiTool } from "react-icons/fi";
 
 import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
 import { MintRightList } from "@/components/commemorative/MintRightList";
+import { BalanceShortfall } from "@/components/BalanceShortfall";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { useAuth } from "@/hooks/useAuth";
 import { useCommemorativeMints } from "@/hooks/useCommemorativeMints";
@@ -215,6 +216,15 @@ export default function MintsPage() {
                       <div className="mt-1 flex justify-between"><span>ルーン残高</span><span className="text-text">{wallet?.runeBalance.toLocaleString("ja-JP") ?? "—"}</span></div>
                     </div>
                     {purchaseError && <p className="mt-3 text-[11px] text-pink">{purchaseError}</p>}
+                    {price?.affordable === false && (
+                      <div className="mt-3">
+                        <BalanceShortfall
+                          balance={wallet?.runeBalance}
+                          currency="rune"
+                          required={selectedOffer.runeCost}
+                        />
+                      </div>
+                    )}
                     <button className="mt-5 w-full border border-gold bg-gold/10 px-4 py-2 text-[12px] font-semibold text-gold disabled:cursor-not-allowed disabled:opacity-40" disabled={inFlight || walletLoading || price?.affordable !== true} onClick={() => void purchase()} type="button">{inFlight ? "鋳造中…" : price?.affordable === false ? "ルーンが不足しています" : "このプレートを鋳造"}</button>
                   </>
                 )}

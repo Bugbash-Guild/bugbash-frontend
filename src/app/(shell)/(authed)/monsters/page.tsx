@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { mutate } from "swr";
 
 import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
@@ -95,7 +96,7 @@ export default function MonstersPage() {
         setActionError((body.error as string) ?? `Error ${res.status}`);
       } else {
         setSuccessMsg(describe(body));
-        await Promise.all([refetch(), refetchHero()]);
+        await Promise.all([refetch(), refetchHero(), mutate("/api/billing/wallet")]);
       }
     } catch {
       setActionError("Network error");

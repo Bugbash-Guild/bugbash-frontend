@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { GameAssetFallback } from "@/components/GameAssetFallback";
+import { InlineActionResult } from "@/components/InlineActionResult";
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { ShopTabs } from "@/components/ShopTabs";
@@ -108,6 +109,7 @@ export default function SkinCatalogPage() {
   const [confirmingPurchase, setConfirmingPurchase] = useState(false);
   const [equipping, setEquipping] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [actionNotice, setActionNotice] = useState<{ title: string; body: string; dexLink?: boolean } | null>(null);
 
 
   const monsterNames = useMemo(
@@ -147,14 +149,20 @@ export default function SkinCatalogPage() {
     setSelectedSkinId(null);
     setConfirmingPurchase(false);
     setActionError(null);
+    setActionNotice(null);
     resetPurchase();
   }
 
   async function handlePurchase(skin: PresentedSkinCatalogItem) {
+    setActionNotice(null);
     try {
       await purchase(skin.skinId);
       await Promise.all([refetch(), refetchWallet()]);
       setConfirmingPurchase(false);
+      setActionNotice({
+        title: "購入しました",
+        body: `「${skin.lineName}」を入手。このままスキンを装備できます。`,
+      });
     } catch {
       // usePurchase exposes the response error in the confirmation panel.
     }
@@ -163,8 +171,14 @@ export default function SkinCatalogPage() {
   async function handleEquip(skin: PresentedSkinCatalogItem) {
     setEquipping(true);
     setActionError(null);
+    setActionNotice(null);
     try {
       await setEquipped(skin, skin.equipped);
+      setActionNotice(
+        skin.equipped
+          ? { title: "装備を外しました", body: "元の外装に戻りました。" }
+          : { title: "装備しました", body: "図鑑と連れ歩きにこの外装が反映されます。", dexLink: true },
+      );
     } catch {
       setActionError(
         skin.equipped
@@ -238,6 +252,7 @@ export default function SkinCatalogPage() {
                         setSelectedSkinId(skin.skinId);
                         setConfirmingPurchase(false);
                         setActionError(null);
+                        setActionNotice(null);
                         resetPurchase();
                       }}
                       type="button"
@@ -350,6 +365,18 @@ export default function SkinCatalogPage() {
               <p className="mt-4 border border-pink/30 bg-pink/10 px-3 py-2 text-[11px] text-pink">
                 {actionError}
               </p>
+            )}
+
+            {actionNotice && (
+              <div className="mt-4">
+                <InlineActionResult
+                  action={actionNotice.dexLink ? { href: "/monsters", label: "図鑑で確認" } : undefined}
+                  title={actionNotice.title}
+                  tone="success"
+                >
+                  {actionNotice.body}
+                </InlineActionResult>
+              </div>
             )}
 
             {selected.owned ? (

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { ItemVisual } from "@/components/ItemVisual";
@@ -143,13 +144,21 @@ export function LimitedSummonResultModal({
               )}
             </div>
 
-            <button
-              className="mt-5 w-full border border-line py-2 text-[12px] text-text-dim hover:border-accent hover:text-accent"
-              onClick={onClose}
-              type="button"
-            >
-              閉じる
-            </button>
+            <div className="mt-5 flex gap-2">
+              <Link
+                className="flex-1 border border-accent/40 py-2 text-center text-[12px] text-accent transition-colors hover:bg-accent/[0.08]"
+                href="/monsters"
+              >
+                図鑑で確認 →
+              </Link>
+              <button
+                className="flex-1 border border-line py-2 text-[12px] text-text-dim hover:border-accent hover:text-accent"
+                onClick={onClose}
+                type="button"
+              >
+                閉じる
+              </button>
+            </div>
           </>
         )}
       </div>
