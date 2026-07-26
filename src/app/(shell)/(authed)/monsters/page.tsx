@@ -66,7 +66,7 @@ function RarityChip({ rarity }: { rarity: RarityKey }) {
 
 export default function MonstersPage() {
   const { isAuthenticated, user } = useAuth();
-  const { monsters, loading, error, refetch } = useMonsters();
+  const { monsters, ownedDegraded, loading, error, refetch } = useMonsters();
   const { partnerId, setPartner } = usePartner();
   const { ownedSkins } = useSkinCatalog(isAuthenticated);
   const { refetch: refetchHero } = useHero(isAuthenticated);
@@ -116,6 +116,20 @@ export default function MonstersPage() {
         : "?";
       return `路線変更：${label}（証残数: ${b.itemRemaining ?? "?"}）`;
     });
+
+  async function handleSetPartner(monsterId: string) {
+    setActionError(null);
+    setSuccessMsg(null);
+    try {
+      await setPartner(monsterId);
+    } catch (error) {
+      setActionError(
+        error instanceof Error
+          ? error.message
+          : "パートナーを設定できませんでした。もう一度お試しください。",
+      );
+    }
+  }
 
   const dex = useMemo(
     () => [...monsters].sort((a, b) => a.id.localeCompare(b.id)),
@@ -231,6 +245,14 @@ export default function MonstersPage() {
         {/* messages */}
         {loading && <p className="mt-4 text-[13px] text-text-faint">loading dex…</p>}
         {error && <p className="mt-4 text-[13px] text-pink">error: {error}</p>}
+        {ownedDegraded && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded border border-pink/30 bg-pink/10 px-3 py-2 text-[12px] text-pink">
+            <span>所持情報を取得できませんでした — 所持状態・レベルは現在正しく表示されていません。</span>
+            <button className="text-text underline underline-offset-4" onClick={() => void refetch()} type="button">
+              再読み込み
+            </button>
+          </div>
+        )}
         {successMsg && (
           <p className="mt-4 rounded border border-accent/30 bg-accent/10 px-3 py-2 text-[13px] text-accent">
             {successMsg}
@@ -268,7 +290,7 @@ export default function MonstersPage() {
                         evolving: evolving === m.id,
                         changingPath: changingPath === m.id,
                       }}
-                      onSetPartner={() => void setPartner(m.id)}
+                      onSetPartner={() => void handleSetPartner(m.id)}
                       onLevelUp={() => void handleLevelUp(m.id)}
                       onEvolve={() => void handleEvolve(m.id)}
                       onChangePath={() => void handleChangePath(m.id)}

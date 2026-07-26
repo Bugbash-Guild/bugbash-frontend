@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { ItemVisual } from "@/components/ItemVisual";
@@ -57,13 +57,49 @@ export default function ItemsPage() {
     activeItemIdRef.current = null;
   }
 
-
   const storageCount = Math.max(
     MIN_STORAGE_SLOTS,
     Math.ceil(items.length / COLS) * COLS,
   );
   const occupied = items.length;
   const selectedItem = items[selectedIdx] ?? null;
+
+  // 表記どおりのホットキーを実装（issue #128）: 1–9 でホットバースロット選択、
+  // E で選択アイテムを使用（使用可能な SOUL_PACK のみ）。
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey
+      ) {
+        return;
+      }
+      if (event.key >= "1" && event.key <= "9") {
+        const idx = Number(event.key) - 1;
+        if (items[idx]) selectSlot(idx);
+        return;
+      }
+      if (event.key === "e" || event.key === "E") {
+        const item = items[selectedIdx];
+        if (
+          item &&
+          item.category === "SOUL_PACK" &&
+          item.quantity > 0 &&
+          !useLoading &&
+          !refetching
+        ) {
+          void handleUseItem(item.itemId);
+        }
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, selectedIdx, useLoading, refetching]);
 
   return (
     <>

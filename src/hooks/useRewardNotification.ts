@@ -28,8 +28,16 @@ export function useRewardNotification(isAuthenticated: boolean) {
     }, [isAuthenticated]);
 
     const acknowledge = async () => {
+        // 楽観クリア + 失敗時ロールバック（fire-and-forget だと失敗時に
+        // 通知がローカルから消えたままサーバ上は未読のまま残る — issue #127）
+        const previous = unread;
         setUnread([]);
-        await fetch('/api/hero/acknowledge', { method: 'POST' });
+        try {
+            const res = await fetch('/api/hero/acknowledge', { method: 'POST' });
+            if (!res.ok) setUnread(previous);
+        } catch {
+            setUnread(previous);
+        }
     };
 
     return { unread, checked, acknowledge };
