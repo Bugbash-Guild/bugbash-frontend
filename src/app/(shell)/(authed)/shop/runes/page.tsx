@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { AgeVerificationModal } from "@/components/billing/AgeVerificationModal";
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
+import { ShopTabs } from "@/components/ShopTabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useRuneProducts } from "@/hooks/useRuneProducts";
 import { useWallet } from "@/hooks/useWallet";
@@ -131,6 +132,7 @@ export default function RuneShopPage() {
               価格は税込総額です。購入後の反映には少し時間がかかる場合があります。
             </p>
           </div>
+          <ShopTabs current="runes" />
         </div>
 
         {monthlyLimitJpy !== null && (
