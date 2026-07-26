@@ -3,156 +3,216 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
+import {
+  ACCOUNT_MENU_ITEMS,
+  ACCOUNT_PATHS,
+  isNavActive,
+  NAV_SECTIONS,
+  type NavItem,
+} from "@/lib/navConfig";
+import { legalFooterLinks } from "@/lib/legalPages";
 
-type NavItem = { glyph: string; label: string; href: string; paid?: boolean };
-
-const NAV_SECTIONS: { label: string; items: NavItem[] }[] = [
-  {
-    label: "NAVIGATION",
-    items: [
-      { glyph: "⌂", label: "~/home", href: "/" },
-      { glyph: "◆", label: "~/monsters", href: "/monsters" },
-      { glyph: "▣", label: "~/items", href: "/items" },
-      { glyph: "≡", label: "~/summon", href: "/summon" },
-      { glyph: "☄", label: "~/summon/limited", href: "/summon/limited", paid: true },
-      { glyph: "▲", label: "~/leaderboard", href: "/leaderboard" },
-    ],
-  },
-  {
-    label: "BILLING",
-    items: [
-      { glyph: "▤", label: "~/shop/runes", href: "/shop/runes", paid: true },
-      { glyph: "◨", label: "~/shop/skins", href: "/shop/skins", paid: true },
-      { glyph: "$", label: "~/shop", href: "/shop" },
-      { glyph: "✦", label: "~/pass", href: "/pass", paid: true },
-      { glyph: "⚒", label: "~/forge", href: "/forge", paid: true },
-      { glyph: "◉", label: "~/badges", href: "/badges" },
-      { glyph: "🔨", label: "~/mints", href: "/mints" },
-      { glyph: "⛭", label: "~/mypage/billing", href: "/mypage/billing" },
-    ],
-  },
-];
-
-/** より具体的な href が優先される active 判定。 */
-function isNavActive(pathname: string, href: string, allHrefs: string[]): boolean {
-  if (href === "/") return pathname === "/";
-  if (!pathname.startsWith(href)) return false;
-  // e.g. /shop should not stay active on /shop/runes
-  const moreSpecific = allHrefs.some(
-    (other) => other !== href && other.startsWith(href) && pathname.startsWith(other),
+function NavLink({
+  item,
+  isActive,
+  onNavigate,
+}: {
+  item: NavItem;
+  isActive: boolean;
+  onNavigate?: () => void;
+}) {
+  return (
+    <Link
+      href={item.href}
+      aria-current={isActive ? "page" : undefined}
+      onClick={onNavigate}
+      className={[
+        "flex items-center rounded px-[10px] py-2 text-[13px] transition-colors",
+        isActive
+          ? "border-l-2 border-accent bg-accent/[0.08] text-accent"
+          : "border-l-2 border-transparent text-text hover:bg-bg-elev-2",
+      ].join(" ")}
+    >
+      <span
+        className={[
+          "mr-2 inline-block w-[16px] shrink-0 text-center",
+          isActive ? "text-accent" : item.paid ? "text-rune" : "text-text-dim",
+        ].join(" ")}
+      >
+        {item.glyph}
+      </span>
+      {item.label}
+    </Link>
   );
-  return !moreSpecific;
 }
 
-export function SideBar() {
+/**
+ * サイドバーの中身。デスクトップの常設 aside と、モバイルの
+ * MobileNavDrawer の両方から使う（onNavigate はドロワーを閉じる用）。
+ */
+export function SideBarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { isAuthenticated, user } = useAuth();
   const { hero } = useHero(isAuthenticated);
-  const allHrefs = NAV_SECTIONS.flatMap((section) => section.items.map((item) => item.href));
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const selfProfileHref = user?.githubId ? `/heroes/${user.githubId}` : null;
+  const allHrefs = NAV_SECTIONS.flatMap((section) =>
+    section.items.map((item) => item.href),
+  );
+  const inAccountZone = ACCOUNT_PATHS.some((path) => pathname.startsWith(path));
 
   return (
-    <aside className="w-60 shrink-0 flex flex-col bg-bg-elev border-r border-line overflow-y-auto">
+    <div className="flex h-full w-60 shrink-0 flex-col overflow-y-auto border-r border-line bg-bg-elev">
       {/* ① ウィンドウクローム */}
-      <div className="flex items-center px-4 py-[14px] border-b border-line">
-        <div className="flex items-center gap-1.5">
-          <span
-            className="w-2.5 h-2.5 rounded-full"
-            style={{ background: "#ff5f56" }}
-          />
-          <span
-            className="w-2.5 h-2.5 rounded-full"
-            style={{ background: "#ffbd2e" }}
-          />
-          <span
-            className="w-2.5 h-2.5 rounded-full"
-            style={{ background: "#27c93f" }}
-          />
+      <div className="flex items-center border-b border-line px-4 py-[14px]">
+        <div className="flex items-center gap-1.5" aria-hidden>
+          <span className="size-2.5 rounded-full" style={{ background: "#ff5f56" }} />
+          <span className="size-2.5 rounded-full" style={{ background: "#ffbd2e" }} />
+          <span className="size-2.5 rounded-full" style={{ background: "#27c93f" }} />
         </div>
-        <span className="ml-auto text-[11px] text-text-faint">
-          bugbash · v0.1.0
-        </span>
+        <span className="ml-auto text-[11px] text-text-faint">bugbash · v0.1.0</span>
       </div>
 
-      {/* ② ナビゲーション（NAVIGATION / BILLING） */}
+      {/* ② ナビゲーション（NAVIGATION=名声 / SHOP=課金） */}
       <div className="flex-1 overflow-y-auto">
-        {NAV_SECTIONS.map((section) => (
-          <div key={section.label}>
-            <p className="px-4 pb-2 pt-4 text-[10px] uppercase tracking-[0.16em] text-text-faint">
-              {section.label}
-            </p>
-            <nav className="flex flex-col gap-0.5 px-2">
-              {section.items.map(({ glyph, label, href, paid }) => {
-                const isActive = isNavActive(pathname, href, allHrefs);
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={[
-                      "flex items-center rounded px-[10px] py-2 text-[13px] transition-colors",
-                      isActive
-                        ? "border-l-2 border-accent bg-accent/[0.08] text-accent"
-                        : "border-l-2 border-transparent text-text hover:bg-bg-elev-2",
-                    ].join(" ")}
-                  >
-                    <span
-                      className={[
-                        "mr-2 inline-block w-[16px] shrink-0 text-center",
-                        isActive
-                          ? "text-accent"
-                          : paid
-                            ? "text-rune"
-                            : "text-text-dim",
-                      ].join(" ")}
-                    >
-                      {glyph}
-                    </span>
-                    {label}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        ))}
+        {NAV_SECTIONS.map((section) => {
+          // 自分の公開プロフィールは正典（home.html）どおりナビ2番目。
+          // githubId が取れないときは出さない（捏造リンク禁止）。
+          const items: NavItem[] =
+            section.label === "NAVIGATION" && selfProfileHref && user
+              ? [
+                  section.items[0],
+                  { glyph: "@", label: `~/@${user.username}`, href: selfProfileHref },
+                  ...section.items.slice(1),
+                ]
+              : section.items;
+          return (
+            <div key={section.label}>
+              <p className="px-4 pb-2 pt-4 text-[10px] uppercase tracking-[0.16em] text-text-faint">
+                {section.label}
+              </p>
+              <nav className="flex flex-col gap-0.5 px-2">
+                {items.map((item) => (
+                  <NavLink
+                    key={item.href}
+                    item={item}
+                    isActive={
+                      item.href === selfProfileHref
+                        ? pathname === selfProfileHref
+                        : isNavActive(pathname, item.href, allHrefs)
+                    }
+                    onNavigate={onNavigate}
+                  />
+                ))}
+              </nav>
+            </div>
+          );
+        })}
       </div>
 
-      {/* ③ HERO_STATUSフッター */}
+      {/* ③ HERO_STATUS フッター（クリックでアカウントメニュー開閉） */}
       {isAuthenticated && user && hero && (
-        <div className="mt-auto p-3 border-t border-line bg-bg-elev-2">
-          <p className="text-[10px] uppercase tracking-[0.08em] text-text-faint mb-2">
-            HERO_STATUS
-          </p>
-          <div className="flex items-center gap-2">
-            {/* アバタータイル */}
-            <div
-              className="w-8 h-8 rounded-sm flex items-center justify-center shrink-0 text-white text-[14px] font-bold"
-              style={{
-                background:
-                  "linear-gradient(135deg, var(--accent), var(--accent-2))",
-              }}
-            >
-              {user.username[0].toUpperCase()}
+        <div
+          className={[
+            "mt-auto border-t bg-bg-elev-2",
+            inAccountZone ? "border-accent/40" : "border-line",
+          ].join(" ")}
+        >
+          {menuOpen && (
+            <nav aria-label="アカウントメニュー" className="border-b border-line px-2 py-2">
+              {selfProfileHref && (
+                <Link
+                  className="flex items-center rounded px-[10px] py-1.5 text-[12px] text-text hover:bg-bg-elev"
+                  href={selfProfileHref}
+                  onClick={onNavigate}
+                >
+                  <span className="mr-2 inline-block w-[16px] text-center text-text-dim">@</span>
+                  公開プロフィールを見る
+                </Link>
+              )}
+              {ACCOUNT_MENU_ITEMS.map((item) => (
+                <Link
+                  key={item.href}
+                  className={[
+                    "flex items-center rounded px-[10px] py-1.5 text-[12px] hover:bg-bg-elev",
+                    pathname.startsWith(item.href) ? "text-accent" : "text-text",
+                  ].join(" ")}
+                  href={item.href}
+                  onClick={onNavigate}
+                >
+                  <span className="mr-2 inline-block w-[16px] text-center text-text-dim">
+                    {item.glyph}
+                  </span>
+                  {item.label}
+                </Link>
+              ))}
+              <div className="mx-2 my-1.5 border-t border-line" />
+              {legalFooterLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  className="flex items-center rounded px-[10px] py-1 text-[11px] text-text-dim hover:bg-bg-elev hover:text-text"
+                  href={link.href}
+                  onClick={onNavigate}
+                >
+                  <span className="mr-2 inline-block w-[16px] text-center text-text-faint">§</span>
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          )}
+
+          <button
+            aria-expanded={menuOpen}
+            aria-label="アカウントメニューを開閉"
+            className="w-full p-3 text-left transition-colors hover:bg-bg-elev"
+            onClick={() => setMenuOpen((open) => !open)}
+            type="button"
+          >
+            <p className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.08em] text-text-faint">
+              HERO_STATUS
+              <span aria-hidden className="text-[12px]">
+                {menuOpen ? "▾" : "▴"}
+              </span>
+            </p>
+            <div className="flex items-center gap-2">
+              <div
+                className="flex size-8 shrink-0 items-center justify-center rounded-sm text-[14px] font-bold text-white"
+                style={{
+                  background: "linear-gradient(135deg, var(--accent), var(--accent-2))",
+                }}
+              >
+                {user.username[0].toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[12px] text-text">{user.username}</p>
+                <p className="text-[10px] text-text-faint">Lv.{hero.level}</p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[12px] text-text truncate">{user.username}</p>
-              <p className="text-[10px] text-text-faint">Lv.{hero.level}</p>
+            <div className="mt-2 h-1 overflow-hidden rounded-full bg-bg-elev">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${Math.min(hero.progressRatio * 100, 100)}%`,
+                  background: "linear-gradient(135deg, var(--accent), var(--accent-2))",
+                }}
+              />
             </div>
-          </div>
-          {/* ミニXPバー */}
-          <div className="h-1 mt-2 rounded-full bg-bg-elev overflow-hidden">
-            <div
-              className="h-full rounded-full"
-              style={{
-                width: `${Math.min(hero.progressRatio * 100, 100)}%`,
-                background:
-                  "linear-gradient(135deg, var(--accent), var(--accent-2))",
-              }}
-            />
-          </div>
+          </button>
         </div>
       )}
+    </div>
+  );
+}
+
+export function SideBar() {
+  return (
+    <aside className="flex h-full">
+      <SideBarContent />
     </aside>
   );
 }

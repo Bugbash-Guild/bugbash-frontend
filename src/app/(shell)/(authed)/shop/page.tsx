@@ -11,6 +11,7 @@ import { usePurchase } from "@/hooks/usePurchase";
 import { ItemVisual } from "@/components/ItemVisual";
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
+import { ShopTabs } from "@/components/ShopTabs";
 import {
   buildShopPurchasePresentation,
   formatShopCurrencyAmount,
@@ -77,20 +78,9 @@ export default function ShopPage() {
     <>
       <ConsoleTopbar command="./browse --shop-items" path="~/shop" showWallet />
       <div className="px-9 py-6 min-h-screen">
-        <nav aria-label="ショップ種別" className="mb-4 inline-flex border border-line text-[11px]">
-          <Link className="px-3 py-2 text-text-dim hover:text-text" href="/shop/runes">
-            RUNES
-          </Link>
-          <Link
-            className="border-x border-line px-3 py-2 text-text-dim hover:text-accent-2"
-            href="/shop/skins"
-          >
-            SKINS
-          </Link>
-          <span aria-current="page" className="bg-bg-elev-2 px-3 py-2 text-accent">
-            ITEMS
-          </span>
-        </nav>
+        <div className="mb-4">
+          <ShopTabs current="items" />
+        </div>
 
         {successFlash && (
           <div className="mb-4 px-3 py-2 bg-accent/10 border border-accent/40 rounded text-[12px] text-accent">

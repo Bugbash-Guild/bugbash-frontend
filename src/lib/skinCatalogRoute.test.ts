@@ -23,10 +23,17 @@ describe("/shop/skins catalog route", () => {
     assert.doesNotMatch(page, /カウントダウン|残り時間|あと\d+|在庫/);
   });
 
-  it("exposes the skin catalog from the existing shop tabs", async () => {
+  it("exposes the skin catalog from the shared shop tabs", async () => {
+    // The tab bar now lives in the shared ShopTabs component, rendered by all
+    // three shop leaves (the sidebar has a single ~/shop entry).
     const shopPage = await readFile(SHOP_PAGE_URL, "utf8");
+    assert.match(shopPage, /<ShopTabs current="items" \/>/);
 
-    assert.match(shopPage, /href="\/shop\/skins"/);
-    assert.match(shopPage, />\s*SKINS\s*</);
+    const shopTabs = await readFile(
+      new URL("../components/ShopTabs.tsx", import.meta.url),
+      "utf8",
+    );
+    assert.match(shopTabs, /href: "\/shop\/skins"/);
+    assert.match(shopTabs, /SKINS/);
   });
 });

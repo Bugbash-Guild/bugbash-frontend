@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { GameAssetFallback } from "@/components/GameAssetFallback";
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
+import { ShopTabs } from "@/components/ShopTabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useMonsters } from "@/hooks/useMonsters";
 import { usePurchase } from "@/hooks/usePurchase";
@@ -192,17 +193,7 @@ export default function SkinCatalogPage() {
               所有モンスターに使える外装から先に表示します。強さや報酬は変わりません。
             </p>
           </div>
-          <nav aria-label="ショップ種別" className="flex border border-line text-[11px]">
-            <Link className="px-3 py-2 text-text-dim hover:text-text" href="/shop/runes">
-              RUNES
-            </Link>
-            <span aria-current="page" className="border-x border-line bg-bg-elev-2 px-3 py-2 text-accent-2">
-              SKINS
-            </span>
-            <Link className="px-3 py-2 text-text-dim hover:text-text" href="/shop">
-              ITEMS
-            </Link>
-          </nav>
+          <ShopTabs current="skins" />
         </header>
 
         {error && (
