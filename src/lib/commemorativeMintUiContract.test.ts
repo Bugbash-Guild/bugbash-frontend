@@ -8,7 +8,7 @@ test("all commemorative plates render the provenance-aware achievement label", a
     "utf8",
   );
   const mintPage = await readFile(
-    new URL("../app/mints/page.tsx", import.meta.url),
+    new URL("../app/(shell)/(authed)/mints/page.tsx", import.meta.url),
     "utf8",
   );
 

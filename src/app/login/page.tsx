@@ -1,16 +1,31 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 
-export default function LoginPage() {
+import { safeReturnTo } from "@/components/AuthGate";
+import { useAuth } from "@/hooks/useAuth";
+
+const RETURN_TO_STORAGE_KEY = "bb.returnTo";
+
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, loading, login } = useAuth();
+  const returnTo = safeReturnTo(searchParams.get("returnTo"));
 
   useEffect(() => {
-    if (!loading && isAuthenticated) router.replace("/");
-  }, [loading, isAuthenticated, router]);
+    if (loading || !isAuthenticated) return;
+    // OAuth 往復では query が失われるため sessionStorage 側も見る
+    const stored = safeReturnTo(window.sessionStorage.getItem(RETURN_TO_STORAGE_KEY));
+    window.sessionStorage.removeItem(RETURN_TO_STORAGE_KEY);
+    router.replace(returnTo ?? stored ?? "/");
+  }, [loading, isAuthenticated, returnTo, router]);
+
+  const handleLogin = () => {
+    if (returnTo) window.sessionStorage.setItem(RETURN_TO_STORAGE_KEY, returnTo);
+    login();
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-bg p-10">
@@ -57,7 +72,7 @@ export default function LoginPage() {
 
             {/* auth button */}
             <button
-              onClick={login}
+              onClick={handleLogin}
               disabled={loading}
               className="w-full py-[14px] px-4 bg-text text-bg border-none rounded-[4px] text-[14px] font-semibold flex items-center justify-center gap-[10px] cursor-pointer tracking-[0.02em] hover:opacity-90 transition-opacity disabled:opacity-50"
             >
@@ -79,5 +94,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginContent />
+    </Suspense>
   );
 }

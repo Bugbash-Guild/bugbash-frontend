@@ -3,8 +3,8 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { describe, it } from "node:test";
 
-const PAGE_URL = new URL("../app/shop/skins/page.tsx", import.meta.url);
-const SHOP_PAGE_URL = new URL("../app/shop/page.tsx", import.meta.url);
+const PAGE_URL = new URL("../app/(shell)/(authed)/shop/skins/page.tsx", import.meta.url);
+const SHOP_PAGE_URL = new URL("../app/(shell)/(authed)/shop/page.tsx", import.meta.url);
 
 describe("/shop/skins catalog route", () => {
   it("renders the canonical API-backed catalog structure without urgency UI", async () => {
