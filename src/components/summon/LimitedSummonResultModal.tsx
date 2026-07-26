@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { ItemVisual } from "@/components/ItemVisual";
-import { getSummonItemDisplay } from "@/app/summon/summonDisplay";
+import { getSummonItemDisplay } from "@/lib/summonDisplay";
 import type { ItemRarity } from "@/types/summon";
 
 export type LimitedResultItem = {
