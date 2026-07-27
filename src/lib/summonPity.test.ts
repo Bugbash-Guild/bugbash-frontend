@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  buildPassPityUpsell,
   buildPityMeterPresentation,
   formatSummonCurrencyCost,
   mapSummonPullErrorMessage,
@@ -93,6 +94,50 @@ describe("summon pity presentation", () => {
     assert.equal(
       mapSummonPullErrorMessage(500, "summon backend failed"),
       "召喚結果を確認できませんでした。履歴を確認してから再度お試しください。",
+    );
+  });
+});
+
+describe("buildPassPityUpsell", () => {
+  it("shows the pass hard pity and the difference for non-subscribers", () => {
+    const upsell = buildPassPityUpsell(disclosure, false);
+
+    assert.deepEqual(upsell, {
+      currentHardPityPull: 70,
+      passHardPityPull: 60,
+      reducedBy: 10,
+      text: "アドベンチャラーパス加入中は天井 60 回（10回少ない）",
+    });
+  });
+
+  it("shows nothing to subscribers, who already have the shorter pity applied", () => {
+    assert.equal(buildPassPityUpsell(disclosure, true), null);
+  });
+
+  it("shows nothing when the API does not provide a pass hard pity", () => {
+    assert.equal(
+      buildPassPityUpsell(
+        { ...disclosure, adventurerPassHardPityPull: null },
+        false,
+      ),
+      null,
+    );
+  });
+
+  it("shows nothing when the pass would not shorten the pity", () => {
+    assert.equal(
+      buildPassPityUpsell(
+        { ...disclosure, adventurerPassHardPityPull: 70 },
+        false,
+      ),
+      null,
+    );
+    assert.equal(
+      buildPassPityUpsell(
+        { ...disclosure, adventurerPassHardPityPull: 80 },
+        false,
+      ),
+      null,
     );
   });
 });

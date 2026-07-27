@@ -93,7 +93,11 @@ export default function ShopPage() {
         {loading ? (
           <TermLoading lines={["query shop.items --currency=all"]} />
         ) : items.length === 0 ? (
-          <ConsoleEmptyState glyph="▣" message="現在販売中のアイテムはありません。入荷までお待ちください。" />
+          <ConsoleEmptyState
+            action={{ href: "/shop/skins", label: "スキンを見る" }}
+            glyph="▣"
+            message="現在販売中のアイテムはありません。入荷までお待ちください。"
+          />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {items.map((item) => {

@@ -1,12 +1,17 @@
 "use client";
 
+import Link from "next/link";
+
 import { buildPityMeterPresentation } from "@/lib/summonPity";
+import type { PassPityUpsell } from "@/lib/summonPity";
 import type { PityCounterResponse, SummonDisclosureResponse } from "@/types/summon";
 
 type PityMeterProps = {
   disclosure: SummonDisclosureResponse | null;
   error?: string | null;
   loading?: boolean;
+  /** 未加入者にだけ渡す。パス加入時の天井を事実として併記する。 */
+  passUpsell?: PassPityUpsell | null;
   pity: PityCounterResponse | null;
 };
 
@@ -22,7 +27,13 @@ const BADGE_TONE_CLASS = {
   soft: "border-gold/40 bg-gold/10 text-gold",
 } as const;
 
-export function PityMeter({ disclosure, error, loading = false, pity }: PityMeterProps) {
+export function PityMeter({
+  disclosure,
+  error,
+  loading = false,
+  passUpsell = null,
+  pity,
+}: PityMeterProps) {
   if (loading) {
     return <div className="h-28 border border-line bg-bg-elev" />;
   }
@@ -77,6 +88,17 @@ export function PityMeter({ disclosure, error, loading = false, pity }: PityMete
           </span>
         )}
       </div>
+      {passUpsell && (
+        <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-line pt-3 text-[11px]">
+          <span className="text-text-dim">{passUpsell.text}</span>
+          <Link
+            className="text-rune underline underline-offset-2 hover:opacity-80"
+            href="/pass"
+          >
+            パスの内容を見る →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

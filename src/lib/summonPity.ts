@@ -32,6 +32,49 @@ export function selectEffectivePityDisclosure(
   };
 }
 
+export type PassPityUpsell = {
+  currentHardPityPull: number;
+  passHardPityPull: number;
+  reducedBy: number;
+  text: string;
+};
+
+/**
+ * 未加入者に「パスなら天井が何回になるか」を提示するための表示値。
+ *
+ * 加入者には既に `selectEffectivePityDisclosure` で短い天井が適用されているが、
+ * 未加入者にはこの差が一切見えていなかった（＝価値を知らないまま買えない）。
+ * 天井の数字を見ている、まさにその地点に事実だけを置く。
+ * 煽り・カウントダウン・欠乏の演出はしない（数値と行き先のみ）。
+ *
+ * @returns 提示するものが無ければ null（加入済み / API未提供 / 短縮にならない）
+ */
+export function buildPassPityUpsell(
+  disclosure: Pick<
+    SummonDisclosureResponse,
+    "hardPityPull" | "adventurerPassHardPityPull"
+  >,
+  passEntitled: boolean,
+): PassPityUpsell | null {
+  if (passEntitled) return null;
+
+  const passHardPityPull = disclosure.adventurerPassHardPityPull;
+  if (passHardPityPull == null) return null;
+
+  const currentHardPityPull = disclosure.hardPityPull;
+  const reducedBy = currentHardPityPull - passHardPityPull;
+  if (reducedBy <= 0) return null;
+
+  return {
+    currentHardPityPull,
+    passHardPityPull,
+    reducedBy,
+    text: `アドベンチャラーパス加入中は天井 ${passHardPityPull.toLocaleString(
+      "ja-JP",
+    )} 回（${reducedBy.toLocaleString("ja-JP")}回少ない）`,
+  };
+}
+
 export function buildPityMeterPresentation(
   pity: PityCounterResponse,
   disclosure: Pick<SummonDisclosureResponse, "hardPityPull" | "softPityPull">,
