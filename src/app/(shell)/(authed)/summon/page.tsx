@@ -345,7 +345,12 @@ export default function SummonPage() {
 function SingleResult({ data }: { data: SummonOnceResponse }) {
   const display = getSummonItemDisplay(data.itemId, data.assetUrl);
   return (
-    <div className={`rounded-lg p-6 text-center ${RARITY_BG[data.rarity]}`}>
+    <div className={`relative rounded-lg p-6 text-center ${RARITY_BG[data.rarity]}`}>
+      {data.isNew && (
+        <span className="absolute left-2 top-2 text-[9px] font-extrabold tracking-[0.12em] text-accent">
+          NEW
+        </span>
+      )}
       <ItemVisual
         alt={display.name}
         assetUrl={display.assetUrl}
@@ -376,8 +381,13 @@ function SummonCard({ item }: { item: SummonItem }) {
   const display = getSummonItemDisplay(item.itemId, item.assetUrl);
   return (
     <div
-      className={`rounded p-2 text-center border border-line ${RARITY_BG[item.rarity]}`}
+      className={`relative rounded p-2 text-center border border-line ${RARITY_BG[item.rarity]}`}
     >
+      {item.isNew && (
+        <span className="absolute left-1 top-0.5 text-[8px] font-extrabold tracking-[0.1em] text-accent">
+          NEW
+        </span>
+      )}
       <ItemVisual
         alt={display.name}
         assetUrl={display.assetUrl}
