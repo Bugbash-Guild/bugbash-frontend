@@ -30,7 +30,10 @@ import {
   LimitedSummonHttpError,
   type LimitedPullCount,
 } from "@/lib/limitedSummon";
-import { selectEffectivePityDisclosure } from "@/lib/summonPity";
+import {
+  buildPassPityUpsell,
+  selectEffectivePityDisclosure,
+} from "@/lib/summonPity";
 import { getSummonItemDisplay } from "@/lib/summonDisplay";
 
 export default function LimitedSummonPage() {
@@ -82,6 +85,10 @@ export default function LimitedSummonPage() {
   const effectiveDisclosure =
     disclosure && subscription
       ? selectEffectivePityDisclosure(disclosure, subscription.entitled)
+      : null;
+  const passPityUpsell =
+    disclosure && subscription
+      ? buildPassPityUpsell(disclosure, subscription.entitled)
       : null;
   const featuredDisplay = featured
     ? getSummonItemDisplay(featured.itemId, featured.assetUrl)
@@ -242,6 +249,7 @@ export default function LimitedSummonPage() {
 
             <PityMeter
               disclosure={effectiveDisclosure}
+              passUpsell={passPityUpsell}
               error={pityError ?? disclosureError ?? subscriptionError}
               loading={disclosureLoading || subscriptionLoading}
               pity={pity}

@@ -552,13 +552,17 @@ function MonsterCard({
         </div>
       )}
 
-      {m.isOwned && m.slug && !cosmetic && (
+      {/*
+        愛着が湧いた相棒の隣に棚を置く（demand-first）。
+        既にスキンを着せている相棒こそ次を見たい層なので、cosmetic の有無で隠さない。
+      */}
+      {m.isOwned && m.slug && (
         <Link
-          className="mt-2 block text-center text-[10px] text-text-faint underline underline-offset-4 hover:text-rune"
+          className="mt-2 block rounded border border-rune-border bg-rune-bg px-2 py-1 text-center text-[10px] text-rune transition-[filter] hover:brightness-125"
           href={`/shop/skins?monster=${encodeURIComponent(m.slug)}`}
           onClick={(event) => event.stopPropagation()}
         >
-          ◨ このモンスターのスキンを見る
+          ◨ {cosmetic ? "別のスキンを見る" : "このモンスターのスキンを見る"}
         </Link>
       )}
 

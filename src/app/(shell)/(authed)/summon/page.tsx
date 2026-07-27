@@ -17,6 +17,7 @@ import { ItemVisual } from "@/components/ItemVisual";
 import { LegalFooter } from "@/components/LegalFooter";
 import { PityMeter } from "@/components/summon/PityMeter";
 import {
+  buildPassPityUpsell,
   formatSummonCurrencyCost,
   selectEffectivePityDisclosure,
 } from "@/lib/summonPity";
@@ -81,7 +82,10 @@ export default function SummonPage() {
     disclosure && subscription
       ? selectEffectivePityDisclosure(disclosure, subscription.entitled)
       : null;
-
+  const passPityUpsell =
+    disclosure && subscription
+      ? buildPassPityUpsell(disclosure, subscription.entitled)
+      : null;
 
   useEffect(() => {
     if (!result) return;
@@ -183,6 +187,7 @@ export default function SummonPage() {
             {/* pity counter */}
             <PityMeter
               disclosure={effectiveDisclosure}
+              passUpsell={passPityUpsell}
               error={pityError ?? disclosureError ?? subscriptionError}
               loading={disclosureLoading || subscriptionLoading}
               pity={pity}
