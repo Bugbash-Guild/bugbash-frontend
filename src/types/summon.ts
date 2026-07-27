@@ -4,12 +4,14 @@ export type SummonItem = {
     itemId: string;
     rarity: ItemRarity;
     assetUrl?: string | null;
+    isNew: boolean;
 };
 
 export type SummonOnceResponse = {
     itemId: string;
     rarity: ItemRarity;
     assetUrl?: string | null;
+    isNew: boolean;
     newPullCount: number;
     coinsRemaining: number;
 };
