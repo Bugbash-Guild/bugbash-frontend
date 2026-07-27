@@ -11,6 +11,8 @@ import { usePurchase } from "@/hooks/usePurchase";
 import { ItemVisual } from "@/components/ItemVisual";
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
+import { ConsoleEmptyState } from "@/components/ConsoleEmptyState";
+import { TermLoading } from "@/components/TermLoading";
 import { ShopTabs } from "@/components/ShopTabs";
 import {
   buildShopPurchasePresentation,
@@ -89,9 +91,9 @@ export default function ShopPage() {
         )}
 
         {loading ? (
-          <div className="text-text-faint text-[13px]">loading shop…</div>
+          <TermLoading lines={["query shop.items --currency=all"]} />
         ) : items.length === 0 ? (
-          <div className="text-text-faint text-[13px]">商品がありません</div>
+          <ConsoleEmptyState glyph="▣" message="現在販売中のアイテムはありません。入荷までお待ちください。" />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {items.map((item) => {

@@ -3,6 +3,8 @@
 import Link from "next/link";
 
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
+import { ConsoleEmptyState } from "@/components/ConsoleEmptyState";
+import { TermLoading } from "@/components/TermLoading";
 import { useAuth } from "@/hooks/useAuth";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 
@@ -32,7 +34,7 @@ export default function LeaderboardPage() {
       <div className="px-9 py-6 min-h-screen">
 
         {loading ? (
-          <div className="text-text-faint text-[13px]">loading leaderboard…</div>
+          <TermLoading lines={["query leaderboard --sort xp"]} />
         ) : (
           <div className="bg-bg-elev border border-line rounded-lg overflow-hidden">
             {/* table header */}
@@ -46,9 +48,12 @@ export default function LeaderboardPage() {
             </div>
 
             {entries.length === 0 && (
-              <div className="px-4 py-8 text-[13px] text-text-faint text-center">
-                まだデータがありません
-              </div>
+              <ConsoleEmptyState
+                className="m-4"
+                glyph="▲"
+                message="まだランキングがありません。PR をマージした勇者から順に載ります。"
+                action={{ label: "自分のホームへ", href: "/" }}
+              />
             )}
 
             {entries.map((entry) => {

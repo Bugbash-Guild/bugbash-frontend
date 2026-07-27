@@ -252,8 +252,10 @@ export default function SummonPage() {
               SUMMON HISTORY
             </div>
             {entries.length === 0 ? (
-              <div className="text-[12px] text-text-faint py-8 text-center">
-                まだ召喚履歴がありません
+              <div className="text-[12px] text-text-faint py-8 text-center leading-6">
+                まだ召喚履歴がありません。
+                <br />
+                左の [ 召喚 × 1 ] から最初の相棒を迎えましょう。
               </div>
             ) : (
               <div className="space-y-0">
