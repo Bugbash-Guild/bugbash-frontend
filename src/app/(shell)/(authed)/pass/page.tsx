@@ -8,6 +8,7 @@ import { AgeVerificationModal } from "@/components/billing/AgeVerificationModal"
 import { SubscriptionStatusSummary } from "@/components/billing/SubscriptionStatusSummary";
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
+import { ShopTabs } from "@/components/ShopTabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { clearAgeVerification } from "@/lib/billing/ageVerification";
@@ -192,6 +193,7 @@ export default function PassPage() {
               継続特典の内容、加入状態、解約予定をこの画面で確認できます。
             </p>
           </div>
+          <ShopTabs current="pass" />
         </div>
 
         {subscriptionError && (

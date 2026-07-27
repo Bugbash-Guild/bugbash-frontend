@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState } from "react";
 
 import { GameAssetFallback } from "@/components/GameAssetFallback";
 import { InlineActionResult } from "@/components/InlineActionResult";
@@ -88,7 +89,8 @@ function ArtworkComparison({
   );
 }
 
-export default function SkinCatalogPage() {
+function SkinCatalogContent() {
+  const searchParams = useSearchParams();
   const { isAuthenticated } = useAuth();
   const {
     error,
@@ -132,10 +134,17 @@ export default function SkinCatalogPage() {
       ),
     [monsters],
   );
-  const lines = useMemo(
-    () => buildSkinCatalogLines(skins, ownedSkins, ownedMonsterSlugs),
-    [ownedMonsterSlugs, ownedSkins, skins],
-  );
+  const monsterFilter = searchParams.get("monster");
+  const lines = useMemo(() => {
+    const all = buildSkinCatalogLines(skins, ownedSkins, ownedMonsterSlugs);
+    if (!monsterFilter) return all;
+    return all
+      .map((line) => ({
+        ...line,
+        skins: line.skins.filter((skin) => skin.monsterSlug === monsterFilter),
+      }))
+      .filter((line) => line.skins.length > 0);
+  }, [monsterFilter, ownedMonsterSlugs, ownedSkins, skins]);
   const revivalSchedule = useMemo(
     () => buildSkinRevivalSchedule(skins),
     [skins],
@@ -217,6 +226,20 @@ export default function SkinCatalogPage() {
             <button className="text-text underline underline-offset-4" onClick={() => void refetch()} type="button">
               再読み込み
             </button>
+          </div>
+        )}
+
+        {monsterFilter && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[4px] border border-line bg-bg-elev px-4 py-2.5 text-[12px]">
+            <span className="text-text-dim">
+              ◆ <b className="text-text">{monsterNames.get(monsterFilter) ?? monsterFilter}</b> のスキンだけを表示中
+            </span>
+            <Link
+              className="shrink-0 text-[11px] text-text-faint underline underline-offset-4 hover:text-text"
+              href="/shop/skins"
+            >
+              すべて表示
+            </Link>
           </div>
         )}
 
@@ -474,5 +497,13 @@ export default function SkinCatalogPage() {
         </div>
       )}
     </>
+  );
+}
+
+export default function SkinCatalogPage() {
+  return (
+    <Suspense>
+      <SkinCatalogContent />
+    </Suspense>
   );
 }

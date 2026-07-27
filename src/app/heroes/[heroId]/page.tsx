@@ -6,6 +6,7 @@ import { FiAward } from "react-icons/fi";
 
 import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
 import { MonsterVisual } from "@/components/MonsterVisual";
+import { useAuth } from "@/hooks/useAuth";
 import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { usePublicHeroBadges } from "@/hooks/useBadges";
 import { usePublicHeroProfile } from "@/hooks/useHeroProfile";
@@ -158,6 +159,9 @@ export default function PublicHeroPage() {
     mints,
   } = usePublicCommemorativeMints(heroId);
   const { profile } = usePublicHeroProfile(heroId);
+  const { user } = useAuth();
+  // バッジ管理・記念鋳造はサイドバーから外し、その実体であるこの2セクションから入る
+  const isSelf = user?.githubId != null && user.githubId === heroId;
 
   const handle = profile?.githubLogin ?? heroId;
   const topTier = badges.reduce((max, b) => Math.max(max, b.currentTier), 0);
@@ -274,7 +278,17 @@ export default function PublicHeroPage() {
         )}
 
         {/* badges */}
-        <SectionHeading note="ティアは活動でのみ上昇" title="BADGES" />
+        <SectionHeading
+          note={isSelf ? undefined : "ティアは活動でのみ上昇"}
+          title="BADGES"
+        />
+        {isSelf && (
+          <p className="-mt-1 mb-3 text-right text-[11px]">
+            <Link className="text-text-dim underline underline-offset-4 hover:text-accent" href="/badges">
+              バッジを管理（公開設定・工房） →
+            </Link>
+          </p>
+        )}
         {badgesLoading && <p className="text-[12px] text-text-faint">loading badges…</p>}
         {badgesError && <p className="text-[12px] text-pink">バッジを読み込めませんでした。</p>}
         {!badgesLoading &&
@@ -292,7 +306,17 @@ export default function PublicHeroPage() {
           ))}
 
         {/* commemorative casts */}
-        <SectionHeading note="記念鋳造 · 刻印は自動（偽造不可）" title="COMMEMORATIVE CASTS" />
+        <SectionHeading
+          note={isSelf ? undefined : "記念鋳造 · 刻印は自動（偽造不可）"}
+          title="COMMEMORATIVE CASTS"
+        />
+        {isSelf && (
+          <p className="-mt-1 mb-3 text-right text-[11px]">
+            <Link className="text-text-dim underline underline-offset-4 hover:text-accent" href="/mints">
+              記念プレートを鋳造する →
+            </Link>
+          </p>
+        )}
         {mintsLoading && <p className="text-[12px] text-text-faint">loading collection…</p>}
         {mintsError && <p className="text-[12px] text-pink">公開コレクションを読み込めませんでした。</p>}
         {!mintsLoading &&

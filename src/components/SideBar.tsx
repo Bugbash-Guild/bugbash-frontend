@@ -12,6 +12,7 @@ import {
   ACCOUNT_PATHS,
   isNavActive,
   NAV_SECTIONS,
+  PROFILE_ADJACENT_PATHS,
   type NavItem,
 } from "@/lib/navConfig";
 import { legalFooterLinks } from "@/lib/legalPages";
@@ -103,7 +104,8 @@ export function SideBarContent({ onNavigate }: { onNavigate?: () => void }) {
                     item={item}
                     isActive={
                       item.href === selfProfileHref
-                        ? pathname === selfProfileHref
+                        ? pathname === selfProfileHref ||
+                          PROFILE_ADJACENT_PATHS.includes(pathname)
                         : isNavActive(pathname, item.href, allHrefs)
                     }
                     onNavigate={onNavigate}
