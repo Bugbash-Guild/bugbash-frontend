@@ -1,11 +1,12 @@
 import Link from "next/link";
 
-type ShopTab = "runes" | "skins" | "items";
+type ShopTab = "runes" | "skins" | "items" | "pass";
 
 const TABS: { key: ShopTab; label: string; href: string }[] = [
   { key: "runes", label: "RUNES", href: "/shop/runes" },
   { key: "skins", label: "SKINS", href: "/shop/skins" },
   { key: "items", label: "ITEMS", href: "/shop" },
+  { key: "pass", label: "PASS", href: "/pass" },
 ];
 
 /**
@@ -21,7 +22,7 @@ export function ShopTabs({ current }: { current: ShopTab }) {
             aria-current="page"
             className={[
               "bg-bg-elev-2 px-3 py-2 font-semibold text-rune",
-              index === 1 ? "border-x border-line" : "",
+              index > 0 ? "border-l border-line" : "",
             ].join(" ")}
             key={tab.key}
           >
@@ -31,7 +32,7 @@ export function ShopTabs({ current }: { current: ShopTab }) {
           <Link
             className={[
               "px-3 py-2 text-text-dim transition-colors hover:text-text",
-              index === 1 ? "border-x border-line" : "",
+              index > 0 ? "border-l border-line" : "",
             ].join(" ")}
             href={tab.href}
             key={tab.key}

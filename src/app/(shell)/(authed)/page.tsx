@@ -9,6 +9,7 @@ import { useMonsters } from "@/hooks/useMonsters";
 import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { FirstQuestChecklist } from "@/components/FirstQuestChecklist";
+import { NextActionStrip } from "@/components/NextActionStrip";
 import { TermLoading } from "@/components/TermLoading";
 import { GameAssetFallback } from "@/components/GameAssetFallback";
 import { MonsterVisual } from "@/components/MonsterVisual";
@@ -161,6 +162,8 @@ export default function Home() {
               ownedMonsterCount={ownedMonsters}
             />
 
+            <NextActionStrip enabled={isAuthenticated} guildCoinBalance={hero.guildCoinBalance} />
+
             {/* HERO PANEL */}
             <div className="bg-bg-elev border border-line rounded-lg p-6 grid gap-7 mb-3.5 relative overflow-hidden"
               style={{ gridTemplateColumns: "auto 1fr" }}>
@@ -233,19 +236,6 @@ export default function Home() {
                     {hero.streakDays}d streak
                   </div>
 
-                  {/* resource summary (real data) */}
-                  <div className="flex gap-2.5 mt-4">
-                    {[
-                      { k: "GUILD COIN", v: hero.guildCoinBalance.toLocaleString("ja-JP"), c: "var(--coin)" },
-                      { k: "PRS MERGED", v: String(hero.totalPrsMerged), c: "var(--accent)" },
-                      { k: "STREAK", v: `${hero.streakDays}d`, c: "var(--accent-2)" },
-                    ].map((s) => (
-                      <div key={s.k} className="flex-1 px-3 py-2 bg-bg-elev-2 border border-line rounded">
-                        <div className="text-[9px] text-text-faint tracking-[0.14em]">{s.k}</div>
-                        <div className="text-[22px] font-semibold leading-[1.1] mt-0.5 tabular-nums" style={{ color: s.c }}>{s.v}</div>
-                      </div>
-                    ))}
-                  </div>
                 </div>
 
                 {/* XP progress */}
@@ -291,8 +281,8 @@ export default function Home() {
               <div className="grid grid-cols-2 gap-2.5">
                 {[
                   { label: "PRs merged",      value: String(hero.totalPrsMerged),  delta: "lifetime",                                     color: "var(--accent)" },
-                  { label: "monsters caught",  value: ownedDegraded ? "—" : String(ownedMonsters), delta: ownedDegraded ? "取得エラー" : `${discoveredSpecies}/${totalSpecies || 20} dex`, color: "var(--purple)" },
-                  { label: "guild coin",       value: hero.guildCoinBalance.toLocaleString("ja-JP"), delta: "balance",                     color: "var(--coin)" },
+                  { label: "monsters caught",  value: ownedDegraded ? "—" : String(ownedMonsters), delta: ownedDegraded ? "取得エラー" : "instances", color: "var(--purple)" },
+                  { label: "dex progress",     value: ownedDegraded ? "—" : `${discoveredSpecies}/${totalSpecies || 20}`, delta: "discovered", color: "var(--gold)" },
                   { label: "streak",           value: `${hero.streakDays}d`,         delta: hero.streakDays > 1 ? "active" : "keep it up!", color: "var(--accent-2)" },
                 ].map((s) => (
                   <div key={s.label} className="bg-bg-elev border border-line rounded-[6px] px-3.5 py-3">

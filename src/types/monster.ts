@@ -10,6 +10,8 @@ export type MonsterFormStage =
 
 export type Monster = {
     id: string;
+    /** 所持インスタンスの取得日時（ISO）。新着ハイライトに使う。 */
+    acquiredAt?: string;
     ownedMonsterId?: string | number;
     slug?: string;
     name: string;

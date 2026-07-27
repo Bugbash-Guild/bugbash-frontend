@@ -21,6 +21,7 @@ type OwnedMonstersDto = {
     monsters: {
         id: string;
         ownedMonsterId?: string | number;
+        acquiredAt?: string;
         slug?: string;
         soulCount: number;
         level: number;
@@ -64,6 +65,7 @@ const fetchCompendium = async (): Promise<Compendium> => {
         return {
             id: m.id,
             ownedMonsterId: owned?.ownedMonsterId,
+            acquiredAt: owned?.acquiredAt,
             slug: owned?.slug ?? m.slug,
             name: m.name,
             emoji: m.emoji,

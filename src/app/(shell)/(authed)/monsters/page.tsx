@@ -11,6 +11,7 @@ import { MonsterVisual } from "@/components/MonsterVisual";
 import { RARITY_COLOR } from "@/constants/rarity";
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
+import { useInventory } from "@/hooks/useInventory";
 import { useMonsters } from "@/hooks/useMonsters";
 import { usePartner } from "@/hooks/usePartner";
 import { useSkinCatalog } from "@/hooks/useSkinCatalog";
@@ -71,6 +72,7 @@ export default function MonstersPage() {
   const { monsters, ownedDegraded, loading, error, refetch } = useMonsters();
   const { partnerId, setPartner } = usePartner();
   const { ownedSkins } = useSkinCatalog(isAuthenticated);
+  const { items: inventoryItems } = useInventory(isAuthenticated);
   const { refetch: refetchHero } = useHero(isAuthenticated);
   const { mints } = usePublicCommemorativeMints(user?.githubId);
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -152,6 +154,20 @@ export default function MonstersPage() {
     return map;
   }, [ownedSkins]);
 
+  // 「今の収穫」が分かるように、直近24時間に迎えたモンスターへ NEW を出す
+  const recentlyAcquiredIds = useMemo(() => {
+    const threshold = Date.now() - 24 * 60 * 60 * 1000;
+    return new Set(
+      dex
+        .filter((m) => {
+          if (!m.acquiredAt) return false;
+          const at = new Date(m.acquiredAt).getTime();
+          return Number.isFinite(at) && at >= threshold;
+        })
+        .map((m) => m.id),
+    );
+  }, [dex]);
+
   const partnerMonster = dex.find((m) => m.id === partnerId) ?? null;
   const discoveredCount = dex.filter((m) => m.isOwned).length;
   const ownedInstances = dex.reduce((sum, m) => sum + (m.isOwned ? 1 : 0), 0);
@@ -199,6 +215,25 @@ export default function MonstersPage() {
             })}
           </div>
         </div>
+
+        {/* 素材（育成の燃料）— 詳細は /items */}
+        {inventoryItems.length > 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-[4px] border border-line bg-bg-elev px-3.5 py-2 text-[11px]">
+            <span className="text-[9px] uppercase tracking-[0.12em] text-text-faint">MATERIALS</span>
+            {inventoryItems.slice(0, 6).map((item) => (
+              <span className="text-text-dim" key={item.itemId}>
+                {item.name}
+                <span className="ml-1 tabular-nums text-text">×{item.quantity}</span>
+              </span>
+            ))}
+            <Link
+              className="ml-auto text-[10px] text-text-faint underline underline-offset-4 hover:text-accent"
+              href="/items"
+            >
+              インベントリ →
+            </Link>
+          </div>
+        )}
 
         {/* FAVORITE / partner banner */}
         <div
@@ -287,6 +322,7 @@ export default function MonstersPage() {
                       monster={m}
                       isPartner={m.id === partnerId}
                       cosmetic={m.slug ? (cosmeticBySlug.get(m.slug) ?? null) : null}
+                      isRecent={recentlyAcquiredIds.has(m.id)}
                       mint={matchMintToOwnedMonster(mints, m.ownedMonsterId)}
                       busy={{
                         levelingUp: levelingUp === m.id,
@@ -318,6 +354,7 @@ function MonsterCard({
   monster: m,
   isPartner,
   cosmetic,
+  isRecent,
   mint,
   busy,
   onSetPartner,
@@ -328,6 +365,7 @@ function MonsterCard({
   monster: Monster;
   isPartner: boolean;
   cosmetic: { masteryLevel: number; lineName: string; skinId: string } | null;
+  isRecent: boolean;
   mint: CommemorativeMintPlate | undefined;
   busy: { levelingUp: boolean; evolving: boolean; changingPath: boolean };
   onSetPartner: () => void;
@@ -375,6 +413,11 @@ function MonsterCard({
         cursor: m.isOwned ? "pointer" : "not-allowed",
       }}
     >
+      {isRecent && (
+        <span className="absolute -top-2.5 left-2.5 rounded-[2px] border border-accent/50 bg-bg px-1.5 py-0.5 text-[9px] font-extrabold tracking-[0.1em] text-accent">
+          NEW
+        </span>
+      )}
       {isPartner && (
         <span
           className="absolute -top-2.5 right-2.5 rounded-[2px] px-2 py-0.5 text-[9px] font-bold tracking-[0.1em]"
@@ -507,6 +550,16 @@ function MonsterCard({
             </div>
           )}
         </div>
+      )}
+
+      {m.isOwned && m.slug && !cosmetic && (
+        <Link
+          className="mt-2 block text-center text-[10px] text-text-faint underline underline-offset-4 hover:text-rune"
+          href={`/shop/skins?monster=${encodeURIComponent(m.slug)}`}
+          onClick={(event) => event.stopPropagation()}
+        >
+          ◨ このモンスターのスキンを見る
+        </Link>
       )}
 
       {mint && <CommemorativePlate className="mt-3" plate={mint} />}
