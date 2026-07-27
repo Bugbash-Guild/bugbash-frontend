@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
+import { TermLoading } from "@/components/TermLoading";
 import { ItemVisual } from "@/components/ItemVisual";
 import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/hooks/useInventory";
@@ -122,7 +123,7 @@ export default function ItemsPage() {
           </p>
         </div>
 
-        {loading && <p className="mb-4 text-[13px] text-text-faint">loading inventory…</p>}
+        {loading && <TermLoading className="mb-4" lines={["query inventory --grid"]} />}
         {error && <p className="mb-4 text-[13px] text-pink">error: {error}</p>}
 
         {/* layout: grids + selected panel */}

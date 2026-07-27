@@ -8,6 +8,8 @@ import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
 import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
+import { FirstQuestChecklist } from "@/components/FirstQuestChecklist";
+import { TermLoading } from "@/components/TermLoading";
 import { GameAssetFallback } from "@/components/GameAssetFallback";
 import { MonsterVisual } from "@/components/MonsterVisual";
 import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
@@ -150,9 +152,15 @@ export default function Home() {
         )}
 
         {heroLoading || !hero ? (
-          <div className="text-text-faint text-[13px]">loading hero…</div>
+          <TermLoading lines={["query hero.stats", "render holo-card"]} />
         ) : (
           <>
+            <FirstQuestChecklist
+              hero={hero}
+              ownedDegraded={ownedDegraded}
+              ownedMonsterCount={ownedMonsters}
+            />
+
             {/* HERO PANEL */}
             <div className="bg-bg-elev border border-line rounded-lg p-6 grid gap-7 mb-3.5 relative overflow-hidden"
               style={{ gridTemplateColumns: "auto 1fr" }}>
@@ -306,7 +314,9 @@ export default function Home() {
                 )}
                 {!activitiesLoading && activities.length === 0 && (
                   <div className="px-3.5 py-4 text-[12px] text-text-faint">
-                    まだアクティビティがありません — PRをマージしよう
+                    {hero?.hasGithubAppInstalled
+                      ? "まだアクティビティがありません — PRをマージしよう"
+                      : "追跡が始まっていません — GitHub App を導入すると、PRマージがここに流れます"}
                   </div>
                 )}
                 {activities.slice(0, 6).map((a, i) => {

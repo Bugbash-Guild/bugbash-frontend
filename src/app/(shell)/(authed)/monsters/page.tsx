@@ -6,6 +6,7 @@ import { mutate } from "swr";
 
 import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
+import { TermLoading } from "@/components/TermLoading";
 import { MonsterVisual } from "@/components/MonsterVisual";
 import { RARITY_COLOR } from "@/constants/rarity";
 import { useAuth } from "@/hooks/useAuth";
@@ -245,7 +246,7 @@ export default function MonstersPage() {
         </div>
 
         {/* messages */}
-        {loading && <p className="mt-4 text-[13px] text-text-faint">loading dex…</p>}
+        {loading && <TermLoading className="mt-4" lines={["query dex --all", "join dex --owned"]} />}
         {error && <p className="mt-4 text-[13px] text-pink">error: {error}</p>}
         {ownedDegraded && (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded border border-pink/30 bg-pink/10 px-3 py-2 text-[12px] text-pink">

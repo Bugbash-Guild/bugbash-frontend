@@ -8,6 +8,7 @@ import { GameAssetFallback } from "@/components/GameAssetFallback";
 import { InlineActionResult } from "@/components/InlineActionResult";
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
+import { TermLoading } from "@/components/TermLoading";
 import { ShopTabs } from "@/components/ShopTabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useMonsters } from "@/hooks/useMonsters";
@@ -219,8 +220,23 @@ export default function SkinCatalogPage() {
           </div>
         )}
 
+        {/* スキンは所有モンスターの外装。1体もいない場合は先に相棒を（CTAは名声圏=召喚のみ） */}
+        {!loading && monsters.length > 0 && ownedMonsterSlugs.size === 0 && (
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-[4px] border border-accent/30 bg-accent/[0.06] px-4 py-3 text-[12px] text-text-dim">
+            <span>
+              スキンは所有モンスターの外装です。まずはコイン召喚で最初の相棒を迎えましょう。
+            </span>
+            <Link
+              className="shrink-0 rounded-[4px] border border-accent/40 bg-accent/[0.08] px-3 py-1.5 text-[11px] font-semibold text-accent hover:brightness-110"
+              href="/summon"
+            >
+              コイン召喚へ →
+            </Link>
+          </div>
+        )}
+
         {loading ? (
-          <p className="py-12 text-[12px] text-text-faint">loading skin archive…</p>
+          <TermLoading className="py-8" lines={["query skins --group=line", "sort --demand-first"]} />
         ) : lines.length === 0 ? (
           <div className="border border-dashed border-line-strong bg-bg-elev px-5 py-12 text-center text-[12px] text-text-dim">
             公開中のスキンはありません。
