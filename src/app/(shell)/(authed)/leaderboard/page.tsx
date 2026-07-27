@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
+
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { useAuth } from "@/hooks/useAuth";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
-import Link from "next/link";
 
 const RANK_COLORS: Record<number, string> = {
   1: "var(--gold)",
@@ -17,23 +19,17 @@ const RANK_GLYPHS: Record<number, string> = {
 };
 
 export default function LeaderboardPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { entries, loading } = useLeaderboard(isAuthenticated);
+  // heroId == githubId は確立済みの契約（home が /api/heroes/{githubId}/... を使用）
+  const selfHeroId = user?.githubId ?? null;
 
 
 
   return (
     <>
+      <ConsoleTopbar command="./rank --all --sort xp" path="~/leaderboard" showWallet />
       <div className="px-9 py-6 min-h-screen">
-        {/* header */}
-        <div className="text-[13px] text-text-dim mb-4">
-          <span className="text-accent">root@bugbash</span>
-          <span className="text-text-faint">:</span>
-          <span className="text-accent-2">~/leaderboard</span>
-          <span className="text-text-faint">$ </span>
-          <span>./rank --all --sort xp</span>
-          <span className="inline-block w-2 h-[14px] ml-0.5 bg-accent align-middle animate-pulse" />
-        </div>
 
         {loading ? (
           <div className="text-text-faint text-[13px]">loading leaderboard…</div>
@@ -60,10 +56,16 @@ export default function LeaderboardPage() {
               const glyph = RANK_GLYPHS[entry.rank] ?? "·";
               const login = entry.githubLogin ?? entry.heroId;
 
+              const isSelf = selfHeroId != null && entry.heroId === selfHeroId;
               return (
                 <div
                   key={entry.heroId}
-                  className="grid px-4 py-3 border-b border-line last:border-b-0 items-center hover:bg-bg-elev-2 transition-colors"
+                  className={[
+                    "grid px-4 py-3 border-b border-line last:border-b-0 items-center transition-colors",
+                    isSelf
+                      ? "border-l-2 border-l-accent bg-accent/[0.06]"
+                      : "hover:bg-bg-elev-2",
+                  ].join(" ")}
                   style={{ gridTemplateColumns: "3rem 1fr 4rem 6rem 5rem" }}
                 >
                   {/* rank */}
@@ -83,6 +85,11 @@ export default function LeaderboardPage() {
                       {login[0]?.toUpperCase() ?? "?"}
                     </div>
                     <Link className="text-[13px] text-text truncate hover:text-accent" href={`/heroes/${encodeURIComponent(entry.heroId)}`}>{login}</Link>
+                    {isSelf && (
+                      <span className="shrink-0 rounded-[2px] border border-accent/40 bg-accent/[0.08] px-1.5 py-px text-[9px] font-bold tracking-[0.1em] text-accent">
+                        YOU
+                      </span>
+                    )}
                   </div>
 
                   {/* level */}

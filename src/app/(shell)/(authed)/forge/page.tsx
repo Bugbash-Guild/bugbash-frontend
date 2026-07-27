@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
@@ -29,14 +30,31 @@ export default function ForgePage() {
   } = useForge(isAuthenticated);
   const [selectedSkinId, setSelectedSkinId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const skinParamAppliedRef = useRef(false);
 
-
+  // 選択の一元的な調停: 現在の選択が有効ならそのまま。無効なら、
+  // 初回に限り ?skin= クエリを優先し（monsters のコスメバッジからの遷移）、
+  // それ以外は先頭を自動選択する。2つの effect に分けると同一レンダーで
+  // 自動選択がクエリ適用を上書きし得るため、1つの effect に統合している。
   useEffect(() => {
     if (selectedSkinId != null && ownedSkins.some((skin) => skin.skinId === selectedSkinId)) {
       return;
     }
-    setSelectedSkinId(ownedSkins[0]?.skinId ?? null);
-  }, [ownedSkins, selectedSkinId]);
+    if (ownedSkins.length === 0) {
+      if (selectedSkinId != null) setSelectedSkinId(null);
+      return;
+    }
+    if (!skinParamAppliedRef.current) {
+      skinParamAppliedRef.current = true;
+      const requested = searchParams.get("skin");
+      if (requested && ownedSkins.some((skin) => skin.skinId === requested)) {
+        setSelectedSkinId(requested);
+        return;
+      }
+    }
+    setSelectedSkinId(ownedSkins[0].skinId);
+  }, [ownedSkins, selectedSkinId, searchParams]);
 
   const selectedSkin = ownedSkins.find((skin) => skin.skinId === selectedSkinId) ?? null;
   const costRows = useMemo(() => buildForgeCostTable(levelDefs), [levelDefs]);

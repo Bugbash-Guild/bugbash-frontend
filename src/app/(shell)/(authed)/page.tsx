@@ -13,6 +13,7 @@ import { MonsterVisual } from "@/components/MonsterVisual";
 import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
 
 import { RARITY_COLOR } from "@/constants/rarity";
+import { getMonsterArtwork } from "@/lib/monsterArtwork";
 
 function formatTimeAgo(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -191,7 +192,6 @@ export default function Home() {
                 <div className="px-3.5 py-2.5 border-t border-line"
                   style={{ background: "rgba(11,15,13,0.67)" }}>
                   <div className="text-[16px] font-semibold text-text">{username}</div>
-                  <div className="text-[12px] text-text-faint mt-1 tracking-[0.05em]">click to equip →</div>
                 </div>
               </div>
 
@@ -203,12 +203,19 @@ export default function Home() {
                     <div className="text-[80px] font-bold leading-none tracking-[-0.04em] text-text">
                       Lv<span className="text-accent">.{hero.level}</span>
                     </div>
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[11px] font-semibold text-accent border border-accent/[0.27]"
-                      style={{ background: "rgba(126,231,135,0.094)" }}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-accent"
-                        style={{ boxShadow: "0 0 6px #7ee787" }} />
-                      ACTIVE
-                    </div>
+                    {hero.hasGithubAppInstalled ? (
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[11px] font-semibold text-accent border border-accent/[0.27]"
+                        style={{ background: "rgba(126,231,135,0.094)" }}>
+                        <span className="w-1.5 h-1.5 rounded-full bg-accent"
+                          style={{ boxShadow: "0 0 6px #7ee787" }} />
+                        TRACKING
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center gap-1.5 rounded-[3px] border border-line px-2.5 py-1 text-[11px] font-semibold text-text-faint">
+                        <span className="size-1.5 rounded-full bg-text-faint" />
+                        OFFLINE
+                      </div>
+                    )}
                   </div>
                   <div className="text-[13px] text-text-dim mt-2">
                     {hero.totalExperience.toLocaleString()} XP earned
@@ -315,11 +322,19 @@ export default function Home() {
                     <div key={a.id} className={`px-3.5 py-3 flex gap-3 ${i < Math.min(activities.length, 6) - 1 ? "border-b border-line" : ""}`}>
                       <div className="w-8 h-8 rounded-[4px] shrink-0 bg-bg-elev-2 border border-line flex items-center justify-center text-base">
                         {monster ? (
-                          <MonsterVisual
-                            className="size-full"
-                            name={monster.name}
-                            sizes="32px"
-                          />
+                          getMonsterArtwork({ name: monster.name }) ? (
+                            <MonsterVisual
+                              className="size-full"
+                              name={monster.name}
+                              sizes="32px"
+                            />
+                          ) : (
+                            // アートワークを解決できないモンスターは API 由来の絵文字で表示
+                            // （従来は灰色プレースホルダに落ちていた）
+                            <span aria-label={monster.name} role="img">
+                              {monster.emoji}
+                            </span>
+                          )
                         ) : (
                           <GameAssetFallback alt="activity" className="size-full" kind="activity" />
                         )}

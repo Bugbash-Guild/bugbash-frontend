@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { mutate } from "swr";
 
@@ -137,12 +138,13 @@ export default function MonstersPage() {
   );
   // 装備中スキンのマスタリー（コスメ・琥珀）を monsterSlug で引けるようにする
   const cosmeticBySlug = useMemo(() => {
-    const map = new Map<string, { masteryLevel: number; lineName: string }>();
+    const map = new Map<string, { masteryLevel: number; lineName: string; skinId: string }>();
     for (const skin of ownedSkins) {
       if (skin.equipped) {
         map.set(skin.monsterSlug, {
           masteryLevel: skin.masteryLevel,
           lineName: skin.lineName,
+          skinId: skin.skinId,
         });
       }
     }
@@ -324,7 +326,7 @@ function MonsterCard({
 }: {
   monster: Monster;
   isPartner: boolean;
-  cosmetic: { masteryLevel: number; lineName: string } | null;
+  cosmetic: { masteryLevel: number; lineName: string; skinId: string } | null;
   mint: CommemorativeMintPlate | undefined;
   busy: { levelingUp: boolean; evolving: boolean; changingPath: boolean };
   onSetPartner: () => void;
@@ -453,12 +455,14 @@ function MonsterCard({
             </span>
           )}
           {cosmetic && (
-            <span
-              title={`${cosmetic.lineName} スキン装備（コスメ・見た目のみ）`}
-              className="inline-flex items-center rounded-[2px] border border-rune-border bg-rune-bg px-[7px] py-px text-[9px] font-bold tracking-[0.08em] text-rune"
+            <Link
+              href={`/forge?skin=${encodeURIComponent(cosmetic.skinId)}`}
+              onClick={(event) => event.stopPropagation()}
+              title={`${cosmetic.lineName} スキン装備（コスメ・見た目のみ）— 工房で深化`}
+              className="inline-flex items-center rounded-[2px] border border-rune-border bg-rune-bg px-[7px] py-px text-[9px] font-bold tracking-[0.08em] text-rune hover:brightness-125"
             >
               ⚒ St{cosmetic.masteryLevel} · COSMETIC
-            </span>
+            </Link>
           )}
         </div>
       )}
