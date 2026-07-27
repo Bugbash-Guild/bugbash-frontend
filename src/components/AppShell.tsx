@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { MobileNavDrawer } from "@/components/MobileNavDrawer";
 import { PendingGrantBanner } from "@/components/billing/PendingGrantBanner";
 import { SideBar } from "@/components/SideBar";
+import { TrackingStatusBanner } from "@/components/TrackingStatusBanner";
 
 /**
  * アプリ共通のウィンドウフレーム + サイドバー + スクロール領域。
@@ -47,6 +48,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             style={{ scrollbarWidth: "none" }}
           >
             <PendingGrantBanner />
+            <TrackingStatusBanner />
             {children}
           </main>
         </div>
