@@ -28,11 +28,10 @@ export function useAuth() {
         if (hasSessionHint()) setOptimisticAuthenticated(true);
     }, []);
 
+    // フォーカス再検証の間隔は SWRProvider の既定（30 秒）に従う。
     const { data } = useSWR<AuthStatus | null>(AUTH_STATUS_KEY, fetcher, {
         dedupingInterval: 2000,
         revalidateOnFocus: true,
-        // フォーカスが往復するたびに叩かないよう間隔を空ける
-        focusThrottleInterval: 30_000,
     });
 
     // 実レスポンスが届くまで data は undefined。
