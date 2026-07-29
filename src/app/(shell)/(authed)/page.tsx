@@ -240,14 +240,38 @@ export default function Home() {
                       </div>
                     )}
                   </div>
+                  {/* PR数とストリークは下の統計と重複するので、ここは総XPのみ */}
                   <div className="text-[13px] text-text-dim mt-2">
-                    {hero.totalExperience.toLocaleString()} XP earned
-                    <span className="text-text-faint mx-2">·</span>
-                    {hero.totalPrsMerged} PRs merged
-                    <span className="text-text-faint mx-2">·</span>
-                    {hero.streakDays}d streak
+                    {hero.totalExperience.toLocaleString("ja-JP")} XP earned
                   </div>
 
+                </div>
+
+                {/*
+                  正典 home.html はここに ATK/DEF/LUCK を置いているが、
+                  その3値は FE の型にも BE の API にも存在しない（捏造になるので置かない）。
+                  代わりに実在する4指標をここに上げ、空洞を実データで埋める。
+                  下段はアクティビティログの全幅に使う。
+                */}
+                <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                {[
+                    { label: "PRs merged",      value: String(hero.totalPrsMerged),  delta: "lifetime",                                     color: "var(--accent)" },
+                    { label: "monsters caught",  value: ownedDegraded ? "—" : String(ownedMonsters), delta: ownedDegraded ? "取得エラー" : "instances", color: "var(--purple)" },
+                    { label: "dex progress",     value: ownedDegraded || !totalSpecies ? "—" : `${discoveredSpecies}/${totalSpecies}`, delta: "discovered", color: "var(--gold)" },
+                    { label: "streak",           value: `${hero.streakDays}d`,         delta: hero.streakDays >= STREAK_BONUS_DAYS ? `+${STREAK_BONUS_COINS}コインが有効` : `${STREAK_BONUS_DAYS}日で+${STREAK_BONUS_COINS}コイン`, color: "var(--accent-2)" },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-bg-elev border border-line rounded-[6px] px-3.5 py-3">
+                      <div className="text-[11px] text-text-faint tracking-[0.1em] mb-2">{s.label.toUpperCase()}</div>
+                      <div className="text-[32px] font-bold leading-none" style={{ color: s.color }}>{s.value}</div>
+                      <div className="text-[11px] text-text-dim mt-1.5">{s.delta}</div>
+                    </div>
+                  ))}
+                    {/* ストリークの仕組みを隠さない（煽りも入れない） */}
+                  <p className="col-span-2 text-[10px] leading-5 text-text-faint sm:col-span-4">
+                    ストリークは活動した日数です。{STREAK_BONUS_DAYS}日以上で、PRマージ1件あたり{STREAK_BONUS_COINS}コインが上乗せされます。
+                    <span className="text-text-dim">土日は途切れの対象になりません</span>
+                    （平日を空けると1日目に戻ります）。
+                  </p>
                 </div>
 
                 {/* XP progress */}
@@ -296,29 +320,7 @@ export default function Home() {
                 </div>
               </section>
             )}
-            <div className="grid gap-3.5 grid-cols-1 lg:grid-cols-[1fr_2fr]">
-              {/* 2×2 stat boxes */}
-              <div className="grid grid-cols-2 gap-2.5">
-                {[
-                  { label: "PRs merged",      value: String(hero.totalPrsMerged),  delta: "lifetime",                                     color: "var(--accent)" },
-                  { label: "monsters caught",  value: ownedDegraded ? "—" : String(ownedMonsters), delta: ownedDegraded ? "取得エラー" : "instances", color: "var(--purple)" },
-                  { label: "dex progress",     value: ownedDegraded || !totalSpecies ? "—" : `${discoveredSpecies}/${totalSpecies}`, delta: "discovered", color: "var(--gold)" },
-                  { label: "streak",           value: `${hero.streakDays}d`,         delta: hero.streakDays >= STREAK_BONUS_DAYS ? `+${STREAK_BONUS_COINS}コインが有効` : `${STREAK_BONUS_DAYS}日で+${STREAK_BONUS_COINS}コイン`, color: "var(--accent-2)" },
-                ].map((s) => (
-                  <div key={s.label} className="bg-bg-elev border border-line rounded-[6px] px-3.5 py-3">
-                    <div className="text-[11px] text-text-faint tracking-[0.1em] mb-2">{s.label.toUpperCase()}</div>
-                    <div className="text-[32px] font-bold leading-none" style={{ color: s.color }}>{s.value}</div>
-                    <div className="text-[11px] text-text-dim mt-1.5">{s.delta}</div>
-                  </div>
-                ))}
-                {/* ストリークの仕組みを隠さない（煽りも入れない） */}
-                <p className="col-span-2 text-[10px] leading-5 text-text-faint">
-                  ストリークは活動した日数です。{STREAK_BONUS_DAYS}日以上で、PRマージ1件あたり{STREAK_BONUS_COINS}コインが上乗せされます。
-                  <span className="text-text-dim">土日は途切れの対象になりません</span>
-                  （平日を空けると1日目に戻ります）。
-                </p>
-              </div>
-
+            <div className="grid gap-3.5">
               {/* activity log */}
               <div className="bg-bg-elev border border-line rounded-[6px] overflow-hidden">
                 <div className="px-3.5 py-2.5 border-b border-line flex items-center justify-between">

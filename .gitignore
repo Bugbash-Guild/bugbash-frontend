@@ -44,3 +44,6 @@ next-env.d.ts
 
 .idea
 .claude
+
+# 画面確認スクリプトの出力（npm run check:visual）
+.visual/
