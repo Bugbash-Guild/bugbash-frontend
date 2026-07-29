@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
 import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
+import { useSummonDisclosure } from "@/hooks/useSummonDisclosure";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { FirstQuestChecklist } from "@/components/FirstQuestChecklist";
 import { NextActionStrip } from "@/components/NextActionStrip";
@@ -123,6 +124,10 @@ export default function Home() {
   const { monsters, ownedDegraded } = useMonsters();
   const { activities, loading: activitiesLoading } = useActivities();
   const { mints: commemorativeMints } = usePublicCommemorativeMints(user?.githubId);
+  // NextActionStrip は hero が来てから描画されるが、コスト取得はそれを待つ理由が
+  // ないのでここで並列に始める（待つと往復が 1 段増える）。
+  const { disclosure: normalSummon } = useSummonDisclosure(isAuthenticated, "normal");
+  const { disclosure: limitedSummon } = useSummonDisclosure(isAuthenticated, "limited");
 
 
 
@@ -175,7 +180,12 @@ export default function Home() {
               ownedMonsterCount={ownedMonsters}
             />
 
-            <NextActionStrip enabled={isAuthenticated} guildCoinBalance={hero.guildCoinBalance} />
+            <NextActionStrip
+              enabled={isAuthenticated}
+              guildCoinBalance={hero.guildCoinBalance}
+              limitedPullCost={limitedSummon?.singlePullCost}
+              normalPullCost={normalSummon?.singlePullCost}
+            />
 
             {/* HERO PANEL */}
             <div className="bg-bg-elev border border-line rounded-lg p-4 md:p-6 grid gap-5 md:gap-7 mb-3.5 relative overflow-hidden grid-cols-1 md:grid-cols-[auto_1fr]">

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 
-import { useSummonDisclosure } from "@/hooks/useSummonDisclosure";
 import { useWallet } from "@/hooks/useWallet";
 import { buildNextActions, type NextActionRow } from "@/lib/nextAction";
 
@@ -37,21 +36,31 @@ const TONE: Record<
   },
 };
 
+/**
+ * 召喚コストは呼び出し側で取得して渡す。
+ *
+ * この帯は hero が来るまで描画されないので、以前は内部の
+ * `useSummonDisclosure` が hero 取得後にようやく発火し、
+ * home の初回表示で往復がもう 1 段増えていた（実測 851ms 開始）。
+ * 取得を親へ上げて、hero と並列に走らせる。
+ */
 export function NextActionStrip({
   enabled,
   guildCoinBalance,
+  limitedPullCost,
+  normalPullCost,
 }: {
   enabled: boolean;
-  guildCoinBalance: number;
+  guildCoinBalance: number | null | undefined;
+  limitedPullCost: number | null | undefined;
+  normalPullCost: number | null | undefined;
 }) {
-  const { disclosure: normal } = useSummonDisclosure(enabled, "normal");
-  const { disclosure: limited } = useSummonDisclosure(enabled, "limited");
   const { wallet } = useWallet(enabled);
 
   const rows = buildNextActions({
     guildCoinBalance,
-    limitedPullCost: limited?.singlePullCost,
-    normalPullCost: normal?.singlePullCost,
+    limitedPullCost,
+    normalPullCost,
     runeBalance: wallet?.runeBalance,
   });
 

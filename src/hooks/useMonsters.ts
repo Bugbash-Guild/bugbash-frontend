@@ -1,6 +1,7 @@
 // src/hooks/useMonsters.ts
 'use client';
 
+import { useMemo } from 'react';
 import useSWR from 'swr';
 
 import { fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
@@ -35,70 +36,88 @@ type OwnedMonstersDto = {
     }[];
 };
 
-type Compendium = {
-    monsters: Monster[];
-    /**
-     * owned の取得に失敗した状態（401以外）。この間 isOwned は信頼できない。
-     * 以前は黙って空配列にフォールバックしており、エラー表示なしで
-     * 「全モンスター未所持」に見えていた（issue #122）。
-     */
-    ownedDegraded: boolean;
-};
+const CATALOG_KEY = '/api/monsters/all';
+const OWNED_KEY = '/api/monsters/owned';
 
-const fetchCompendium = async (): Promise<Compendium> => {
-    let ownedDegraded = false;
-    const [allData, ownedData] = await Promise.all([
-        fetchJson<AllMonstersDto>('/api/monsters/all', undefined, 'monsters/all'),
-        fetchJson<OwnedMonstersDto>('/api/monsters/owned', undefined, 'monsters/owned').catch(
-            (error: unknown) => {
-                if (isUnauthorizedApiError(error)) throw error;
-                ownedDegraded = true;
-                return { monsters: [] };
-            },
-        ),
-    ]);
+/** マスタデータはリリースでしか変わらないので、遷移ごとに取り直さない。 */
+const CATALOG_DEDUPING_INTERVAL_MS = 5 * 60 * 1000;
 
-    const ownedMap = new Map(ownedData.monsters.map((m) => [m.id, m]));
-
-    const monsters = allData.monsters.map((m) => {
-        const owned = ownedMap.get(m.id);
-        return {
-            id: m.id,
-            ownedMonsterId: owned?.ownedMonsterId,
-            acquiredAt: owned?.acquiredAt,
-            slug: owned?.slug ?? m.slug,
-            name: m.name,
-            emoji: m.emoji,
-            rarity: m.rarity as Monster['rarity'],
-            isOwned: ownedMap.has(m.id),
-            attribute: owned?.attribute,
-            attributeName: owned?.attributeName,
-            attributeEmoji: owned?.attributeEmoji,
-            soulCount: owned?.soulCount ?? 0,
-            level: owned?.level ?? 1,
-            awakeningState: owned?.awakeningState,
-            formStage: owned?.formStage,
-            assetUrl: owned?.assetUrl,
-            artworkByStage: owned?.artworkByStage ?? m.artworkByStage,
-        };
-    });
-
-    return { monsters, ownedDegraded };
-};
+const fetchCatalog = (url: string) => fetchJson<AllMonstersDto>(url, undefined, 'monsters/all');
+const fetchOwned = (url: string) => fetchJson<OwnedMonstersDto>(url, undefined, 'monsters/owned');
 
 export function useMonsters() {
-    const { data, error, isLoading, mutate } = useSWR<Compendium>(
-        'monsters-compendium',
-        fetchCompendium,
-        { revalidateOnFocus: true },
-    );
-    useRedirectOnUnauthorized(error);
+    // マスタと所持を別キーにしている。以前は Promise.all で 1 つの
+    // SWR キーにまとめていたため、
+    //   - どちらか片方が遅いだけで図鑑全体が loading のまま
+    //   - 遷移するたびにマスタ（全モンスター）も取り直し
+    //   - 所持だけ再検証したいときもマスタが付いてくる
+    // という状態だった。
+    // dedupingInterval だけで抑えて revalidateIfStale は切らない。
+    // 「セッション中ずっと取り直さない」にするとリリースで増えた
+    // モンスターがリロードまで出てこないため。
+    const catalog = useSWR<AllMonstersDto>(CATALOG_KEY, fetchCatalog, {
+        dedupingInterval: CATALOG_DEDUPING_INTERVAL_MS,
+        revalidateOnFocus: false,
+    });
+
+    const owned = useSWR<OwnedMonstersDto>(OWNED_KEY, fetchOwned, {
+        revalidateOnFocus: true,
+    });
+
+    // 片方の非 401 エラーがもう片方の 401 を隠さないよう、それぞれ渡す。
+    useRedirectOnUnauthorized(catalog.error);
+    useRedirectOnUnauthorized(owned.error);
+
+    /**
+     * 所持の取得に失敗した状態（401以外）。この間 isOwned は信頼できない。
+     * 以前は黙って空配列にフォールバックしており、エラー表示なしで
+     * 「全モンスター未所持」に見えていた（issue #122）。
+     * キーを分けても「所持だけ失敗」は黙らせない。
+     */
+    const ownedDegraded = Boolean(owned.error) && !isUnauthorizedApiError(owned.error);
+
+    const monsters = useMemo<Monster[]>(() => {
+        const allMonsters = catalog.data?.monsters;
+        if (!allMonsters) return [];
+
+        const ownedMap = new Map((owned.data?.monsters ?? []).map((m) => [m.id, m]));
+
+        return allMonsters.map((m) => {
+            const ownedMonster = ownedMap.get(m.id);
+            return {
+                id: m.id,
+                ownedMonsterId: ownedMonster?.ownedMonsterId,
+                acquiredAt: ownedMonster?.acquiredAt,
+                slug: ownedMonster?.slug ?? m.slug,
+                name: m.name,
+                emoji: m.emoji,
+                rarity: m.rarity as Monster['rarity'],
+                isOwned: ownedMap.has(m.id),
+                attribute: ownedMonster?.attribute,
+                attributeName: ownedMonster?.attributeName,
+                attributeEmoji: ownedMonster?.attributeEmoji,
+                soulCount: ownedMonster?.soulCount ?? 0,
+                level: ownedMonster?.level ?? 1,
+                awakeningState: ownedMonster?.awakeningState,
+                formStage: ownedMonster?.formStage,
+                assetUrl: ownedMonster?.assetUrl,
+                artworkByStage: ownedMonster?.artworkByStage ?? m.artworkByStage,
+            };
+        });
+    }, [catalog.data, owned.data]);
+
+    // 所持側の失敗は error ではなく ownedDegraded で伝える（表示が二重になるのを避ける）。
+    const catalogError =
+        catalog.error && !isUnauthorizedApiError(catalog.error) ? String(catalog.error) : null;
 
     return {
-        monsters: data?.monsters ?? [],
-        ownedDegraded: data?.ownedDegraded ?? false,
-        loading: isLoading,
-        error: error && !isUnauthorizedApiError(error) ? String(error) : null,
-        refetch: () => mutate(),
+        monsters,
+        ownedDegraded,
+        // 図鑑の枠を出せるのはマスタが来た時点。所持はその上に載る差分なので、
+        // 所持待ちでスケルトンを見せ続けない。
+        loading: catalog.isLoading,
+        ownedLoading: owned.isLoading,
+        error: catalogError,
+        refetch: () => Promise.all([catalog.mutate(), owned.mutate()]),
     };
 }
