@@ -24,8 +24,8 @@ export function ConsoleTopbar({ path, command, showWallet = false }: ConsoleTopb
   const username = user?.username ?? (isAuthenticated ? "hero" : "guest");
 
   return (
-    <div className="sticky top-0 z-20 flex h-[54px] items-center justify-between gap-4 border-b border-line bg-bg/[0.86] px-6 backdrop-blur">
-      <div className="truncate text-[13px] text-text-dim">
+    <div className="sticky top-0 z-20 flex h-[54px] items-center justify-between gap-2 border-b border-line bg-bg/[0.86] px-4 backdrop-blur md:gap-4 md:px-6">
+      <div className="min-w-0 truncate text-[13px] text-text-dim">
         <span className="text-accent">{username}@bugbash</span>
         <span className="text-text-faint">:</span>
         <span className="text-blue">{path}</span>
@@ -35,12 +35,12 @@ export function ConsoleTopbar({ path, command, showWallet = false }: ConsoleTopb
       </div>
 
       {showWallet && isAuthenticated && (
-        <div className="flex shrink-0 items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-[4px] border border-coin-border bg-bg-elev-2 px-2.5 py-1.5 text-[13px] font-semibold tabular-nums text-coin">
+        <div className="flex shrink-0 items-center gap-1.5 md:gap-2">
+          <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-[4px] border border-coin-border bg-bg-elev-2 px-2 py-1.5 text-[12px] font-semibold tabular-nums text-coin md:gap-1.5 md:px-2.5 md:text-[13px]">
             <span>🪙</span>
             {wallet ? wallet.guildCoinBalance.toLocaleString("ja-JP") : "—"}
           </span>
-          <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-[4px] border border-rune-border bg-bg-elev-2 px-2.5 py-1.5 text-[13px] font-semibold tabular-nums text-rune">
+          <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-[4px] border border-rune-border bg-bg-elev-2 px-2 py-1.5 text-[12px] font-semibold tabular-nums text-rune md:gap-1.5 md:px-2.5 md:text-[13px]">
             <span>💎</span>
             {wallet ? wallet.runeBalance.toLocaleString("ja-JP") : "—"}
           </span>

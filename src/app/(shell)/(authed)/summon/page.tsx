@@ -136,7 +136,7 @@ export default function SummonPage() {
   return (
     <>
       <ConsoleTopbar command="./summon --currency=coin" path="~/summon" showWallet />
-      <div className="px-9 py-6 min-h-screen">
+      <div className="px-4 py-5 md:px-9 md:py-6 min-h-screen">
         <div className="mb-5 flex flex-wrap items-end justify-between gap-4 max-w-4xl">
           <div>
             <h1 className="flex items-center gap-2 text-[24px] font-semibold text-text">

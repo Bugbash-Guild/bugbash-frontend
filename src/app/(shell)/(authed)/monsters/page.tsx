@@ -187,7 +187,7 @@ export default function MonstersPage() {
   return (
     <>
       <ConsoleTopbar command="cat dex/*.card --format=detailed" path="~/monsters" showWallet />
-      <div className="px-9 py-6">
+      <div className="px-4 py-5 md:px-9 md:py-6">
         {/* page header + filters */}
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>

@@ -127,8 +127,13 @@ export default function Home() {
 
 
   const username = user?.username ?? "hero";
-  const pct = hero ? (hero.progressRatio * 100).toFixed(1) : "0.0";
-  const filledSegments = hero ? Math.round(hero.progressRatio * 60) : 0;
+  // progressRatio が欠けていると "NaN%" とバーの塗り 0 が並ぶ。
+  // 仮の値を置かず、読めないときは "—" にする（formatTimeAgo と同方針）。
+  const progressRatio = Number.isFinite(hero?.progressRatio)
+    ? Math.min(1, Math.max(0, hero!.progressRatio))
+    : null;
+  const pct = progressRatio == null ? null : (progressRatio * 100).toFixed(1);
+  const filledSegments = progressRatio == null ? 0 : Math.round(progressRatio * 60);
   const totalSpecies = monsters.length;
   const discoveredSpecies = monsters.filter((m) => m.isOwned).length;
   const ownedMonsters = discoveredSpecies;
@@ -136,7 +141,7 @@ export default function Home() {
   return (
     <>
       <ConsoleTopbar command="./hero --render --interactive" path="~/home" showWallet />
-      <div className="px-9 py-6 min-h-screen">
+      <div className="px-4 py-5 md:px-9 md:py-6 min-h-screen">
         {process.env.NODE_ENV === "development" && (
           <DevPanel onSuccess={() => void refetchHero()} />
         )}
@@ -173,14 +178,13 @@ export default function Home() {
             <NextActionStrip enabled={isAuthenticated} guildCoinBalance={hero.guildCoinBalance} />
 
             {/* HERO PANEL */}
-            <div className="bg-bg-elev border border-line rounded-lg p-6 grid gap-7 mb-3.5 relative overflow-hidden"
-              style={{ gridTemplateColumns: "auto 1fr" }}>
+            <div className="bg-bg-elev border border-line rounded-lg p-4 md:p-6 grid gap-5 md:gap-7 mb-3.5 relative overflow-hidden grid-cols-1 md:grid-cols-[auto_1fr]">
               {/* ambient glow */}
               <div className="absolute -top-28 -right-24 w-80 h-80 pointer-events-none"
                 style={{ background: "radial-gradient(circle, rgba(126,231,135,0.1), transparent 60%)" }} />
 
               {/* LEFT: hero card */}
-              <div className="w-[240px] min-h-[340px] rounded-[10px] border border-line-strong relative overflow-hidden flex flex-col"
+              <div className="w-full max-w-[240px] mx-auto md:mx-0 min-h-[340px] rounded-[10px] border border-line-strong relative overflow-hidden flex flex-col"
                 style={{
                   background: "linear-gradient(180deg, var(--bg-elev-2) 0%, var(--bg) 100%)",
                   boxShadow: "0 8px 24px rgba(0,0,0,0.4), inset 0 0 30px rgba(126,231,135,0.07)",
@@ -250,10 +254,18 @@ export default function Home() {
                 <div className="mt-6">
                   <div className="flex justify-between text-[14px] text-text-dim mb-2">
                     <span>
-                      <span className="text-text font-semibold">{hero.currentLevelExperience}</span>
-                      {" / "}{hero.experienceForNextLevel} XP
+                      <span className="text-text font-semibold">
+                        {Number.isFinite(hero.currentLevelExperience)
+                          ? hero.currentLevelExperience.toLocaleString("ja-JP")
+                          : "—"}
+                      </span>
+                      {" / "}
+                      {Number.isFinite(hero.experienceForNextLevel)
+                        ? hero.experienceForNextLevel.toLocaleString("ja-JP")
+                        : "—"}{" "}
+                      XP
                     </span>
-                    <span className="text-accent">{pct}%</span>
+                    <span className="text-accent">{pct == null ? "—" : `${pct}%`}</span>
                   </div>
                   {/* 60-segment bar */}
                   <div className="flex gap-0.5">
@@ -284,7 +296,7 @@ export default function Home() {
                 </div>
               </section>
             )}
-            <div className="grid gap-3.5" style={{ gridTemplateColumns: "1fr 2fr" }}>
+            <div className="grid gap-3.5 grid-cols-1 lg:grid-cols-[1fr_2fr]">
               {/* 2×2 stat boxes */}
               <div className="grid grid-cols-2 gap-2.5">
                 {[

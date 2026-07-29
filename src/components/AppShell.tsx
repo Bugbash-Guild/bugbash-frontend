@@ -39,12 +39,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className="text-[11px] text-text-faint">bugbash · v0.1.0</span>
         </div>
 
-        <div className="flex min-h-0 flex-1">
+        <div className="flex min-h-0 min-w-0 flex-1">
           <div className="hidden md:flex">
             <SideBar />
           </div>
           <main
-            className="flex-1 overflow-y-auto bg-bg [&::-webkit-scrollbar]:hidden"
+            className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-bg [&::-webkit-scrollbar]:hidden"
             style={{ scrollbarWidth: "none" }}
           >
             <PendingGrantBanner />

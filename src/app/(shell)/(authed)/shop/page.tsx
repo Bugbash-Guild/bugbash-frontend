@@ -74,7 +74,7 @@ export default function ShopPage() {
   return (
     <>
       <ConsoleTopbar command="./browse --shop-items" path="~/shop" showWallet />
-      <div className="px-9 py-6 min-h-screen">
+      <div className="px-4 py-5 md:px-9 md:py-6 min-h-screen">
         <div className="mb-4">
           <ShopTabs current="items" />
         </div>
