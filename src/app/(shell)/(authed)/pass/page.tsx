@@ -185,7 +185,7 @@ export default function PassPage() {
   return (
     <>
       <ConsoleTopbar command="./manage-adventurer-pass" path="~/pass" showWallet />
-      <div className="min-h-screen px-9 py-6">
+      <div className="min-h-screen px-4 py-5 md:px-9 md:py-6">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-[20px] font-semibold text-text">冒険者パス</h1>

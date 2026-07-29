@@ -36,7 +36,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (loading || !isAuthenticated) {
     return (
-      <div className="px-9 py-6 text-[13px] leading-7 text-text-faint">
+      <div className="px-4 py-5 md:px-9 md:py-6 text-[13px] leading-7 text-text-faint">
         <p>
           <span className="text-text-dim">$</span> auth --verify-session
         </p>

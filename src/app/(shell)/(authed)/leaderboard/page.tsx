@@ -31,20 +31,21 @@ export default function LeaderboardPage() {
   return (
     <>
       <ConsoleTopbar command="./rank --all --sort xp" path="~/leaderboard" showWallet />
-      <div className="px-9 py-6 min-h-screen">
+      <div className="px-4 py-5 md:px-9 md:py-6 min-h-screen">
 
         {loading ? (
           <TermLoading lines={["query leaderboard --sort xp"]} />
         ) : (
           <div className="bg-bg-elev border border-line rounded-lg overflow-hidden">
             {/* table header */}
-            <div className="grid px-4 py-2.5 border-b border-line text-[10px] text-text-faint uppercase tracking-[0.12em]"
-              style={{ gridTemplateColumns: "3rem 1fr 4rem 6rem 5rem" }}>
+            {/* 5列固定だと390pxで溢れるため、狭い幅では XP と STREAK を畳む
+                （行側の対応する列も同じブレークポイントで hidden にしている） */}
+            <div className="grid grid-cols-[2.5rem_1fr_3rem] px-4 py-2.5 border-b border-line text-[10px] text-text-faint uppercase tracking-[0.12em] sm:grid-cols-[3rem_1fr_4rem_6rem] lg:grid-cols-[3rem_1fr_4rem_6rem_5rem]">
               <span>RANK</span>
               <span>HERO</span>
               <span className="text-right">LV</span>
-              <span className="text-right">TOTAL XP</span>
-              <span className="text-right">STREAK</span>
+              <span className="hidden text-right sm:block">TOTAL XP</span>
+              <span className="hidden text-right lg:block">STREAK</span>
             </div>
 
             {entries.length === 0 && (
@@ -66,12 +67,11 @@ export default function LeaderboardPage() {
                 <div
                   key={entry.heroId}
                   className={[
-                    "grid px-4 py-3 border-b border-line last:border-b-0 items-center transition-colors",
+                    "grid grid-cols-[2.5rem_1fr_3rem] px-4 py-3 border-b border-line last:border-b-0 items-center transition-colors sm:grid-cols-[3rem_1fr_4rem_6rem] lg:grid-cols-[3rem_1fr_4rem_6rem_5rem]",
                     isSelf
                       ? "border-l-2 border-l-accent bg-accent/[0.06]"
                       : "hover:bg-bg-elev-2",
                   ].join(" ")}
-                  style={{ gridTemplateColumns: "3rem 1fr 4rem 6rem 5rem" }}
                 >
                   {/* rank */}
                   <div className="flex items-center gap-1.5">
@@ -103,12 +103,12 @@ export default function LeaderboardPage() {
                   </div>
 
                   {/* xp */}
-                  <div className="text-right text-[13px] text-text-dim">
+                  <div className="hidden text-right text-[13px] text-text-dim sm:block">
                     {entry.totalExperience.toLocaleString()}
                   </div>
 
                   {/* streak */}
-                  <div className="text-right text-[12px] text-text-faint">
+                  <div className="hidden text-right text-[12px] text-text-faint lg:block">
                     {entry.streakDays > 1 ? (
                       <span className="text-gold">{entry.streakDays}d active</span>
                     ) : (

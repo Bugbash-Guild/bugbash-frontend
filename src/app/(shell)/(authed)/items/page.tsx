@@ -105,7 +105,7 @@ export default function ItemsPage() {
   return (
     <>
       <ConsoleTopbar command="inv --grid" path="~/items" showWallet />
-      <div className="px-9 py-6">
+      <div className="px-4 py-5 md:px-9 md:py-6">
         {/* page header */}
         <div className="mb-4">
           <h1 className="text-[28px] font-semibold tracking-[-0.015em]">Inventory</h1>

@@ -34,7 +34,7 @@ export default function AdminMonstersPage() {
 
   return (
     <>
-      <div className="px-9 py-6">
+      <div className="px-4 py-5 md:px-9 md:py-6">
         <div className="mb-5 text-[13px] text-text-dim">
           <span className="text-accent">admin@bugbash</span>
           <span className="text-text-faint">:</span>

@@ -3,7 +3,7 @@ import { LegalFooter } from "@/components/LegalFooter";
 
 export function LegalPageShell({ page }: { page: LegalPage }) {
   return (
-    <div className="min-h-screen px-9 py-6">
+    <div className="min-h-screen px-4 py-5 md:px-9 md:py-6">
       <div className="mb-5 text-[13px] text-text-dim">
         <span className="text-accent">root@bugbash</span>
         <span className="text-text-faint">:</span>

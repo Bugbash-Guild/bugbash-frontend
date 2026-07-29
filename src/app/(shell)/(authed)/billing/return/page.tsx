@@ -111,7 +111,7 @@ export default function BillingReturnPage() {
   return (
     <>
       <ConsoleTopbar command="./wait-for-ledger" path="~/billing/return" showWallet />
-      <div className="min-h-screen px-9 py-6">
+      <div className="min-h-screen px-4 py-5 md:px-9 md:py-6">
         <section className="max-w-2xl border border-line bg-bg-elev p-5">
           <div className="mb-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
             BILLING RETURN
