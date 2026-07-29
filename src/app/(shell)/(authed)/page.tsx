@@ -18,8 +18,9 @@ import { CommemorativePlate } from "@/components/commemorative/CommemorativePlat
 import { RARITY_COLOR } from "@/constants/rarity";
 import { getMonsterArtwork } from "@/lib/monsterArtwork";
 
-/** BE: HandlePrMergedUseCase.STREAK_BONUS_DAYS_THRESHOLD と対応。 */
+/** BE: HandlePrMergedUseCase.STREAK_BONUS_DAYS_THRESHOLD / COIN_STREAK_BONUS と対応。 */
 const STREAK_BONUS_DAYS = 7;
+const STREAK_BONUS_COINS = 300;
 
 function formatTimeAgo(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -286,7 +287,7 @@ export default function Home() {
                   { label: "PRs merged",      value: String(hero.totalPrsMerged),  delta: "lifetime",                                     color: "var(--accent)" },
                   { label: "monsters caught",  value: ownedDegraded ? "—" : String(ownedMonsters), delta: ownedDegraded ? "取得エラー" : "instances", color: "var(--purple)" },
                   { label: "dex progress",     value: ownedDegraded ? "—" : `${discoveredSpecies}/${totalSpecies || 20}`, delta: "discovered", color: "var(--gold)" },
-                  { label: "streak",           value: `${hero.streakDays}d`,         delta: hero.streakDays >= STREAK_BONUS_DAYS ? "コイン4倍が有効" : `${STREAK_BONUS_DAYS}日でコイン4倍`, color: "var(--accent-2)" },
+                  { label: "streak",           value: `${hero.streakDays}d`,         delta: hero.streakDays >= STREAK_BONUS_DAYS ? `+${STREAK_BONUS_COINS}コインが有効` : `${STREAK_BONUS_DAYS}日で+${STREAK_BONUS_COINS}コイン`, color: "var(--accent-2)" },
                 ].map((s) => (
                   <div key={s.label} className="bg-bg-elev border border-line rounded-[6px] px-3.5 py-3">
                     <div className="text-[11px] text-text-faint tracking-[0.1em] mb-2">{s.label.toUpperCase()}</div>
@@ -296,7 +297,7 @@ export default function Home() {
                 ))}
                 {/* ストリークの仕組みを隠さない（煽りも入れない） */}
                 <p className="col-span-2 text-[10px] leading-5 text-text-faint">
-                  ストリークは活動した日数です。{STREAK_BONUS_DAYS}日以上で獲得コインが4倍になります。
+                  ストリークは活動した日数です。{STREAK_BONUS_DAYS}日以上で、PRマージ1件あたり{STREAK_BONUS_COINS}コインが上乗せされます。
                   <span className="text-text-dim">土日は途切れの対象になりません</span>
                   （平日を空けると1日目に戻ります）。
                 </p>
