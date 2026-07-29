@@ -2,7 +2,7 @@
 
 import useSWR from 'swr';
 
-import { fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
+import { asArray, fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
 import type { LeaderboardEntry } from '@/types/leaderboard';
 import { useRedirectOnUnauthorized } from './useRedirectOnUnauthorized';
 
@@ -22,7 +22,7 @@ export function useLeaderboard(enabled: boolean) {
     useRedirectOnUnauthorized(error);
 
     return {
-        entries: data ?? [],
+        entries: asArray(data),
         loading: isLoading,
         error: error && !isUnauthorizedApiError(error) ? String(error.message ?? error) : null,
         refetch: () => mutate(),

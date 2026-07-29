@@ -15,6 +15,7 @@ type AllMonstersDto = {
         emoji: string;
         rarity: string;
         artworkByStage?: Partial<Record<MonsterFormStage, string>>;
+        prAcquirable?: boolean;
     }[];
 };
 type OwnedMonstersDto = {
@@ -70,6 +71,7 @@ const fetchCompendium = async (): Promise<Compendium> => {
             name: m.name,
             emoji: m.emoji,
             rarity: m.rarity as Monster['rarity'],
+            prAcquirable: m.prAcquirable,
             isOwned: ownedMap.has(m.id),
             attribute: owned?.attribute,
             attributeName: owned?.attributeName,

@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 
-import { fetchJson, isUnauthorizedApiError } from "@/lib/apiError";
+import { asArray, fetchJson, isUnauthorizedApiError } from "@/lib/apiError";
 import type { RuneProduct } from "@/types/billing";
 import { useRedirectOnUnauthorized } from "./useRedirectOnUnauthorized";
 
@@ -21,7 +21,7 @@ export function useRuneProducts(enabled: boolean) {
   return {
     error: error && !isUnauthorizedApiError(error) ? String(error.message ?? error) : null,
     loading: isLoading,
-    products: data ?? [],
+    products: asArray(data),
     refetch: () => mutate(),
   };
 }

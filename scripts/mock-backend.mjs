@@ -31,7 +31,7 @@ const monsters = NAMES.map((name, i) => ({
   level: i < 8 ? 50 - i * 3 : 1 + (i % 12),
   formStage: i === 0 ? "AWAKENED_FINAL" : i === 1 ? "EVO" : "BASE",
   awakeningState: i === 0 ? "AWAKENED" : "NONE",
-  isOwned: i < 13,
+  isOwned: i < 13 && i < NAMES.length - 5,
   soulCount: 40 + i * 11,
   experience: 120,
   acquiredAt: new Date(Date.now() - i * 3600_000 * 7).toISOString(),
@@ -40,6 +40,8 @@ const monsters = NAMES.map((name, i) => ({
   attribute: ["FIRE","WATER","WIND","EARTH","LIGHT","DARK"][i % 6],
   attributeEmoji: "\ud83d\udd25",
   ownedMonsterId: `om-${i + 1}`,
+  // 末尾5体を召喚専用（未所持）にして、図鑑の入手経路表示を確認できるようにする
+  prAcquirable: i < NAMES.length - 5,
 }));
 
 const routes = {
@@ -135,7 +137,7 @@ const routes = {
   },
   "/api/summon/pity": { poolKey: "NORMAL", pullCount: 46, isSoftPity: false, isHardPity: false },
   "/api/summon/limited/pity": { poolKey: "LIMITED", pullCount: 12, isSoftPity: false, isHardPity: false },
-  "/api/summon/history": { entries: [] },
+  "/api/summon/history": [],
   "/api/shop/items": {
     items: [
       { itemId: "fire-soul-pack-s", name: "炎の魂パック・小", description: "炎属性のモンスターに50魂を指定して付与", currency: "RUNE", price: 30, category: "SOUL_PACK", iconEmoji: "🔮", assetUrl: null, variantGroup: "attribute-soul-pack", attribute: "fire", attributeLabel: "炎", sizeSuffix: "s", sizeLabel: "小" },
@@ -167,19 +169,24 @@ const routes = {
   "/api/skins": { skins: [] },
   "/api/skins/owned": { skins: [] },
   "/api/inventory": { items: [{ itemId: "evolution-stone", name: "進化の輝石", quantity: 2, iconUrl: null }] },
-  "/api/commemorative-mints": { mints: [] },
-  "/api/badges/catalog": { badges: [] },
-  "/api/heroes/me/badges/progress": { badges: [] },
-  "/api/v1/leaderboard": {
-    entries: Array.from({ length: 10 }, (_, i) => ({
-      rank: i + 1, heroId: `hero-${i}`, githubId: i === 4 ? "haseryo0403" : `dev${i}`,
-      name: i === 4 ? "haseryo0403" : `dev${i}`, level: 60 - i * 2, totalExperience: 20000 - i * 1500,
-      totalPrsMerged: 200 - i * 12, avatarUrl: null,
-    })),
-  },
-  "/api/forge/level-defs": {
-    levelDefs: [120, 180, 260, 340, 440, 560, 700, 880, 1120, 1400].map((runeCost, i) => ({ level: i + 1, runeCost })),
-  },
+  // 記念プレートAPIは配列を返す契約。オブジェクトを返すと図鑑が落ちる
+  "/api/commemorative-mints": [],
+  "/api/heroes/haseryo0403/commemorative-mints": [],
+  "/api/badges/catalog": [],
+  "/api/heroes/me/badges/progress": [],
+  // 一覧系APIは配列を返す契約。オブジェクトにすると呼び出し側の .map が落ちる
+  "/api/v1/leaderboard": Array.from({ length: 10 }, (_, i) => ({
+    rank: i + 1,
+    heroId: i === 4 ? "haseryo0403" : `dev${i}`,
+    githubId: i === 4 ? "haseryo0403" : `dev${i}`,
+    name: i === 4 ? "haseryo0403" : `dev${i}`,
+    level: 60 - i * 2,
+    totalExperience: 20000 - i * 1500,
+    totalPrsMerged: 200 - i * 12,
+    streakDays: 10 - i,
+    avatarUrl: null,
+  })),
+  "/api/forge/level-defs": [120, 180, 260, 340, 440, 560, 700, 880, 1120, 1400].map((runeCost, i) => ({ level: i + 1, runeCost })),
 };
 
 http.createServer((req, res) => {

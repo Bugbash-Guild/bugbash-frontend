@@ -32,6 +32,17 @@ export const createApiError = async (response: Response, context: string): Promi
     );
 };
 
+/**
+ * 配列を期待している応答が配列でなかったら空配列として扱う。
+ *
+ * 一覧系APIは配列を返す契約だが、契約外の応答（オブジェクト・null）が来ると
+ * 呼び出し側の `.map` が throw し、**ページが丸ごと白画面になる**。
+ * 実際に /monsters と /leaderboard がこれで落ちた。
+ * 型注釈は「そう来るはず」の宣言であって保証ではないので、境界で受け止める。
+ */
+export const asArray = <T>(value: T[] | undefined | null): T[] =>
+  Array.isArray(value) ? value : [];
+
 export const fetchJson = async <T>(
     url: string,
     init?: RequestInit,

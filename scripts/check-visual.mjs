@@ -10,7 +10,11 @@
  *   BASE_URL=http://localhost:3000 npm run check:visual   # 起動済みに向ける
  *   MOCK_UNREAD=1 npm run check:visual                    # 報酬モーダルも見る
  *
- * 終了コード: 横スクロールが発生するページが1つでもあれば 1。
+ * 終了コード: クラッシュ・JSエラー・横スクロールのいずれかがあれば 1。
+ *
+ * クラッシュ検出を後から足したのは、溢れ検査だけだと**白画面のページが
+ * 通ってしまう**ため（クラッシュしたページの scrollWidth は溢れない）。
+ * 実際に /monsters が壊れているのに OK と報告された。
  * 祖先にクリップされている要素は参考情報として出すだけ（意図的な省略と
  * 区別できないため、これで落とすと誤検知で信用されなくなる）。
  */
@@ -115,6 +119,13 @@ async function main() {
     for (const [vpName, width] of VIEWPORTS) {
       for (const [pageName, route] of PAGES) {
         const page = await browser.newPage({ viewport: { height: 1000, width } });
+        // クラッシュしたページは横溢れが0なので、溢れ検査だけだと OK になってしまう。
+        // 実際に /monsters が白画面のまま OK と報告された。ページの死亡も検出する。
+        const pageErrors = [];
+        page.on("pageerror", (error) => pageErrors.push(String(error).slice(0, 200)));
+        page.on("console", (msg) => {
+          if (msg.type() === "error") pageErrors.push(msg.text().slice(0, 200));
+        });
         try {
           await page.goto(baseUrl + route, {
             timeout: 60_000,
@@ -125,6 +136,12 @@ async function main() {
             fullPage: true,
             path: path.join(OUT_DIR, `${vpName}-${pageName}.png`),
           });
+
+          const crashed = await page.evaluate(() =>
+            document.body.innerText.includes(
+              "Application error: a client-side exception has occurred",
+            ),
+          );
 
           const report = await page.evaluate((ignore) => {
             const vw = document.documentElement.clientWidth;
@@ -155,9 +172,14 @@ async function main() {
           // 参考情報として出すだけにする（誤検知で信用を失わせない）。
           const label = `${vpName}(${width}) ${route}`;
           const scrolls = report.scrollWidth > report.vw + 2;
-          if (scrolls) {
+          if (crashed || pageErrors.length > 0 || scrolls) {
             problems.push({ label, report });
-            console.log(`NG ${label}  scrollWidth=${report.scrollWidth}/${report.vw}`);
+            const reasons = [];
+            if (crashed) reasons.push("クラッシュ（error boundary 表示）");
+            if (pageErrors.length > 0) reasons.push(`JSエラー${pageErrors.length}件`);
+            if (scrolls) reasons.push(`横スクロール ${report.scrollWidth}/${report.vw}`);
+            console.log(`NG ${label}  ${reasons.join(" / ")}`);
+            for (const e of pageErrors.slice(0, 3)) console.log(`     ${e}`);
           } else {
             console.log(`OK ${label}`);
           }
@@ -182,11 +204,11 @@ async function main() {
 
     console.log(`\nスクリーンショット: ${OUT_DIR}/`);
     if (problems.length > 0) {
-      console.log(`横スクロール/エラー: ${problems.length} 件`);
+      console.log(`問題のあるページ: ${problems.length} 件`);
       for (const p of problems) console.log(`  - ${p.label}`);
       process.exitCode = 1;
     } else {
-      console.log("横スクロールなし（全ページ・全幅）");
+      console.log("全ページ・全幅で問題なし（クラッシュ / JSエラー / 横スクロール）");
     }
   } finally {
     for (const child of started) child.kill("SIGTERM");
