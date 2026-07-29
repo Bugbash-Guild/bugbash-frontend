@@ -159,13 +159,35 @@ export default function BillingReturnPage() {
           )}
 
           {status === "confirmed" && (
-            <div className="mt-4">
-              <Link
-                className="border border-accent px-3 py-1.5 text-[12px] text-accent hover:bg-accent hover:text-bg"
-                href={confirmedType === "subscription" ? "/pass" : "/shop"}
-              >
-                {confirmedType === "subscription" ? "パス画面へ" : "ショップへ戻る"}
-              </Link>
+            /*
+              決済直後は「買ったものを使いたい」熱が最も高い地点。
+              ルーン購入で /shop（コインのアイテム棚）に返していたため、
+              買ったルーンの主要な使い道に繋がっていなかった。
+            */
+            <div className="mt-4 flex flex-wrap gap-2">
+              {confirmedType === "subscription" ? (
+                <Link
+                  className="border border-accent px-3 py-1.5 text-[12px] text-accent hover:bg-accent hover:text-bg"
+                  href="/pass"
+                >
+                  パス画面へ
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    className="border border-rune-border bg-rune-bg px-3 py-1.5 text-[12px] text-rune hover:brightness-125"
+                    href="/summon/limited"
+                  >
+                    限定召喚へ →
+                  </Link>
+                  <Link
+                    className="border border-line px-3 py-1.5 text-[12px] text-text-dim hover:bg-bg-elev-2"
+                    href="/shop"
+                  >
+                    ショップへ戻る
+                  </Link>
+                </>
+              )}
             </div>
           )}
         </section>
