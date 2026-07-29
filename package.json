@@ -10,7 +10,9 @@
     "assets:review:skin": "tsx scripts/review-skin-candidates.ts",
     "assets:upload:r2": "tsx scripts/upload-game-assets-r2.ts",
     "dev": "next dev --turbopack",
+    "dev:mock": "node scripts/mock-backend.mjs",
     "build": "next build --turbopack",
+    "check:visual": "node scripts/check-visual.mjs",
     "start": "next start",
     "lint": "next lint",
     "test": "node --import tsx --test \"src/**/*.test.ts\""
@@ -32,6 +34,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
+    "playwright-core": "^1.62.0",
     "prettier": "^3.6.2",
     "sharp": "^0.34.3",
     "tailwindcss": "^4",

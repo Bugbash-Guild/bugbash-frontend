@@ -118,7 +118,7 @@ NAVIGATION                     SHOP
 | badges・mints | 自分のプロフィールのバッジ壁・プレート棚 |
 | pass | shop のタブ |
 | forge | monsters の ⚒ バッジ / スキン詳細 |
-| summon/limited | summon ページ内リンク |
+| summon/limited | summon 先頭の琥珀バナー / home の READY 行（ルーン）/ 決済完了後 |
 | mypage/billing | HERO_STATUS メニュー |
 
 ### 4.3 導線（Job Stories 対応）
@@ -126,7 +126,7 @@ NAVIGATION                     SHOP
 | JS | 実装 |
 |---|---|
 | JS-1 | シェルの `RewardModalHost` がどの入口でも発火 |
-| JS-2 | `NextActionStrip`「召喚 ×N ぶんのコインがあります」（コストは開示APIから取得） |
+| JS-2 | `NextActionStrip` 通貨ごとに「◯◯ ×N ぶんの△△があります」（コストは開示APIから取得。コイン行が常に先） |
 | JS-3 | 召喚結果の `NEW` チップ → 「図鑑で確認 →」→ 図鑑で直近24hに `NEW` |
 | JS-4 | monsters カード →「このモンスターのスキンを見る」→ `/shop/skins?monster=slug` |
 | JS-5 | leaderboard の自分ハイライト（YOU）→ プロフィール |
@@ -142,6 +142,8 @@ NAVIGATION                     SHOP
 | 値を仮置きしない | `TermLoading`（端末出力行）。価格は `—`。召喚コストもAPI由来 |
 | 嘘を置かない（原則7） | 「click to equip」削除 / ACTIVE→TRACKING・OFFLINE / [E]キーは実装 |
 | 色の専有 | 琥珀=課金 / gold=SSR / blue=システム情報 / 緑=名声 |
+| 存在しない値の枠を置かない | 正典 `home.html` の ATK/DEF/LUCK は FE の型にも BE の API にも無い。捏造せず、実在する4指標（PR数・所持数・図鑑・ストリーク）をその位置に上げた |
+| 画面は読むだけでなく描画して確認する | `npm run check:visual`（モックBE + 3幅 × 10画面のスクショ + 横溢れ検出） |
 
 ---
 
@@ -206,6 +208,23 @@ XP = マージPR数 × 100。つまり**同僚のPR本数の公開順位表**。
 
 正典 `profile.html` は殿堂カードを「買っただけでは入れない、St10まで**使い込んだ記録**」と
 記述しているが、実装は**ルーンで購入して上げる**。配置ではなく思想の不一致。
+
+---
+
+## 5.5 実装を目で見る手順
+
+コードを読むだけでは出なかった不備が、実際に描画したら出た:
+
+| 見つかったもの | 対応 |
+|---|---|
+| `RewardModal` が `activity.metadata` 欠損で throw し、`(authed)` レイアウト常設のため**全ページが白画面**になる | FE #143 |
+| モバイルで全ページが横に溢れて文字が切れる（原因は `AppShell` の flex 行の `min-w-0` 欠落） | FE #145 |
+| 内部ラベル `PRESTIGE ZONE — 課金導線なし` がユーザーに露出 | FE #143 |
+| `NaN%` / `NaN日前` / 図鑑の分母が20固定 | FE #143 / #145 |
+
+そのため使い捨てにせず `npm run check:visual` として常設した。
+横溢れは目視ではなく `getBoundingClientRect()` で超過要素を列挙して特定する
+（`min-w-0` の欠落のような原因は推測では当てられない）。
 
 ---
 
