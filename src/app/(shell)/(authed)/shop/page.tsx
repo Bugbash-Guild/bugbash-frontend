@@ -94,7 +94,7 @@ export default function ShopPage() {
           <TermLoading lines={["query shop.items --currency=all"]} />
         ) : items.length === 0 ? (
           <ConsoleEmptyState
-            action={{ href: "/shop/skins", label: "スキンを見る" }}
+            action={{ href: "/summon", label: "召喚へ" }}
             glyph="▣"
             message="現在販売中のアイテムはありません。入荷までお待ちください。"
           />

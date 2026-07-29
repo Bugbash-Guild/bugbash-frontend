@@ -71,8 +71,13 @@ export default function MonstersPage() {
   const { isAuthenticated, user } = useAuth();
   const { monsters, ownedDegraded, loading, error, refetch } = useMonsters();
   const { partnerId, setPartner } = usePartner();
-  const { ownedSkins } = useSkinCatalog(isAuthenticated);
+  const { ownedSkins, skins: skinCatalog } = useSkinCatalog(isAuthenticated);
   const { items: inventoryItems } = useInventory(isAuthenticated);
+  // スキンが1つも無いモンスターに「スキンを見る」を出すと空棚に送ることになる。
+  const slugsWithSkins = useMemo(
+    () => new Set(skinCatalog.map((skin) => skin.monsterSlug)),
+    [skinCatalog],
+  );
   const { refetch: refetchHero } = useHero(isAuthenticated);
   const { mints } = usePublicCommemorativeMints(user?.githubId);
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -322,6 +327,7 @@ export default function MonstersPage() {
                       monster={m}
                       isPartner={m.id === partnerId}
                       cosmetic={m.slug ? (cosmeticBySlug.get(m.slug) ?? null) : null}
+                      hasPurchasableSkin={m.slug ? slugsWithSkins.has(m.slug) : false}
                       isRecent={recentlyAcquiredIds.has(m.id)}
                       mint={matchMintToOwnedMonster(mints, m.ownedMonsterId)}
                       busy={{
@@ -354,6 +360,7 @@ function MonsterCard({
   monster: m,
   isPartner,
   cosmetic,
+  hasPurchasableSkin,
   isRecent,
   mint,
   busy,
@@ -365,6 +372,7 @@ function MonsterCard({
   monster: Monster;
   isPartner: boolean;
   cosmetic: { masteryLevel: number; lineName: string; skinId: string } | null;
+  hasPurchasableSkin: boolean;
   isRecent: boolean;
   mint: CommemorativeMintPlate | undefined;
   busy: { levelingUp: boolean; evolving: boolean; changingPath: boolean };
@@ -554,9 +562,10 @@ function MonsterCard({
 
       {/*
         愛着が湧いた相棒の隣に棚を置く（demand-first）。
-        既にスキンを着せている相棒こそ次を見たい層なので、cosmetic の有無で隠さない。
+        既にスキンを着せている相棒こそ次を見たい層なので、cosmetic の有無では隠さない。
+        ただしそのモンスターのスキンが1つも無いなら出さない（空棚への導線は嘘のアフォーダンス）。
       */}
-      {m.isOwned && m.slug && (
+      {m.isOwned && m.slug && hasPurchasableSkin && (
         <Link
           className="mt-2 block rounded border border-rune-border bg-rune-bg px-2 py-1 text-center text-[10px] text-rune transition-[filter] hover:brightness-125"
           href={`/shop/skins?monster=${encodeURIComponent(m.slug)}`}
