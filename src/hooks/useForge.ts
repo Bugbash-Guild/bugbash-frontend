@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useWallet } from "@/hooks/useWallet";
 import { readBillingErrorMessage } from "@/lib/billing/runeCheckout";
 import { ForgeIdempotencyKeys } from "@/lib/forge";
-import { fetchJson, isUnauthorizedApiError } from "@/lib/apiError";
+import { asArray, fetchJson, isUnauthorizedApiError } from "@/lib/apiError";
 import type {
   ForgeLevelDef,
   ForgeUpgradeRequest,
@@ -141,7 +141,7 @@ export function useForge(enabled: boolean) {
 
   return {
     error: visibleError(skins.error) ?? visibleError(definitions.error) ?? walletError,
-    levelDefs: definitions.data ?? [],
+    levelDefs: asArray(definitions.data),
     loading: skins.isLoading || definitions.isLoading || walletLoading,
     mutationError,
     ownedSkins: skins.data?.skins ?? [],

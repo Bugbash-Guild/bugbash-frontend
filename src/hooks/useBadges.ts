@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 
-import { fetchJson, isUnauthorizedApiError } from "@/lib/apiError";
+import { asArray, fetchJson, isUnauthorizedApiError } from "@/lib/apiError";
 import type {
   BadgeCatalogItem,
   BadgeProgress,
@@ -41,13 +41,13 @@ export function useBadges(enabled: boolean) {
   useRedirectOnUnauthorized(levelDefs.error);
 
   return {
-    catalog: catalog.data ?? [],
+    catalog: asArray(catalog.data),
     catalogError: visibleError(catalog.error),
-    levelDefs: levelDefs.data ?? [],
+    levelDefs: asArray(levelDefs.data),
     levelDefsError: visibleError(levelDefs.error),
     levelDefsLoading: levelDefs.isLoading,
     loading: catalog.isLoading || progress.isLoading || levelDefs.isLoading,
-    progress: progress.data ?? [],
+    progress: asArray(progress.data),
     progressError: visibleError(progress.error),
     refetchAll: () =>
       Promise.all([catalog.mutate(), progress.mutate(), levelDefs.mutate()]),
@@ -64,7 +64,7 @@ export function usePublicHeroBadges(heroId: string | null | undefined) {
   );
 
   return {
-    badges: data ?? [],
+    badges: asArray(data),
     error: visibleError(error),
     loading: isLoading,
   };

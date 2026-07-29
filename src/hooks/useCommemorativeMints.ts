@@ -9,6 +9,16 @@ import type {
 } from "@/types/commemorativeMint";
 import { useRedirectOnUnauthorized } from "./useRedirectOnUnauthorized";
 
+/**
+ * 配列を期待している箇所で配列以外が来たら空として扱う。
+ *
+ * 記念プレートは monsters ページで map される。契約外の応答が来たときに
+ * ここで throw すると図鑑が丸ごと白画面になる（RewardModal の #143 と同じ形）。
+ */
+function asArray<T>(value: T[] | undefined): T[] {
+  return Array.isArray(value) ? value : [];
+}
+
 function visibleError(error: unknown): string | null {
   if (!error || isUnauthorizedApiError(error)) return null;
   return error instanceof Error ? error.message : String(error);
@@ -31,7 +41,7 @@ export function useCommemorativeMints(enabled: boolean) {
   return {
     error: visibleError(result.error),
     loading: result.isLoading,
-    offers: result.data ?? [],
+    offers: asArray(result.data),
     refetch: () => result.mutate(),
   };
 }
@@ -46,7 +56,7 @@ export function usePublicCommemorativeMints(heroId: string | null | undefined) {
   return {
     error: visibleError(result.error),
     loading: result.isLoading,
-    mints: result.data ?? [],
+    mints: asArray(result.data),
     refetch: () => result.mutate(),
   };
 }

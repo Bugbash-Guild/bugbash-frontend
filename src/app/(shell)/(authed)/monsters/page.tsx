@@ -17,6 +17,7 @@ import { usePartner } from "@/hooks/usePartner";
 import { useSkinCatalog } from "@/hooks/useSkinCatalog";
 import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { matchMintToOwnedMonster } from "@/lib/commemorativeMint";
+import { buildAcquisitionHint, buildDexProgress } from "@/lib/dexProgress";
 import {
   canEvolveMonster,
   canLevelUpMonster,
@@ -174,7 +175,7 @@ export default function MonstersPage() {
   }, [dex]);
 
   const partnerMonster = dex.find((m) => m.id === partnerId) ?? null;
-  const discoveredCount = dex.filter((m) => m.isOwned).length;
+  const progress = buildDexProgress(dex);
   const ownedInstances = dex.reduce((sum, m) => sum + (m.isOwned ? 1 : 0), 0);
 
   const visibleGroups = RARITY_GROUPS.filter(
@@ -193,10 +194,21 @@ export default function MonstersPage() {
           <div>
             <h1 className="text-[28px] font-semibold tracking-[-0.015em]">Monster Dex</h1>
             <p className="mt-1.5 text-[12.5px] leading-7 text-text-dim">
-              discovered <b className="text-accent">{discoveredCount}</b> / {dex.length}
+              discovered <b className="text-accent">{progress.discovered}</b> / {progress.total}
               {" · "}owned <b className="text-accent">{ownedInstances}</b> instances{" · "}
               進化/覚醒＝<span className="text-accent">活動由来</span>
             </p>
+            {/* 召喚でしか埋まらない枠は別に数える（働けば埋まる枠と行動が違う） */}
+            {progress.summonOnlyTotal > 0 && (
+              <p className="mt-0.5 text-[11px] text-text-faint">
+                うち召喚専用{" "}
+                <b className="tabular-nums text-rune">
+                  {progress.summonOnlyDiscovered}
+                </b>
+                {" / "}
+                {progress.summonOnlyTotal}
+              </p>
+            )}
           </div>
           <div className="flex flex-wrap gap-2" role="group" aria-label="レアリティで絞り込み">
             {FILTERS.map((f) => {
@@ -388,6 +400,7 @@ function MonsterCard({
   const canEvolve = canEvolveMonster(m);
   const canLevelUp = canLevelUpMonster(m);
   const levelUpCost = getMonsterLevelUpCost(m.level);
+  const acquisitionHint = buildAcquisitionHint(m);
 
   // art tint by activity state (green evolution / gold awaken / pink berserk)
   const artBorder = berserk
@@ -486,6 +499,34 @@ function MonsterCard({
           <span className="text-pink">not_found</span>
         )}
       </div>
+
+      {/*
+        未所持の枠に「どうすれば埋まるのか」を出す（JS-7）。
+        召喚専用は琥珀＋限定召喚への導線、PRで取れるものは緑で導線なし。
+        prAcquirable が未取得のあいだは何も出さない（推測しない）。
+      */}
+      {acquisitionHint && (
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span
+            className={`inline-flex items-center rounded-[2px] border px-[7px] py-px text-[9px] font-bold tracking-[0.08em] ${
+              acquisitionHint.paid
+                ? "border-rune-border bg-rune-bg text-rune"
+                : "border-accent/30 bg-accent/[0.08] text-accent"
+            }`}
+          >
+            {acquisitionHint.text}
+          </span>
+          {acquisitionHint.route && (
+            <Link
+              className="text-[10px] text-rune underline underline-offset-2 hover:brightness-125"
+              href={acquisitionHint.route.href}
+              onClick={(event) => event.stopPropagation()}
+            >
+              {acquisitionHint.route.label} →
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* activity-derived badges (green fame / gold awaken / pink berserk) */}
       {m.isOwned && (
