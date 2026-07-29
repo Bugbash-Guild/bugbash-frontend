@@ -74,12 +74,12 @@ describe("summon pity presentation", () => {
   });
 
   it("formats summon costs from disclosure currency values", () => {
-    assert.equal(formatSummonCurrencyCost(300, "GUILD_COIN"), "300 GUILD_COIN");
+    assert.equal(formatSummonCurrencyCost(300, "GUILD_COIN"), "300 ギルドコイン");
     assert.equal(
       formatSummonCurrencyCost(3000, "GUILD_COIN"),
-      "3,000 GUILD_COIN",
+      "3,000 ギルドコイン",
     );
-    assert.equal(formatSummonCurrencyCost(30, "RUNE"), "30 RUNE");
+    assert.equal(formatSummonCurrencyCost(30, "RUNE"), "30 ルーン");
   });
 
   it("maps pull errors without exposing backend English messages", () => {

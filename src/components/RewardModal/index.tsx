@@ -60,7 +60,7 @@ function RewardLine({ reward }: { reward: ActivityReward }) {
         return (
             <div className="text-[13px]">
                 <span className="text-purple-400 font-bold">+{quantity}</span>
-                <span className="text-text-dim"> soul</span>
+                <span className="text-text-dim"> 魂</span>
             </div>
         );
     }
@@ -69,7 +69,7 @@ function RewardLine({ reward }: { reward: ActivityReward }) {
         return (
             <div className="text-[13px]">
                 <span className="text-yellow-400 font-bold">+{quantity}</span>
-                <span className="text-text-dim"> G</span>
+                <span className="text-text-dim"> ギルドコイン</span>
             </div>
         );
     }
@@ -91,7 +91,14 @@ export function RewardModal({ activities, onClose }: Props) {
     const allRewards = activities.flatMap((a) => a.rewards);
     const sources = activities
         .map((a) => {
-            const m = a.metadata as { prNumber?: number; repositoryFullName?: string; title?: string };
+            // metadata は型上は必須だが、実際には欠けて届くことがある。
+            // RewardModalHost は (authed) レイアウトに常設されているため、
+            // ここで throw すると全ページが白画面になる。
+            const m = (a.metadata ?? {}) as {
+                prNumber?: number;
+                repositoryFullName?: string;
+                title?: string;
+            };
             return m.prNumber ? `#${m.prNumber} ${m.title ?? ''}` : null;
         })
         .filter(Boolean) as string[];

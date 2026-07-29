@@ -23,7 +23,11 @@ const STREAK_BONUS_DAYS = 7;
 const STREAK_BONUS_COINS = 300;
 
 function formatTimeAgo(isoString: string): string {
-  const diff = Date.now() - new Date(isoString).getTime();
+  // 値が欠けている/壊れていると "NaN日前" と自信満々に表示されてしまう。
+  // 仮の値を置かない方針なので、読めないときは "—" を返す。
+  const at = new Date(isoString).getTime();
+  if (!Number.isFinite(at)) return "—";
+  const diff = Date.now() - at;
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return "たった今";
   if (mins < 60) return `${mins}分前`;
@@ -286,7 +290,7 @@ export default function Home() {
                 {[
                   { label: "PRs merged",      value: String(hero.totalPrsMerged),  delta: "lifetime",                                     color: "var(--accent)" },
                   { label: "monsters caught",  value: ownedDegraded ? "—" : String(ownedMonsters), delta: ownedDegraded ? "取得エラー" : "instances", color: "var(--purple)" },
-                  { label: "dex progress",     value: ownedDegraded ? "—" : `${discoveredSpecies}/${totalSpecies || 20}`, delta: "discovered", color: "var(--gold)" },
+                  { label: "dex progress",     value: ownedDegraded || !totalSpecies ? "—" : `${discoveredSpecies}/${totalSpecies}`, delta: "discovered", color: "var(--gold)" },
                   { label: "streak",           value: `${hero.streakDays}d`,         delta: hero.streakDays >= STREAK_BONUS_DAYS ? `+${STREAK_BONUS_COINS}コインが有効` : `${STREAK_BONUS_DAYS}日で+${STREAK_BONUS_COINS}コイン`, color: "var(--accent-2)" },
                 ].map((s) => (
                   <div key={s.label} className="bg-bg-elev border border-line rounded-[6px] px-3.5 py-3">
