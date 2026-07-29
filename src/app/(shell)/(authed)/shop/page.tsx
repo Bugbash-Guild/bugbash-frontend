@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { mutate } from "swr";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -15,11 +15,13 @@ import { ConsoleEmptyState } from "@/components/ConsoleEmptyState";
 import { InlineActionResult } from "@/components/InlineActionResult";
 import { TermLoading } from "@/components/TermLoading";
 import { ShopTabs } from "@/components/ShopTabs";
+import { ShopSectionList } from "@/components/shop/ShopSectionList";
 import {
   buildShopPurchasePresentation,
   formatShopCurrencyAmount,
   mapShopPurchaseErrorMessage,
 } from "@/lib/shopPresentation";
+import { buildShopSections } from "@/lib/shopSections";
 import type { ShopItem } from "@/types/shop";
 
 export default function ShopPage() {
@@ -39,6 +41,8 @@ export default function ShopPage() {
   const selectedPresentation = selected
     ? buildShopPurchasePresentation(selected, { guildCoinBalance, runeBalance })
     : null;
+  // 用途で区切り、組み合わせ商品（属性×サイズ）は1つに畳む
+  const sections = useMemo(() => buildShopSections(items), [items]);
 
 
   function closeModal() {
@@ -105,48 +109,11 @@ export default function ShopPage() {
             message="現在販売中のアイテムはありません。入荷までお待ちください。"
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {items.map((item) => {
-              const presentation = buildShopPurchasePresentation(item, {
-                guildCoinBalance,
-                runeBalance,
-              });
-              return (
-                <button
-                  key={item.itemId}
-                  onClick={() => setSelected(item)}
-                  className="text-left bg-bg-elev border border-line rounded-lg p-4 hover:bg-bg-elev-2 transition-colors"
-                >
-                  <div className="flex items-start gap-3">
-                    <ItemVisual
-                      alt={item.name}
-                      assetUrl={item.assetUrl}
-                      className="size-9"
-                      sizes="36px"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[14px] text-text font-semibold">
-                        {item.name}
-                      </div>
-                      <div className="text-[11px] text-text-faint mt-1 line-clamp-2">
-                        {item.description}
-                      </div>
-                      <div className="mt-3 flex items-center gap-1.5">
-                        <span
-                          className={[
-                            "text-[13px] font-semibold",
-                            presentation.canAfford ? "text-text" : "text-pink",
-                          ].join(" ")}
-                        >
-                          {presentation.priceLabel}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+          <ShopSectionList
+            balances={{ guildCoinBalance, runeBalance }}
+            onSelect={setSelected}
+            sections={sections}
+          />
         )}
 
         <LegalFooter />

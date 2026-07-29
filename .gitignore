@@ -47,3 +47,6 @@ next-env.d.ts
 
 # 画面確認スクリプトの出力（npm run check:visual）
 .visual/
+
+# 画面確認スクリプトの出力（別 OUT_DIR 指定時）
+.visual-*/

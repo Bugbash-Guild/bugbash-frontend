@@ -21,8 +21,9 @@ export function shopBalanceForCurrency(
 }
 
 export function formatShopCurrencyAmount(currency: ShopItemCurrency, amount: number): string {
-  if (currency === "RUNE") return `${amount.toLocaleString("ja-JP")}ルーン`;
-  return `GC ${amount.toLocaleString("ja-JP")}`;
+  // 通貨の呼び名は全画面で統一する（以前はここだけ "GC" だった）。
+  if (currency === "RUNE") return `${amount.toLocaleString("ja-JP")} ルーン`;
+  return `${amount.toLocaleString("ja-JP")} ギルドコイン`;
 }
 
 export function buildShopPurchasePresentation(

@@ -9,6 +9,16 @@ export type ShopItem = {
     category: 'EVOLUTION' | 'SOUL_PACK';
     iconEmoji: string;
     assetUrl?: string | null;
+    /** 同じ商品の別バリエーションをまとめるキー（属性魂パックのみ）。 */
+    variantGroup?: string | null;
+    /** 属性（fire / water / ...）。属性魂パックのみ。 */
+    attribute?: string | null;
+    /** 属性の表示名（炎 / 水 / ...）。 */
+    attributeLabel?: string | null;
+    /** サイズ（s / m / l）。 */
+    sizeSuffix?: string | null;
+    /** サイズの表示名（小 / 中 / 大）。 */
+    sizeLabel?: string | null;
 };
 
 export type ListShopResponse = {
