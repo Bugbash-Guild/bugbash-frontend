@@ -156,9 +156,6 @@ export default function SummonPage() {
               </button>
             </p>
           </div>
-          <span className="rounded-[3px] border border-accent/30 bg-accent/[0.08] px-2.5 py-1 text-[11px] font-semibold text-accent">
-            PRESTIGE ZONE — 課金導線なし
-          </span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl">
@@ -199,7 +196,7 @@ export default function SummonPage() {
               <span className="text-gold font-semibold">
                 ◈ {(hero?.guildCoinBalance ?? 0).toLocaleString()}
               </span>
-              <span className="text-text-faint">GUILD_COIN</span>
+              <span className="text-text-faint">ギルドコイン</span>
             </div>
 
             {/* summon buttons */}

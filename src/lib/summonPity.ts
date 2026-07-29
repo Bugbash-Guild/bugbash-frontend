@@ -13,11 +13,25 @@ export type PityMeterPresentation = {
   tone: PityMeterTone;
 };
 
+/**
+ * API が返す通貨コード（GUILD_COIN / RUNE）はそのままユーザーに見せない。
+ * 同じ通貨がトップバーでは 🪙、ここでは GUILD_COIN、報酬モーダルでは G と
+ * 3通りに呼ばれていたため、表示名を1箇所に集約する。
+ */
+const CURRENCY_LABEL: Record<string, string> = {
+  GUILD_COIN: "ギルドコイン",
+  RUNE: "ルーン",
+};
+
+export function formatSummonCurrencyLabel(currency: string): string {
+  return CURRENCY_LABEL[currency] ?? currency;
+}
+
 export function formatSummonCurrencyCost(
   cost: number,
   currency: string,
 ): string {
-  return `${cost.toLocaleString("ja-JP")} ${currency}`;
+  return `${cost.toLocaleString("ja-JP")} ${formatSummonCurrencyLabel(currency)}`;
 }
 
 export function selectEffectivePityDisclosure(
