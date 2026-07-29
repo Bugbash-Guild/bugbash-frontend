@@ -15,6 +15,7 @@ import { DisclosureModal } from "@/components/billing/DisclosureModal";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { ItemVisual } from "@/components/ItemVisual";
 import { LegalFooter } from "@/components/LegalFooter";
+import { LimitedSummonBanner } from "@/components/summon/LimitedSummonBanner";
 import { PityMeter } from "@/components/summon/PityMeter";
 import {
   buildPassPityUpsell,
@@ -146,17 +147,12 @@ export default function SummonPage() {
               </span>
             </h1>
             <p className="mt-1 text-[12px] text-text-dim">
-              ギルドコイン（活動で獲得）で相棒を召喚します。{" "}
-              <button
-                className="text-blue hover:underline"
-                onClick={() => setDisclosureOpen(true)}
-                type="button"
-              >
-                提供割合について ▸
-              </button>
+              ギルドコイン（活動で獲得）で相棒を召喚します。
             </p>
           </div>
         </div>
+
+        <LimitedSummonBanner enabled={isAuthenticated} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl">
           {/* ── Left: summon panel ── */}
@@ -181,15 +177,6 @@ export default function SummonPage() {
               </button>
             </div>
 
-            {/* pity counter */}
-            <PityMeter
-              disclosure={effectiveDisclosure}
-              passUpsell={passPityUpsell}
-              error={pityError ?? disclosureError ?? subscriptionError}
-              loading={disclosureLoading || subscriptionLoading}
-              pity={pity}
-            />
-
             {/* coin balance */}
             <div className="flex items-center gap-2 text-[13px] px-1">
               <span className="text-text-faint">残高</span>
@@ -204,14 +191,14 @@ export default function SummonPage() {
               <button
                 onClick={handlePullOnce}
                 disabled={summoning || !effectiveDisclosure}
-                className="flex-1 py-3 rounded border border-accent text-accent text-[13px] hover:bg-accent hover:text-bg disabled:opacity-40 transition-colors"
+                className="flex-1 rounded border border-accent bg-accent py-3.5 text-[14px] font-semibold text-bg transition-[filter] hover:brightness-110 disabled:opacity-40"
               >
                 {summoning ? "召喚中…" : "[ 召喚 × 1 ]"}
               </button>
               <button
                 onClick={handlePullTen}
                 disabled={summoning || !effectiveDisclosure}
-                className="flex-1 py-3 rounded border border-gold text-gold text-[13px] hover:bg-gold hover:text-bg disabled:opacity-40 transition-colors"
+                className="flex-1 rounded border border-gold py-3.5 text-[13px] text-gold transition-colors hover:bg-gold hover:text-bg disabled:opacity-40"
               >
                 {summoning ? "召喚中…" : "[ 10連召喚 ]"}
               </button>
@@ -229,16 +216,18 @@ export default function SummonPage() {
                 : "召喚コストを確認しています"}
             </div>
 
+            {/* pity counter */}
+            <PityMeter
+              disclosure={effectiveDisclosure}
+              passUpsell={passPityUpsell}
+              error={pityError ?? disclosureError ?? subscriptionError}
+              loading={disclosureLoading || subscriptionLoading}
+              pity={pity}
+            />
+
             <p className="text-[10.5px] text-text-faint px-1">
               コインが足りないときは — PR をマージして集めましょう（購入はできません）。
             </p>
-
-            <Link
-              className="block border border-line px-3 py-2 text-center text-[12px] text-gold hover:border-gold"
-              href="/summon/limited"
-            >
-              限定召喚へ
-            </Link>
 
             {/* error */}
             {summonError && (
