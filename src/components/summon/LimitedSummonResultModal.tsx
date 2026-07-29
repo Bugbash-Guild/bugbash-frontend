@@ -139,7 +139,7 @@ export function LimitedSummonResultModal({
               )}
               {result.runesRemaining != null && (
                 <span>
-                  残高: {result.runesRemaining.toLocaleString("ja-JP")} RUNE
+                  残高: {result.runesRemaining.toLocaleString("ja-JP")} ルーン
                 </span>
               )}
             </div>
@@ -156,7 +156,7 @@ export function LimitedSummonResultModal({
                 onClick={onClose}
                 type="button"
               >
-                閉じる
+                続けて引く
               </button>
             </div>
           </>

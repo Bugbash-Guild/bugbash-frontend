@@ -12,6 +12,7 @@ import { ItemVisual } from "@/components/ItemVisual";
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { ConsoleEmptyState } from "@/components/ConsoleEmptyState";
+import { InlineActionResult } from "@/components/InlineActionResult";
 import { TermLoading } from "@/components/TermLoading";
 import { ShopTabs } from "@/components/ShopTabs";
 import {
@@ -40,12 +41,6 @@ export default function ShopPage() {
     : null;
 
 
-  useEffect(() => {
-    if (!successFlash) return;
-    const t = setTimeout(() => setSuccessFlash(null), 3000);
-    return () => clearTimeout(t);
-  }, [successFlash]);
-
   function closeModal() {
     if (purchasing) return;
     setSelected(null);
@@ -69,7 +64,7 @@ export default function ShopPage() {
       const res = await purchase(selected.itemId);
       setSelected(null);
       resetPurchase();
-      setSuccessFlash(`${res.itemName} を購入しました(所持: ${res.itemQuantity})`);
+      setSuccessFlash(`${res.itemName}（所持: ${res.itemQuantity}）`);
       await Promise.all([refetchShop(), refetchInventory(), mutate("/api/billing/wallet")]);
     } catch {
       // エラーは usePurchase の error state からモーダル内に表示される
@@ -85,8 +80,19 @@ export default function ShopPage() {
         </div>
 
         {successFlash && (
-          <div className="mb-4 px-3 py-2 bg-accent/10 border border-accent/40 rounded text-[12px] text-accent">
-            {successFlash}
+          /*
+            以前は3秒で消えるフラッシュだけで、買ったアイテムをどこで使うのかに
+            繋がっていなかった（購入 → 何も起きない → 離脱）。
+            消さずに次の行動への導線を残す。
+          */
+          <div className="mb-4">
+            <InlineActionResult
+              action={{ href: "/monsters", label: "相棒に使う" }}
+              title="購入しました"
+              tone="success"
+            >
+              {successFlash}
+            </InlineActionResult>
           </div>
         )}
 
