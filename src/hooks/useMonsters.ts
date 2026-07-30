@@ -46,12 +46,15 @@ const fetchCatalog = (url: string) => fetchJson<AllMonstersDto>(url, undefined, 
 const fetchOwned = (url: string) => fetchJson<OwnedMonstersDto>(url, undefined, 'monsters/owned');
 
 export function useMonsters() {
-    // マスタと所持を別キーにしている。以前は Promise.all で 1 つの
-    // SWR キーにまとめていたため、
-    //   - どちらか片方が遅いだけで図鑑全体が loading のまま
-    //   - 遷移するたびにマスタ（全モンスター）も取り直し
-    //   - 所持だけ再検証したいときもマスタが付いてくる
-    // という状態だった。
+    /*
+     * マスタと所持を別キーにしている。以前は Promise.all で 1 つの SWR
+     * キーにまとめていたため、キャッシュと再検証が二つで一つに縛られていた:
+     *   - 遷移するたびにマスタ（全モンスター）まで取り直し
+     *   - 育成操作のあと所持だけ再検証したいのにマスタが付いてくる
+     *   - 鮮度の要求が違う（マスタはリリース単位／所持は操作ごと）のに
+     *     同じ revalidate 設定しか持てない
+     * 分けたことでマスタ側だけ長めにキャッシュできる。
+     */
     // dedupingInterval だけで抑えて revalidateIfStale は切らない。
     // 「セッション中ずっと取り直さない」にするとリリースで増えた
     // モンスターがリロードまで出てこないため。
@@ -113,10 +116,15 @@ export function useMonsters() {
     return {
         monsters,
         ownedDegraded,
-        // 図鑑の枠を出せるのはマスタが来た時点。所持はその上に載る差分なので、
-        // 所持待ちでスケルトンを見せ続けない。
-        loading: catalog.isLoading,
-        ownedLoading: owned.isLoading,
+        /*
+         * キーは分けたが loading は両方を見る。マスタだけで描き始めると
+         * 所持が届くまで全モンスターが未所持として並び、
+         * 「何も持っていない」ように見える一瞬が生まれる（issue #122 と同じ絵）。
+         *
+         * 所持が失敗したときは SWR の isLoading が false になるため、
+         * ここで止まらず ownedDegraded の警告付きで描画に進む。
+         */
+        loading: catalog.isLoading || owned.isLoading,
         error: catalogError,
         refetch: () => Promise.all([catalog.mutate(), owned.mutate()]),
     };
