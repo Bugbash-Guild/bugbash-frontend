@@ -4,7 +4,7 @@
 import { useMemo } from 'react';
 import useSWR from 'swr';
 
-import { fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
+import { asArray, fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
 import type { AwakeningState, Monster, MonsterFormStage } from '@/types/monster';
 import { useRedirectOnUnauthorized } from './useRedirectOnUnauthorized';
 
@@ -81,10 +81,17 @@ export function useMonsters() {
     const ownedDegraded = Boolean(owned.error) && !isUnauthorizedApiError(owned.error);
 
     const monsters = useMemo<Monster[]>(() => {
-        const allMonsters = catalog.data?.monsters;
-        if (!allMonsters) return [];
+        if (catalog.data === undefined) return [];
 
-        const ownedMap = new Map((owned.data?.monsters ?? []).map((m) => [m.id, m]));
+        /*
+         * asArray で受け止めるのは、この整形が fetcher からレンダー中の
+         * useMemo に移ったため。fetcher の中なら throw は SWR が拾って
+         * error になるだけだが、レンダー中に throw するとページが丸ごと
+         * 白画面になる（#151 が /monsters で踏んだ絵）。
+         * 契約外の応答で失敗の質を変えないよう境界で潰しておく。
+         */
+        const allMonsters = asArray(catalog.data.monsters);
+        const ownedMap = new Map(asArray(owned.data?.monsters).map((m) => [m.id, m]));
 
         return allMonsters.map((m) => {
             const ownedMonster = ownedMap.get(m.id);
