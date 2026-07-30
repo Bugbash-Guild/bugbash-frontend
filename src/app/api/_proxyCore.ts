@@ -32,6 +32,16 @@ const createResponseHeaders = (response: Response): Headers => {
     const location = response.headers.get('location');
     if (location) headers.set('location', location);
 
+    // BE の指定をそのまま通す。これまでは落としていたため、
+    // マスタデータ（/api/monsters）でもブラウザキャッシュが効かず、
+    // 遷移するたびに往復していた。BE 側は既定で no-store を返すので、
+    // 転送する方が「明示的に許可された分だけキャッシュされる」形に近い。
+    const cacheControl = response.headers.get('cache-control');
+    if (cacheControl) headers.set('cache-control', cacheControl);
+
+    const vary = response.headers.get('vary');
+    if (vary) headers.set('vary', vary);
+
     for (const setCookie of getSetCookieHeaders(response.headers)) {
         headers.append('set-cookie', setCookie);
     }

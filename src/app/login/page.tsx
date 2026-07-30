@@ -11,16 +11,18 @@ const RETURN_TO_STORAGE_KEY = "bb.returnTo";
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, loading, login } = useAuth();
+  const { isAuthenticated, isAuthResolved, loading, login } = useAuth();
   const returnTo = safeReturnTo(searchParams.get("returnTo"));
 
   useEffect(() => {
-    if (loading || !isAuthenticated) return;
+    // ここでは先読み（Cookie の目印）を信用しない。目印が古いまま遷移すると
+    // /login → / → /login と跳ね返るため、実レスポンスの確定を待つ。
+    if (!isAuthResolved || !isAuthenticated) return;
     // OAuth 往復では query が失われるため sessionStorage 側も見る
     const stored = safeReturnTo(window.sessionStorage.getItem(RETURN_TO_STORAGE_KEY));
     window.sessionStorage.removeItem(RETURN_TO_STORAGE_KEY);
     router.replace(returnTo ?? stored ?? "/");
-  }, [loading, isAuthenticated, returnTo, router]);
+  }, [isAuthResolved, isAuthenticated, returnTo, router]);
 
   const handleLogin = () => {
     if (returnTo) window.sessionStorage.setItem(RETURN_TO_STORAGE_KEY, returnTo);

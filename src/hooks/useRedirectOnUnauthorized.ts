@@ -7,7 +7,7 @@ import { mutate } from 'swr';
 
 import { isUnauthorizedApiError } from '@/lib/apiError';
 
-const AUTH_STATUS_KEY = '/api/auth/status';
+import { AUTH_STATUS_KEY } from './useAuth';
 
 export function useRedirectOnUnauthorized(error: unknown): void {
     const router = useRouter();
