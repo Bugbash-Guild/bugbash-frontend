@@ -16,6 +16,7 @@ type AllMonstersDto = {
         emoji: string;
         rarity: string;
         artworkByStage?: Partial<Record<MonsterFormStage, string>>;
+        prAcquirable?: boolean;
     }[];
 };
 type OwnedMonstersDto = {
@@ -95,6 +96,8 @@ export function useMonsters() {
                 name: m.name,
                 emoji: m.emoji,
                 rarity: m.rarity as Monster['rarity'],
+                // main 由来: 図鑑に入手経路を出すためマスタ側の値をそのまま通す
+                prAcquirable: m.prAcquirable,
                 isOwned: ownedMap.has(m.id),
                 attribute: ownedMonster?.attribute,
                 attributeName: ownedMonster?.attributeName,

@@ -2,7 +2,7 @@
 
 import useSWR from 'swr';
 
-import { fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
+import { asArray, fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
 import type { ActivitiesResponse, Activity, MonsterDetail, PrMergedMetadata, XpDetail } from '@/types/activity';
 import { useRedirectOnUnauthorized } from './useRedirectOnUnauthorized';
 
@@ -20,7 +20,7 @@ export function useActivities() {
     useRedirectOnUnauthorized(error);
 
     return {
-        activities: data ?? [],
+        activities: asArray(data),
         loading: isLoading,
         error: error && !isUnauthorizedApiError(error) ? String(error) : null,
         refetch: () => mutate(),

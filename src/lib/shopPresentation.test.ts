@@ -37,8 +37,8 @@ describe("shop presentation helpers", () => {
   });
 
   it("formats shop currency labels without mixing coin and rune icons", () => {
-    assert.equal(formatShopCurrencyAmount("GUILD_COIN", 120), "GC 120");
-    assert.equal(formatShopCurrencyAmount("RUNE", 80), "80ルーン");
+    assert.equal(formatShopCurrencyAmount("GUILD_COIN", 120), "120 ギルドコイン");
+    assert.equal(formatShopCurrencyAmount("RUNE", 80), "80 ルーン");
   });
 
   it("adds rune-only purchase guard copy and top-up guidance when balance is short", () => {
@@ -48,7 +48,7 @@ describe("shop presentation helpers", () => {
         canAfford: false,
         cosmeticNotice: "この購入は見た目や時短のためのものです。ステータス・報酬・順位には影響しません。",
         insufficientMessage: "ルーンが足りません（必要 80 / 保有 40）",
-        priceLabel: "80ルーン",
+        priceLabel: "80 ルーン",
         showRuneTopUpLink: true,
       },
     );
@@ -61,7 +61,7 @@ describe("shop presentation helpers", () => {
         canAfford: false,
         cosmeticNotice: null,
         insufficientMessage: "ギルドコインが足りません。PRをマージして集めましょう。",
-        priceLabel: "GC 120",
+        priceLabel: "120 ギルドコイン",
         showRuneTopUpLink: false,
       },
     );

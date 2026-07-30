@@ -22,6 +22,11 @@ export type Monster = {
     attributeEmoji?: string;
     soulCount: number;
     isOwned: boolean;
+    /**
+     * PRマージで入手できるか。false は召喚専用。
+     * 未所持の枠に「どうすれば埋まるのか」を出すために使う。
+     */
+    prAcquirable?: boolean;
     level: number;
     awakeningState?: AwakeningState;
     formStage?: MonsterFormStage;

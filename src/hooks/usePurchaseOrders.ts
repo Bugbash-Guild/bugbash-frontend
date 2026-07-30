@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 
-import { fetchJson, isUnauthorizedApiError } from "@/lib/apiError";
+import { asArray, fetchJson, isUnauthorizedApiError } from "@/lib/apiError";
 import type { PurchaseOrderHistory } from "@/types/billing";
 import { useRedirectOnUnauthorized } from "./useRedirectOnUnauthorized";
 
@@ -20,7 +20,7 @@ export function usePurchaseOrders(enabled: boolean) {
   return {
     error: error && !isUnauthorizedApiError(error) ? String(error.message ?? error) : null,
     loading: isLoading,
-    orders: data ?? [],
+    orders: asArray(data),
     refetch: () => mutate(),
   };
 }
