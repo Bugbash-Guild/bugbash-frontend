@@ -6,6 +6,8 @@ import { MonsterVisual } from '@/components/MonsterVisual';
 import { RARITY_COLOR } from '@/constants/rarity';
 import {
     buildRewardSummary,
+    formatCoinBreakdown,
+    formatDailyPolicyNote,
     formatRewardTotals,
     type RewardEntry,
 } from '@/lib/rewardSummary';
@@ -60,6 +62,8 @@ function EntryRow({ entry }: { entry: RewardEntry }) {
         entry.coin > 0 ? `+${entry.coin.toLocaleString('ja-JP')} ギルドコイン` : null,
         entry.soul > 0 ? `+${entry.soul.toLocaleString('ja-JP')} 魂` : null,
     ].filter(Boolean) as string[];
+    const coinBreakdown = formatCoinBreakdown(entry.coinDetail);
+    const dailyPolicyNote = formatDailyPolicyNote(entry.coinDetail);
 
     return (
         <div className="border-t border-line px-4 py-3 first:border-t-0">
@@ -94,6 +98,21 @@ function EntryRow({ entry }: { entry: RewardEntry }) {
                             Lv.{entry.levelAfter}
                         </span>
                     )}
+                </div>
+            )}
+
+            {/* コインに何が乗ったのかを述べる。推測ではなくBEが分解した値。 */}
+            {coinBreakdown && (
+                <div className="mt-1 text-[10px] text-text-faint">{coinBreakdown}</div>
+            )}
+
+            {/*
+              同日のPR本数による減衰は、これまでどこにも開示されていなかった。
+              減衰した回にだけ、その場で理由を述べる（煽らず事実だけ）。
+            */}
+            {dailyPolicyNote && (
+                <div className="mt-1 rounded-[3px] border border-line bg-bg px-2 py-1 text-[10px] text-text-dim">
+                    {dailyPolicyNote}
                 </div>
             )}
         </div>

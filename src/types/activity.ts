@@ -1,12 +1,35 @@
 export type RewardType = 'xp' | 'monster' | 'soul' | 'coin';
 
 export type XpDetail = { levelBefore: number; levelAfter: number };
+
+/**
+ * ギルドコインの内訳（BE: RewardSnapshot.Coin）。
+ *
+ * 合計だけだと、同じ「PRをマージした」で 100 と 450 が並んだときに
+ * 理由を説明できない。UI側で差分から推測すると捏造になるので、
+ * BE が分解した値をそのまま出す。
+ */
+export type CoinDetail = {
+    base: number;
+    largePrBonus: number;
+    streakBonus: number;
+    /** 同日のPR本数による減衰率（100 = 減衰なし）。 */
+    dailyPolicyPercent: number;
+};
+
+/** 属性ソウルの内訳（BE: RewardSnapshot.Soul）。 */
+export type SoulDetail = {
+    attribute: string;
+    partner: number;
+    monsterBonus: number;
+    adventurerPassMultiplier: number;
+};
 export type MonsterDetail = { name: string; rarity: string; emoji: string };
 
 export type ActivityReward = {
     rewardType: RewardType;
     quantity: number;
-    detail: XpDetail | MonsterDetail | Record<string, unknown>;
+    detail: XpDetail | MonsterDetail | CoinDetail | SoulDetail | Record<string, unknown>;
     occurredAt: string;
 };
 

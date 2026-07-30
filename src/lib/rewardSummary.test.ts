@@ -1,13 +1,19 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { buildRewardSummary, formatRewardTotals } from "./rewardSummary";
+import {
+  buildRewardSummary,
+  formatCoinBreakdown,
+  formatDailyPolicyNote,
+  formatRewardTotals,
+} from "./rewardSummary";
 import type { Activity } from "@/types/activity";
 
 function activity(
   id: number,
   opts: {
     coin?: number;
+    coinDetail?: Record<string, unknown>;
     levelAfter?: number;
     metadata?: Record<string, unknown> | undefined;
     monsters?: { name: string; rarity: string }[];
@@ -31,7 +37,12 @@ function activity(
       rewardType: "monster" as const,
     });
   if (opts.coin != null)
-    rewards.push({ detail: {}, occurredAt: "", quantity: opts.coin, rewardType: "coin" as const });
+    rewards.push({
+      detail: opts.coinDetail ?? {},
+      occurredAt: "",
+      quantity: opts.coin,
+      rewardType: "coin" as const,
+    });
   if (opts.soul != null)
     rewards.push({ detail: {}, occurredAt: "", quantity: opts.soul, rewardType: "soul" as const });
 
@@ -131,5 +142,61 @@ describe("formatRewardTotals", () => {
       "+100 XP",
     ]);
     assert.deepEqual(formatRewardTotals({ coin: 0, monsterCount: 0, soul: 0, xp: 0 }), []);
+  });
+});
+
+describe("formatCoinBreakdown", () => {
+  const detail = {
+    base: 100,
+    dailyPolicyPercent: 100,
+    largePrBonus: 0,
+    streakBonus: 300,
+  };
+
+  it("names what was added on top of the base", () => {
+    assert.equal(formatCoinBreakdown(detail), "基本 100 · ストリーク +300");
+    assert.equal(
+      formatCoinBreakdown({ ...detail, largePrBonus: 50 }),
+      "基本 100 · 大規模PR +50 · ストリーク +300",
+    );
+  });
+
+  it("says nothing when only the base was granted", () => {
+    assert.equal(formatCoinBreakdown({ ...detail, streakBonus: 0 }), null);
+  });
+
+  it("says nothing when the backend did not send a breakdown", () => {
+    assert.equal(formatCoinBreakdown(null), null);
+  });
+
+  it("reads the breakdown from the backend instead of inferring it from the total", () => {
+    // 合計から差分を推測すると捏造になる。BEの値をそのまま使う。
+    const summary = buildRewardSummary([
+      activity(1, { coin: 400, coinDetail: detail, xp: 100 }),
+    ]);
+    assert.deepEqual(summary.entries[0]?.coinDetail, detail);
+  });
+});
+
+describe("formatDailyPolicyNote", () => {
+  const base = { base: 100, dailyPolicyPercent: 100, largePrBonus: 0, streakBonus: 0 };
+
+  it("stays silent when nothing was reduced", () => {
+    assert.equal(formatDailyPolicyNote(base), null);
+    assert.equal(formatDailyPolicyNote(null), null);
+  });
+
+  it("explains the reduction on the pull that was actually reduced", () => {
+    assert.equal(
+      formatDailyPolicyNote({ ...base, dailyPolicyPercent: 50 }),
+      "同日のマージ本数が多いため、資源が 50% になっています",
+    );
+  });
+
+  it("says plainly when nothing was granted at all", () => {
+    assert.equal(
+      formatDailyPolicyNote({ ...base, dailyPolicyPercent: 0 }),
+      "同日のマージ本数が多いため、このPRでは資源が付与されていません",
+    );
   });
 });

@@ -1,5 +1,5 @@
 import { RARITY_ORDER } from "@/constants/rarity";
-import type { Activity, MonsterDetail, XpDetail } from "@/types/activity";
+import type { Activity, CoinDetail, MonsterDetail, XpDetail } from "@/types/activity";
 
 /**
  * 未読報酬モーダルの表示モデル。
@@ -22,6 +22,8 @@ export type RewardTotals = {
 
 export type RewardEntry = {
   coin: number;
+  /** コインの内訳（BEが分解した値。無ければ null）。 */
+  coinDetail: CoinDetail | null;
   id: number;
   /** このPRで到達したレベル（上がっていなければ null）。 */
   levelAfter: number | null;
@@ -58,6 +60,16 @@ function isMonsterDetail(d: unknown): d is MonsterDetail {
   return typeof d === "object" && d !== null && "name" in d && "emoji" in d;
 }
 
+function isCoinDetail(d: unknown): d is CoinDetail {
+  return (
+    typeof d === "object" &&
+    d !== null &&
+    "base" in d &&
+    "streakBonus" in d &&
+    "dailyPolicyPercent" in d
+  );
+}
+
 function metadataOf(activity: Activity) {
   // metadata は型上必須だが実際には欠けて届くことがある（#143）。
   const m = (activity.metadata ?? {}) as {
@@ -79,6 +91,7 @@ function entryOf(activity: Activity): RewardEntry {
   let soul = 0;
   let xp = 0;
   let levelAfter: number | null = null;
+  let coinDetail: CoinDetail | null = null;
   const monsters: MonsterDetail[] = [];
 
   for (const reward of rewards) {
@@ -86,6 +99,7 @@ function entryOf(activity: Activity): RewardEntry {
     switch (reward.rewardType) {
       case "coin":
         coin += quantity;
+        if (isCoinDetail(reward.detail)) coinDetail = reward.detail;
         break;
       case "soul":
         soul += quantity;
@@ -102,7 +116,16 @@ function entryOf(activity: Activity): RewardEntry {
     }
   }
 
-  return { coin, id: activity.id, levelAfter, monsters, soul, xp, ...metadataOf(activity) };
+  return {
+    coin,
+    coinDetail,
+    id: activity.id,
+    levelAfter,
+    monsters,
+    soul,
+    xp,
+    ...metadataOf(activity),
+  };
 }
 
 /** レアリティの高い順。同順位は元の順序を保つ。 */
@@ -141,6 +164,39 @@ export function buildRewardSummary(
     prCount: all.length,
     totals,
   };
+}
+
+/**
+ * コインの内訳を人が読める形にする。0 の項目は出さない。
+ * 何も乗っていない（基本のみ）なら内訳を出す意味がないので null。
+ */
+export function formatCoinBreakdown(detail: CoinDetail | null): string | null {
+  if (detail == null) return null;
+  const parts: string[] = [];
+  if (detail.largePrBonus > 0) {
+    parts.push(`大規模PR +${detail.largePrBonus.toLocaleString("ja-JP")}`);
+  }
+  if (detail.streakBonus > 0) {
+    parts.push(`ストリーク +${detail.streakBonus.toLocaleString("ja-JP")}`);
+  }
+  if (parts.length === 0) return null;
+  return `基本 ${detail.base.toLocaleString("ja-JP")} · ${parts.join(" · ")}`;
+}
+
+/**
+ * 同日のPR本数による減衰の注記。減衰していないときは null。
+ *
+ * この減衰はこれまでどこにも開示されておらず、数字が合わない理由が
+ * 分からない状態だった。減衰した回だけ、その場で理由を述べる。
+ */
+export function formatDailyPolicyNote(detail: CoinDetail | null): string | null {
+  if (detail == null) return null;
+  const percent = detail.dailyPolicyPercent;
+  if (!Number.isFinite(percent) || percent >= 100) return null;
+  if (percent <= 0) {
+    return "同日のマージ本数が多いため、このPRでは資源が付与されていません";
+  }
+  return `同日のマージ本数が多いため、資源が ${percent}% になっています`;
 }
 
 /** 合計行に出す「+N XP · +N ギルドコイン · …」。0 の項目は出さない。 */
