@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
+import { trackFunnelEvent } from "@/hooks/useFunnelTracking";
 import { useAuth } from "@/hooks/useAuth";
 import {
   buildBillingReturnMessage,
@@ -69,6 +70,12 @@ export default function BillingReturnPage() {
           if (wallet) {
             const detection = detectRuneGrant(pendingOrder, wallet.runeBalance);
             if (detection) {
+              // 残高への反映を確認できた時点が「完了」。決済画面の
+              // 戻りURLに来ただけでは完了と数えない（webhook待ちで失敗しうる）。
+              trackFunnelEvent("CHECKOUT_COMPLETED", {
+                grantedRunes: detection.grantedRunes,
+                kind: "rune",
+              });
               clearPendingOrder(window.sessionStorage);
               setConfirmedType("rune");
               setDetectedRunes(detection.grantedRunes);
@@ -84,6 +91,7 @@ export default function BillingReturnPage() {
           if (cancelled) return;
 
           if (subscription?.entitled) {
+            trackFunnelEvent("CHECKOUT_COMPLETED", { kind: "subscription" });
             clearPendingOrder(window.sessionStorage);
             setConfirmedType("subscription");
             setPendingOrder(null);
