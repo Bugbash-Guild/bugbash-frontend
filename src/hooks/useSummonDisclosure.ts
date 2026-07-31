@@ -2,7 +2,8 @@
 
 import useSWR from "swr";
 
-import { fetchJson, isUnauthorizedApiError } from "@/lib/apiError";
+import { isUnauthorizedApiError } from "@/lib/apiError";
+import { fetchMasterJson } from "@/lib/masterData";
 import type { SummonDisclosureResponse } from "@/types/summon";
 import { useRedirectOnUnauthorized } from "./useRedirectOnUnauthorized";
 
@@ -12,7 +13,7 @@ const disclosureUrl = (scope: SummonDisclosureScope): string =>
   scope === "limited" ? "/api/summon/limited/disclosure" : "/api/summon/disclosure";
 
 const fetcher = async (url: string) => {
-  return fetchJson<SummonDisclosureResponse>(url, { cache: "no-store" }, "summon/disclosure");
+  return fetchMasterJson<SummonDisclosureResponse>(url, "summon/disclosure");
 };
 
 export function useSummonDisclosure(enabled: boolean, scope: SummonDisclosureScope = "normal") {

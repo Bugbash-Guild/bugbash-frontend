@@ -3,13 +3,15 @@
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
+import { fetchWithEarly } from '@/lib/earlyFetch';
+
 import { clearSessionHint, hasSessionHint, setSessionHint } from './useAuthSession';
 import { normalizeAuthStatus, type AuthStatus } from './useAuthStatus';
 
 export const AUTH_STATUS_KEY = '/api/auth/status';
 
 const fetcher = async (url: string): Promise<AuthStatus | null> => {
-    const res = await fetch(url, {
+    const res = await fetchWithEarly(url, {
         headers: { Accept: 'application/json' },
         cache: 'no-store',
     });

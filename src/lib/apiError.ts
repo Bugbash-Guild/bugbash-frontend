@@ -1,3 +1,5 @@
+import { fetchWithEarly } from './earlyFetch';
+
 const UNAUTHORIZED_MESSAGE = 'ログイン期限が切れました。もう一度ログインしてください。';
 
 export class ApiError extends Error {
@@ -48,7 +50,9 @@ export const fetchJson = async <T>(
     init?: RequestInit,
     context: string = url,
 ): Promise<T> => {
-    const response = await fetch(url, init);
+    // <head> のインラインスクリプトが先読みした Response があれば引き取る
+    // （無ければ通常の fetch）。詳細は src/lib/earlyFetch.ts。
+    const response = await fetchWithEarly(url, init);
     if (!response.ok) throw await createApiError(response, context);
     return (await response.json()) as T;
 };

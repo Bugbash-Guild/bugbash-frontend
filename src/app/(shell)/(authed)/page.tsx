@@ -6,7 +6,7 @@ import { useActivities, isMonsterDetail, isPrMergedMetadata, isXpDetail } from "
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
-import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
+import { useMyCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { useSummonDisclosure } from "@/hooks/useSummonDisclosure";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { FirstQuestChecklist } from "@/components/FirstQuestChecklist";
@@ -123,7 +123,8 @@ export default function Home() {
   const { hero, loading: heroLoading, refetch: refetchHero } = useHero(isAuthenticated);
   const { monsters, ownedDegraded } = useMonsters();
   const { activities, loading: activitiesLoading } = useActivities();
-  const { mints: commemorativeMints } = usePublicCommemorativeMints(user?.githubId);
+  // githubId (auth/status の応答) を待たず、最初のリクエスト波に乗せる
+  const { mints: commemorativeMints } = useMyCommemorativeMints(isAuthenticated);
   // NextActionStrip は hero が来てから描画されるが、コスト取得はそれを待つ理由が
   // ないのでここで並列に始める（待つと往復が 1 段増える）。
   const { disclosure: normalSummon } = useSummonDisclosure(isAuthenticated, "normal");

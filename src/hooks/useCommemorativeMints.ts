@@ -60,3 +60,27 @@ export function usePublicCommemorativeMints(heroId: string | null | undefined) {
     refetch: () => result.mutate(),
   };
 }
+
+/**
+ * 自分の鋳造プレート一覧。
+ *
+ * `usePublicCommemorativeMints(user?.githubId)` は githubId が
+ * `/api/auth/status` の応答からしか取れないため、この 1 本だけ
+ * 他のリクエストより 1 往復ぶん遅れて始まっていた（実測 678ms 開始 vs
+ * 他は 500ms 前後）。principal から解決する自分用エンドポイントで
+ * 最初の波に乗せる。
+ */
+export function useMyCommemorativeMints(enabled: boolean) {
+  const result = useSWR<CommemorativeMintPlate[]>(
+    enabled ? "/api/heroes/me/commemorative-mints" : null,
+    fetchPublicMints,
+    { shouldRetryOnError: false },
+  );
+
+  return {
+    error: visibleError(result.error),
+    loading: result.isLoading,
+    mints: asArray(result.data),
+    refetch: () => result.mutate(),
+  };
+}
