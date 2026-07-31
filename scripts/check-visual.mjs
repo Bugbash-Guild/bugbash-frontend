@@ -38,6 +38,7 @@ const PAGES = [
   ["pass", "/pass"],
   ["leaderboard", "/leaderboard"],
   ["mypage-billing", "/mypage/billing"],
+  ["admin-funnel", "/admin/funnel"],
 ];
 
 /** 幅。JS側の SP 判定は 768px 境界なので、その前後と実機幅を見る。 */
