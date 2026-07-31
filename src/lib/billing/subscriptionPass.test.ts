@@ -39,6 +39,8 @@ const planInfo: SubscriptionPlanInfo = {
   monthlyRuneGrant: 150,
   normalHardPityThreshold: 80,
   normalPassHardPityThreshold: 70,
+  normalPassSoftPityThreshold: 50,
+  normalSoftPityThreshold: 60,
   partnerSoulMultiplier: 2,
   plan: "ADVENTURER_PASS",
   priceJpyTaxIncluded: 780,
@@ -82,6 +84,7 @@ describe("subscription pass helpers", () => {
       "月150ルーン付与",
       "PRマージ時の相棒魂×2",
       "通常召喚 天井80→70",
+      "通常召喚 確率上昇の開始60→50",
       "限定召喚 天井60→50",
     ]);
     assert.deepEqual(
@@ -94,6 +97,7 @@ describe("subscription pass helpers", () => {
         "月200ルーン付与",
         "PRマージ時の相棒魂×2",
         "通常召喚 天井80→70",
+        "通常召喚 確率上昇の開始60→50",
         "限定召喚 天井60→40",
       ],
     );

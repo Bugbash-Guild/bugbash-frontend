@@ -69,6 +69,7 @@ export type SummonDisclosureResponse = {
     hardPityPull: number;
     adventurerPassHardPityPull?: number | null;
     softPityPull?: number | null;
+    adventurerPassSoftPityPull?: number | null;
     guaranteeType: string;
     stockPolicy: string;
     items: SummonDisclosureItem[];

@@ -57,6 +57,26 @@ describe("summon pity presentation", () => {
     );
   });
 
+  it("swaps the soft ceiling too, so the boost window shown is the real one", () => {
+    // ハードだけ差し替えると、加入者に実際とは違う区間を見せる。
+    const withSoft = { ...disclosure, adventurerPassSoftPityPull: 45 };
+
+    assert.equal(selectEffectivePityDisclosure(withSoft, true).softPityPull, 45);
+    assert.equal(selectEffectivePityDisclosure(withSoft, false).softPityPull, 55);
+  });
+
+  it("does not invent a shortened ceiling the server never sent", () => {
+    const withoutPassValues = {
+      ...disclosure,
+      adventurerPassHardPityPull: null,
+      adventurerPassSoftPityPull: null,
+    };
+    const effective = selectEffectivePityDisclosure(withoutPassValues, true);
+
+    assert.equal(effective.hardPityPull, 70);
+    assert.equal(effective.softPityPull, 55);
+  });
+
   it("keeps pity copy factual without urgency wording", () => {
     const presentation = buildPityMeterPresentation(
       {
