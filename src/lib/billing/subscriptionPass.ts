@@ -1,25 +1,17 @@
 import type {
   AgeGroup,
   CreateSubscriptionCheckoutRequest,
+  SubscriptionPlanInfo,
   SubscriptionStatus,
 } from "@/types/billing";
 
 export const ADVENTURER_PASS_PLAN = "ADVENTURER_PASS";
-export const ADVENTURER_PASS_PRICE_JPY = 780;
 export const SUBSCRIPTION_CHECKOUT_IDEMPOTENCY_KEY =
   "bb.checkout.subscription.ADVENTURER_PASS";
-
-export const ADVENTURER_PASS_BENEFITS = [
-  "月150ルーン付与",
-  "PRマージ時の相棒魂×2",
-  "通常召喚 天井80→70",
-  "限定召喚 天井60→50",
-] as const;
 
 type SubscriptionCheckoutStorage = Pick<Storage, "getItem" | "removeItem" | "setItem">;
 
 export type PassStatusPresentation = {
-  benefits: string[];
   cancelButtonVisible: boolean;
   periodEndText: string | null;
   statusLabel: string;
@@ -38,8 +30,30 @@ export type SubscriptionCheckoutErrorPresentation = {
   message: string;
 };
 
-export function formatPassPrice(): string {
-  return `¥${ADVENTURER_PASS_PRICE_JPY.toLocaleString("ja-JP")}/月（税込）`;
+/**
+ * 価格の表示。サーバから届いていなければ null を返す。
+ *
+ * 以前は 780 円を直書きしていたため、サーバ側の価格を変えても
+ * 表示は変わらず、**実際の請求額と違う金額を見せたまま課金させる**
+ * 状態を作れてしまった。既定値へ落とさないのはそのため。
+ */
+export function formatPassPrice(plan: SubscriptionPlanInfo | null): string | null {
+  if (plan == null) return null;
+  return `¥${plan.priceJpyTaxIncluded.toLocaleString("ja-JP")}/月（税込）`;
+}
+
+/**
+ * 特典の表示。数値はすべてサーバの値で、文言の形だけここにある。
+ * 天井はパス有無の両方をサーバから受け取るので、差分をここで計算しない。
+ */
+export function buildPassBenefits(plan: SubscriptionPlanInfo | null): string[] {
+  if (plan == null) return [];
+  return [
+    `月${plan.monthlyRuneGrant.toLocaleString("ja-JP")}ルーン付与`,
+    `PRマージ時の相棒魂×${plan.partnerSoulMultiplier}`,
+    `通常召喚 天井${plan.normalHardPityThreshold}→${plan.normalPassHardPityThreshold}`,
+    `限定召喚 天井${plan.limitedHardPityPull}→${plan.limitedPassHardPityPull}`,
+  ];
 }
 
 export function subscriptionCheckoutIdempotencyStorageKey(): string {
@@ -117,11 +131,9 @@ export function toPassStatusPresentation(
   subscription: SubscriptionStatus,
 ): PassStatusPresentation {
   const periodEnd = formatPeriodEnd(subscription.currentPeriodEnd);
-  const benefits = [...ADVENTURER_PASS_BENEFITS];
 
   if (!subscription.entitled) {
     return {
-      benefits,
       cancelButtonVisible: false,
       periodEndText: null,
       statusLabel: "未加入",
@@ -131,7 +143,6 @@ export function toPassStatusPresentation(
 
   if (subscription.cancelScheduled) {
     return {
-      benefits,
       cancelButtonVisible: false,
       periodEndText: periodEnd
         ? `${periodEnd}特典は有効です。それ以降更新されません。`
@@ -142,7 +153,6 @@ export function toPassStatusPresentation(
   }
 
   return {
-    benefits,
     cancelButtonVisible: true,
     periodEndText: periodEnd ? `${periodEnd}有効` : null,
     statusLabel: "加入中",
