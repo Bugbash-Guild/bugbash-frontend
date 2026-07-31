@@ -81,4 +81,39 @@ describe('proxyRequest', () => {
             }
         }
     });
+
+    it('forwards the operator token, and only the headers we name', async () => {
+        const originalFetch = globalThis.fetch;
+        const originalBackendOrigin = process.env.BACKEND_ORIGIN;
+        let forwardedRequest: { input: RequestInfo | URL; init?: RequestInit } | undefined;
+
+        globalThis.fetch = (async (input, init) => {
+            forwardedRequest = { input, init };
+            return new Response('{}', { headers: { 'content-type': 'application/json' } });
+        }) as typeof fetch;
+        process.env.BACKEND_ORIGIN = 'https://backend.example.com';
+
+        try {
+            const req = new NextRequest('https://app.bugbashguild.com/api/analytics/funnel', {
+                headers: {
+                    authorization: 'Bearer should-not-be-forwarded',
+                    'x-bugbash-admin-token': 'operator-token',
+                },
+            });
+
+            await proxyRequest(req, '/api/analytics/funnel', 'GET');
+
+            const forwarded = new Headers(forwardedRequest?.init?.headers);
+            assert.equal(forwarded.get('x-bugbash-admin-token'), 'operator-token');
+            // 列挙していないヘッダは流さない。丸ごと素通しにしない。
+            assert.equal(forwarded.get('authorization'), null);
+        } finally {
+            globalThis.fetch = originalFetch;
+            if (originalBackendOrigin === undefined) {
+                delete process.env.BACKEND_ORIGIN;
+            } else {
+                process.env.BACKEND_ORIGIN = originalBackendOrigin;
+            }
+        }
+    });
 });

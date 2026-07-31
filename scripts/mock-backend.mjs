@@ -108,6 +108,28 @@ const routes = {
   // 値はBEの SubscriptionPlan / AdventurerPassBenefits と同じ形。FEはこれ以外の数値を出さない。
   // 計測の受け口。返さないと画面側で 404 が出て、確認のたびにノイズになる。
   "/api/analytics/events": { recorded: 0 },
+  // 集計画面の確認用。実BEはトークンを要求するが、モックは素通し。
+  "/api/analytics/funnel": {
+    days: 7,
+    steps: [
+      { name: "SUMMON_VIEWED", eventCount: 1840, heroCount: 612 },
+      { name: "SUMMON_EXECUTED", eventCount: 2410, heroCount: 388 },
+      { name: "PITY_REACHED", eventCount: 96, heroCount: 71 },
+      { name: "SHOP_VIEWED", eventCount: 402, heroCount: 205 },
+      { name: "RUNE_SHOP_VIEWED", eventCount: 143, heroCount: 88 },
+      { name: "PASS_VIEWED", eventCount: 77, heroCount: 54 },
+      { name: "CHECKOUT_STARTED", eventCount: 31, heroCount: 24 },
+      { name: "CHECKOUT_COMPLETED", eventCount: 12, heroCount: 11 },
+    ],
+    // 到達率は「同じ人が両方を通った割合」なので 100% を超えない。
+    conversions: [
+      { from: "SUMMON_VIEWED", to: "SUMMON_EXECUTED", fromHeroCount: 612, reachedHeroCount: 388, percent: 63.4 },
+      { from: "SUMMON_EXECUTED", to: "PITY_REACHED", fromHeroCount: 388, reachedHeroCount: 71, percent: 18.3 },
+      { from: "PITY_REACHED", to: "RUNE_SHOP_VIEWED", fromHeroCount: 71, reachedHeroCount: 39, percent: 54.9 },
+      { from: "RUNE_SHOP_VIEWED", to: "CHECKOUT_STARTED", fromHeroCount: 88, reachedHeroCount: 24, percent: 27.3 },
+      { from: "CHECKOUT_STARTED", to: "CHECKOUT_COMPLETED", fromHeroCount: 24, reachedHeroCount: 11, percent: 45.8 },
+    ],
+  },
   "/api/billing/subscription/plan": { plan: "ADVENTURER_PASS", priceJpyTaxIncluded: 780, monthlyRuneGrant: 150, partnerSoulMultiplier: 2, normalHardPityThreshold: 80, normalPassHardPityThreshold: 70, normalSoftPityThreshold: 60, normalPassSoftPityThreshold: 50, limitedHardPityPull: 60, limitedPassHardPityPull: 50 },
   "/api/billing/rune-products": [
     { id: "rune_starter", sku: "rune_starter", priceJpyTaxIncluded: 480, runeAmount: 170, bonusRune: 0, totalRune: 170, firstPurchaseOnly: true },
