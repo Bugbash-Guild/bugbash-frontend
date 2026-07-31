@@ -8,6 +8,7 @@ import { AgeVerificationModal } from "@/components/billing/AgeVerificationModal"
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { ShopTabs } from "@/components/ShopTabs";
+import { trackFunnelEvent, useTrackScreenView } from "@/hooks/useFunnelTracking";
 import { useAuth } from "@/hooks/useAuth";
 import { useRuneProducts } from "@/hooks/useRuneProducts";
 import { useWallet } from "@/hooks/useWallet";
@@ -28,6 +29,7 @@ function createBrowserIdempotencyKey(): string {
 }
 
 export default function RuneShopPage() {
+  useTrackScreenView("RUNE_SHOP_VIEWED");
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const {
@@ -113,6 +115,9 @@ export default function RuneShopPage() {
         runeBalanceBefore: wallet.runeBalance,
         type: "rune",
       });
+      // PSP画面へ送る直前。ここから先はこちらでは追えないので、
+      // 「送り出した」ことだけを記録する（完了は復帰後に記録する）。
+      trackFunnelEvent("CHECKOUT_STARTED", { kind: "rune", sku: product.sku });
       window.location.href = checkout.checkoutUrl;
     } catch {
       setCheckoutError("一時的なエラーが発生しました。同じ内容でもう一度お試しください。");

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { mutate } from "swr";
 
+import { trackFunnelEvent, useTrackScreenView } from "@/hooks/useFunnelTracking";
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
 import { usePityCounter } from "@/hooks/usePityCounter";
@@ -77,6 +78,20 @@ export default function SummonPage() {
     reset,
   } = useSummon();
 
+  useTrackScreenView("SUMMON_VIEWED");
+
+  /*
+    天井は「課金に踏み切るか離脱するか」が分かれる一点なので、
+    到達を単独で記録する。到達した状態で何度も描画されるため、
+    到達したときに一度だけ送る。
+  */
+  const reachedPity = pity?.isHardPity === true || pity?.isSoftPity === true;
+  const pityKind = pity?.isHardPity === true ? "hard" : "soft";
+  useEffect(() => {
+    if (!reachedPity) return;
+    trackFunnelEvent("PITY_REACHED", { kind: pityKind, pool: "normal" });
+  }, [pityKind, reachedPity]);
+
   const [disclosureOpen, setDisclosureOpen] = useState(false);
   const [result, setResult] = useState<SummonResult | null>(null);
   const effectiveDisclosure =
@@ -103,6 +118,7 @@ export default function SummonPage() {
     setResult(null);
     try {
       const data = await pullOnce();
+      trackFunnelEvent("SUMMON_EXECUTED", { kind: "once" });
       setResult({ type: "once", data });
       await Promise.all([
         refetchPity(),
@@ -121,6 +137,7 @@ export default function SummonPage() {
     setResult(null);
     try {
       const data = await pullTen();
+      trackFunnelEvent("SUMMON_EXECUTED", { kind: "ten" });
       setResult({ type: "ten", data });
       await Promise.all([
         refetchPity(),

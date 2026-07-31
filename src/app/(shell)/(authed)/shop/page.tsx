@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { mutate } from "swr";
 
+import { useTrackScreenView } from "@/hooks/useFunnelTracking";
 import { useAuth } from "@/hooks/useAuth";
 import { useShop } from "@/hooks/useShop";
 import { useInventory } from "@/hooks/useInventory";
@@ -29,6 +30,7 @@ import type { ShopItem } from "@/types/shop";
 const ITEMS_TAB = findShopTab("items");
 
 export default function ShopPage() {
+  useTrackScreenView("SHOP_VIEWED");
   const { isAuthenticated } = useAuth();
   const {
     items,

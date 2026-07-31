@@ -10,6 +10,7 @@ import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { ShopTabs } from "@/components/ShopTabs";
 import { useAuth } from "@/hooks/useAuth";
+import { trackFunnelEvent, useTrackScreenView } from "@/hooks/useFunnelTracking";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useSubscriptionPlan } from "@/hooks/useSubscriptionPlan";
 import { clearAgeVerification } from "@/lib/billing/ageVerification";
@@ -60,6 +61,8 @@ export default function PassPage() {
     updateSubscription,
   } = useSubscription(isAuthenticated);
   const { plan } = useSubscriptionPlan();
+
+  useTrackScreenView("PASS_VIEWED");
 
   const [ageGateOpen, setAgeGateOpen] = useState(false);
   const [agreementChecked, setAgreementChecked] = useState(false);
@@ -149,6 +152,7 @@ export default function PassPage() {
         orderId: checkout.subscriptionId,
         type: "subscription",
       });
+      trackFunnelEvent("CHECKOUT_STARTED", { kind: "subscription" });
       window.location.href = checkout.checkoutUrl;
     } catch {
       setCheckoutError("一時的なエラーが発生しました。時間をおいて再度お試しください。");
