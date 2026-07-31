@@ -21,8 +21,11 @@ import {
   formatShopCurrencyAmount,
   mapShopPurchaseErrorMessage,
 } from "@/lib/shopPresentation";
+import { findShopTab } from "@/lib/shopNav";
 import { buildShopSections } from "@/lib/shopSections";
 import type { ShopItem } from "@/types/shop";
+
+const ITEMS_TAB = findShopTab("items");
 
 export default function ShopPage() {
   const { isAuthenticated } = useAuth();
@@ -79,7 +82,18 @@ export default function ShopPage() {
     <>
       <ConsoleTopbar command="./browse --shop-items" path="~/shop" showWallet />
       <div className="px-4 py-5 md:px-9 md:py-6 min-h-screen">
-        <div className="mb-4">
+        {/*
+          この画面だけ見出しが無く、タブのラベルだけが手掛かりだった。
+          何を買う場所で何を支払うのかを、他のショップ画面と同じ形で述べる。
+        */}
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-[20px] font-semibold text-text">{ITEMS_TAB.label}</h1>
+            <p className="mt-1 max-w-2xl text-[12px] leading-6 text-text-dim">
+              {ITEMS_TAB.purpose}
+              <span className="ml-2 text-text-faint">支払い: {ITEMS_TAB.cost}</span>
+            </p>
+          </div>
           <ShopTabs current="items" />
         </div>
 
