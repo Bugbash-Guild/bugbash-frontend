@@ -113,12 +113,12 @@ describe("monster artwork catalog", () => {
 
   it("selects Token Mimic family SVG artwork from form stage", () => {
     const expectedByStage = {
-      BASE: "/monster-svgs/token-mimic.svg",
-      EVO: "/monster-svgs/session-mimic.svg",
-      AWAKENED: "/monster-svgs/vault-agent.svg",
-      AWAKENED_FINAL: "/monster-svgs/oauth-gateway.svg",
-      BERSERK: "/monster-svgs/token-exfiltrator.svg",
-      BERSERK_FINAL: "/monster-svgs/shadow-iam-proxy.svg",
+      BASE: "/monsters/token-mimic.png",
+      EVO: "/monsters/session-mimic.png",
+      AWAKENED: "/monsters/vault-agent.png",
+      AWAKENED_FINAL: "/monsters/oauth-gateway.png",
+      BERSERK: "/monsters/token-exfiltrator.png",
+      BERSERK_FINAL: "/monsters/shadow-iam-proxy.png",
     };
 
     for (const formStage of formStages) {
@@ -131,12 +131,12 @@ describe("monster artwork catalog", () => {
 
   it("selects Race Condition Twins family SVG artwork from form stage", () => {
     const expectedByStage = {
-      BASE: "/monster-svgs/race-condition-twins.svg",
-      EVO: "/monster-svgs/thread-sprinters.svg",
-      AWAKENED: "/monster-svgs/sync-mediators.svg",
-      AWAKENED_FINAL: "/monster-svgs/deterministic-arbiters.svg",
-      BERSERK: "/monster-svgs/deadlock-knot.svg",
-      BERSERK_FINAL: "/monster-svgs/starvation-hydra.svg",
+      BASE: "/monsters/race-condition-twins.png",
+      EVO: "/monsters/thread-sprinters.png",
+      AWAKENED: "/monsters/sync-mediators.png",
+      AWAKENED_FINAL: "/monsters/deterministic-arbiters.png",
+      BERSERK: "/monsters/deadlock-knot.png",
+      BERSERK_FINAL: "/monsters/starvation-hydra.png",
     };
 
     for (const formStage of formStages) {

@@ -106,56 +106,65 @@ const NULL_POINTER_ARTWORK_BY_STAGE: MonsterArtworkByStage = {
   BERSERK_FINAL: NULL_POINTER_ARTWORK.berserkFinal,
 };
 
+/*
+ * これらは以前 /monster-svgs/*.svg を指していたが、その SVG は 1254px 級の
+ * PNG を base64 で 1 枚埋め込んだだけの入れ物（2.3〜4MB）だった。
+ * `next/image` の最適化器は SVG を受け付けず 400 を返すため、実際には
+ * 画像が出ずフォールバックのプレースホルダになっていた。
+ * 埋め込まれていた PNG をそのまま取り出して置いてある（ピクセルは同一）。
+ * PNG なら最適化器が通り、28px のアイコンは w=64 で約 3.5KB になる。
+ */
 const TOKEN_MIMIC_ARTWORK_BY_STAGE: MonsterArtworkByStage = {
   BASE: {
-    src: "/monster-svgs/token-mimic.svg",
+    src: "/monsters/token-mimic.png",
     alt: "Token Mimic",
   },
   EVO: {
-    src: "/monster-svgs/session-mimic.svg",
+    src: "/monsters/session-mimic.png",
     alt: "Session Mimic",
   },
   AWAKENED: {
-    src: "/monster-svgs/vault-agent.svg",
+    src: "/monsters/vault-agent.png",
     alt: "Vault Agent",
   },
   AWAKENED_FINAL: {
-    src: "/monster-svgs/oauth-gateway.svg",
+    src: "/monsters/oauth-gateway.png",
     alt: "OAuth Gateway",
   },
   BERSERK: {
-    src: "/monster-svgs/token-exfiltrator.svg",
+    src: "/monsters/token-exfiltrator.png",
     alt: "Token Exfiltrator",
   },
   BERSERK_FINAL: {
-    src: "/monster-svgs/shadow-iam-proxy.svg",
+    src: "/monsters/shadow-iam-proxy.png",
     alt: "Shadow IAM Proxy",
   },
 };
 
+/** 上と同じ理由で SVG 入れ物から PNG に差し替えたもの。 */
 const RACE_CONDITION_TWINS_ARTWORK_BY_STAGE: MonsterArtworkByStage = {
   BASE: {
-    src: "/monster-svgs/race-condition-twins.svg",
+    src: "/monsters/race-condition-twins.png",
     alt: "Race Condition Twins",
   },
   EVO: {
-    src: "/monster-svgs/thread-sprinters.svg",
+    src: "/monsters/thread-sprinters.png",
     alt: "Thread Sprinters",
   },
   AWAKENED: {
-    src: "/monster-svgs/sync-mediators.svg",
+    src: "/monsters/sync-mediators.png",
     alt: "Sync Mediators",
   },
   AWAKENED_FINAL: {
-    src: "/monster-svgs/deterministic-arbiters.svg",
+    src: "/monsters/deterministic-arbiters.png",
     alt: "Deterministic Arbiters",
   },
   BERSERK: {
-    src: "/monster-svgs/deadlock-knot.svg",
+    src: "/monsters/deadlock-knot.png",
     alt: "Deadlock Knot",
   },
   BERSERK_FINAL: {
-    src: "/monster-svgs/starvation-hydra.svg",
+    src: "/monsters/starvation-hydra.png",
     alt: "Starvation Hydra",
   },
 };
