@@ -111,7 +111,7 @@ describe("monster artwork catalog", () => {
     );
   });
 
-  it("selects Token Mimic family SVG artwork from form stage", () => {
+  it("selects Token Mimic family artwork from form stage", () => {
     const expectedByStage = {
       BASE: "/monsters/token-mimic.png",
       EVO: "/monsters/session-mimic.png",
@@ -129,7 +129,7 @@ describe("monster artwork catalog", () => {
     }
   });
 
-  it("selects Race Condition Twins family SVG artwork from form stage", () => {
+  it("selects Race Condition Twins family artwork from form stage", () => {
     const expectedByStage = {
       BASE: "/monsters/race-condition-twins.png",
       EVO: "/monsters/thread-sprinters.png",
