@@ -140,7 +140,10 @@ const routes = {
   "/api/summon/pity": { poolKey: "NORMAL", pullCount: 46, isSoftPity: false, isHardPity: false },
   "/api/summon/limited/pity": { poolKey: "LIMITED", pullCount: 12, isSoftPity: false, isHardPity: false },
   "/api/summon/history": [],
+  // 残高も返す（実BEは返す）。返さないと「残高不明」の見え方の確認になってしまう。
   "/api/shop/items": {
+    guildCoinBalance: 16475,
+    runeBalance: 340,
     items: [
       { itemId: "fire-soul-pack-s", name: "炎の魂パック・小", description: "炎属性のモンスターに50魂を指定して付与", currency: "RUNE", price: 30, category: "SOUL_PACK", iconEmoji: "🔮", assetUrl: null, variantGroup: "attribute-soul-pack", attribute: "fire", attributeLabel: "炎", sizeSuffix: "s", sizeLabel: "小" },
       { itemId: "fire-soul-pack-m", name: "炎の魂パック・中", description: "炎属性のモンスターに150魂を指定して付与", currency: "RUNE", price: 80, category: "SOUL_PACK", iconEmoji: "🔮", assetUrl: null, variantGroup: "attribute-soul-pack", attribute: "fire", attributeLabel: "炎", sizeSuffix: "m", sizeLabel: "中" },
