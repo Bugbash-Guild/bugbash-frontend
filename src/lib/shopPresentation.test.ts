@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import {
   buildShopPurchasePresentation,
   formatShopCurrencyAmount,
+  isShopPurchaseBlocked,
   shopBalanceForCurrency,
 } from "./shopPresentation";
 import type { ShopItem } from "@/types/shop";
@@ -45,7 +46,7 @@ describe("shop presentation helpers", () => {
     assert.deepEqual(
       buildShopPurchasePresentation(runeItem, { guildCoinBalance: 300, runeBalance: 40 }),
       {
-        canAfford: false,
+        affordability: "insufficient",
         cosmeticNotice: "この購入は見た目や時短のためのものです。ステータス・報酬・順位には影響しません。",
         insufficientMessage: "ルーンが足りません（必要 80 / 保有 40）",
         priceLabel: "80 ルーン",
@@ -54,11 +55,40 @@ describe("shop presentation helpers", () => {
     );
   });
 
+  it("says the balance is unknown instead of claiming it is zero", () => {
+    // 残高が届いていないだけで「買えない」と表示すると、金を持っている
+    // ユーザーの前で全商品を赤くして購入を塞ぐことになる。
+    const presentation = buildShopPurchasePresentation(runeItem, {
+      guildCoinBalance: null,
+      runeBalance: null,
+    });
+
+    assert.equal(presentation.affordability, "unknown");
+    assert.equal(presentation.insufficientMessage, null);
+    assert.equal(presentation.showRuneTopUpLink, false);
+    assert.equal(isShopPurchaseBlocked(presentation), false, "分からないなら押させる");
+  });
+
+  it("blocks the purchase only when the shortage is actually known", () => {
+    const short = buildShopPurchasePresentation(runeItem, {
+      guildCoinBalance: 300,
+      runeBalance: 40,
+    });
+    const enough = buildShopPurchasePresentation(runeItem, {
+      guildCoinBalance: 300,
+      runeBalance: 400,
+    });
+
+    assert.equal(isShopPurchaseBlocked(short), true);
+    assert.equal(isShopPurchaseBlocked(enough), false);
+    assert.equal(enough.affordability, "affordable");
+  });
+
   it("does not add rune purchase guidance to guild coin shortages", () => {
     assert.deepEqual(
       buildShopPurchasePresentation(guildCoinItem, { guildCoinBalance: 40, runeBalance: 500 }),
       {
-        canAfford: false,
+        affordability: "insufficient",
         cosmeticNotice: null,
         insufficientMessage: "ギルドコインが足りません。PRをマージして集めましょう。",
         priceLabel: "120 ギルドコイン",

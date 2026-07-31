@@ -19,6 +19,7 @@ import { ShopSectionList } from "@/components/shop/ShopSectionList";
 import {
   buildShopPurchasePresentation,
   formatShopCurrencyAmount,
+  isShopPurchaseBlocked,
   mapShopPurchaseErrorMessage,
 } from "@/lib/shopPresentation";
 import { findShopTab } from "@/lib/shopNav";
@@ -201,7 +202,7 @@ export default function ShopPage() {
               </button>
               <button
                 onClick={handleConfirm}
-                disabled={purchasing || !selectedPresentation.canAfford}
+                disabled={purchasing || isShopPurchaseBlocked(selectedPresentation)}
                 className="px-3 py-1.5 text-[12px] text-bg bg-accent rounded hover:bg-accent/90 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {purchasing ? "購入中…" : "購入する"}
