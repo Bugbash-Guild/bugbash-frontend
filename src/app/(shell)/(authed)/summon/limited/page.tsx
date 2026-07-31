@@ -16,6 +16,7 @@ import { PityMeter } from "@/components/summon/PityMeter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { useAuth } from "@/hooks/useAuth";
 import { useLimitedSummon } from "@/hooks/useLimitedSummon";
+import { MONSTERS_OWNED_KEY } from "@/hooks/useMonsters";
 import { usePityCounter } from "@/hooks/usePityCounter";
 import { useSummonDisclosure } from "@/hooks/useSummonDisclosure";
 import { useSummonHistory } from "@/hooks/useSummonHistory";
@@ -121,7 +122,7 @@ export default function LimitedSummonPage() {
       refetchPity(),
       refetchHistory(),
       refetchWallet(),
-      mutate("monsters-compendium"),
+      mutate(MONSTERS_OWNED_KEY),
     ]);
   }
 

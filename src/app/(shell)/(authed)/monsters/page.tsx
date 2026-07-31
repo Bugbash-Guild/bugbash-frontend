@@ -21,13 +21,14 @@ import { buildAcquisitionHint, buildDexProgress } from "@/lib/dexProgress";
 import {
   canEvolveMonster,
   canLevelUpMonster,
-  getMonsterLevelUpCost,
+  hasEnoughMaterial,
   isMonsterAwakened,
-  MONSTER_EVOLUTION_LEVEL,
-  MONSTER_MAX_LEVEL,
+  isMonsterMaxLevel,
+  meetsLevel,
 } from "@/lib/monsterProgression";
+import { InlineActionResult } from "@/components/InlineActionResult";
 import type { CommemorativeMintPlate } from "@/types/commemorativeMint";
-import type { AwakeningState, Monster } from "@/types/monster";
+import type { AwakeningState, Monster, RitualRequirement } from "@/types/monster";
 
 type RarityKey = "SSR" | "SR" | "R" | "N";
 type FilterKey = "all" | RarityKey;
@@ -39,6 +40,96 @@ const AWAKENING_LABEL: Partial<Record<AwakeningState, string>> = {
   AWAKENED: "覚醒",
   BERSERK: "暴走",
 };
+
+/** 節目のレベルに届いたときに何が起きるか。到達済みの行に添える。 */
+const GATE_READY_LABEL: Record<string, string> = {
+  BASIC_EVOLUTION: "姿が変わりました",
+  BRANCH_EVOLUTION: "進化の儀式を行えます",
+  FINAL_EVOLUTION: "最終進化を行えます",
+};
+
+/**
+ * 素材を消費する儀式のボタン。押す前に「何をいくつ使うか」を必ず出し、
+ * 確認を挟んでから実行する（クリック即消費にしない）。
+ */
+function RitualAction({
+  busy,
+  confirming,
+  label,
+  level,
+  requirement,
+  tone,
+  onCancel,
+  onConfirm,
+  onRequest,
+}: {
+  busy: boolean;
+  confirming: boolean;
+  label: string;
+  level: number;
+  requirement: RitualRequirement;
+  tone: "purple" | "neutral";
+  onCancel: () => void;
+  onConfirm: () => void;
+  onRequest: () => void;
+}) {
+  const enough = hasEnoughMaterial(requirement);
+  const levelOk = meetsLevel(level, requirement.requiredLevel);
+  const buttonClass =
+    tone === "purple"
+      ? "w-full rounded border border-purple/40 px-2 py-1 text-[10px] text-purple transition-opacity hover:bg-purple/[0.08] disabled:cursor-not-allowed disabled:opacity-30"
+      : "w-full rounded border border-line-strong px-2 py-1 text-[10px] text-text-dim transition-opacity hover:text-text disabled:cursor-not-allowed disabled:opacity-30";
+
+  if (confirming) {
+    return (
+      <div className="space-y-1 rounded-[4px] border border-line-strong bg-bg-elev-2 p-2">
+        <p className="text-[10px] leading-5 text-text">
+          {label}を実行すると <b>{requirement.itemName}</b> を{" "}
+          {requirement.requiredQuantity} 個消費します（所持 {requirement.ownedQuantity} 個）。
+        </p>
+        <div className="flex gap-1">
+          <button className={buttonClass} disabled={busy} onClick={onConfirm} type="button">
+            {busy ? "…" : `${label}する`}
+          </button>
+          <button
+            className="w-full rounded border border-line px-2 py-1 text-[10px] text-text-dim hover:text-text"
+            disabled={busy}
+            onClick={onCancel}
+            type="button"
+          >
+            やめる
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <button
+        className={buttonClass}
+        disabled={busy || !enough || !levelOk}
+        onClick={onRequest}
+        type="button"
+      >
+        {busy
+          ? "…"
+          : `${label}（${requirement.itemName} ×${requirement.requiredQuantity}）`}
+      </button>
+      {!levelOk && requirement.requiredLevel !== null && (
+        <p className="text-[9.5px] leading-5 text-text-faint">
+          Lv.{requirement.requiredLevel} から実行できます。
+        </p>
+      )}
+      {levelOk && !enough && (
+        <p className="rounded-[4px] border border-line bg-bg-elev-2 px-2 py-1 text-[9.5px] leading-5 text-text-dim">
+          {requirement.itemName}が {requirement.requiredQuantity - requirement.ownedQuantity} 個
+          足りません（所持 {requirement.ownedQuantity} 個）。
+        </p>
+      )}
+    </>
+  );
+}
 
 /** 進化段階（活動由来）。formStage から派生。 */
 function evolutionStage(monster: Monster): number {
@@ -73,7 +164,7 @@ export default function MonstersPage() {
   const { monsters, ownedDegraded, loading, error, refetch } = useMonsters();
   const { partnerId, setPartner } = usePartner();
   const { ownedSkins, skins: skinCatalog } = useSkinCatalog(isAuthenticated);
-  const { items: inventoryItems } = useInventory(isAuthenticated);
+  const { items: inventoryItems, refetch: refetchInventory } = useInventory(isAuthenticated);
   // スキンが1つも無いモンスターに「スキンを見る」を出すと空棚に送ることになる。
   const slugsWithSkins = useMemo(
     () => new Set(skinCatalog.map((skin) => skin.monsterSlug)),
@@ -83,11 +174,19 @@ export default function MonstersPage() {
   // githubId (auth/status の応答) を待たず、最初のリクエスト波に乗せる
   const { mints } = useMyCommemorativeMints(isAuthenticated);
   const [filter, setFilter] = useState<FilterKey>("all");
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [levelingUp, setLevelingUp] = useState<string | null>(null);
   const [evolving, setEvolving] = useState<string | null>(null);
   const [changingPath, setChangingPath] = useState<string | null>(null);
+  /*
+   * 育成の結果は操作したカードの隣に出す。以前はページ最上部の <p> だけに出して
+   * いたため、図鑑が縦に長いと下のカードで押した結果が画面外だった。
+   * aria-live も付いていなかったので読み上げにも乗っていない（InlineActionResult が持つ）。
+   */
+  const [lastResult, setLastResult] = useState<{
+    monsterId: string;
+    tone: "success" | "error";
+    message: string;
+  } | null>(null);
 
   async function runAction(
     monsterId: string,
@@ -96,21 +195,34 @@ export default function MonstersPage() {
     describe: (body: Record<string, unknown>) => string,
   ) {
     setBusy(monsterId);
-    setActionError(null);
-    setSuccessMsg(null);
+    setLastResult(null);
     try {
       const res = await fetch(`/api/monsters/${monsterId}/${action}`, {
         method: "POST",
       });
       const body = (await res.json()) as Record<string, unknown>;
       if (!res.ok) {
-        setActionError((body.error as string) ?? `Error ${res.status}`);
+        setLastResult({
+          monsterId,
+          tone: "error",
+          message: (body.error as string) ?? `Error ${res.status}`,
+        });
       } else {
-        setSuccessMsg(describe(body));
-        await Promise.all([refetch(), refetchHero(), mutate("/api/billing/wallet")]);
+        setLastResult({ monsterId, tone: "success", message: describe(body) });
+        /*
+         * 素材を消費する操作があるのでインベントリも再検証する。以前は含めておらず、
+         * 路線変更で証を1個使ったあとも画面上部の MATERIALS ストリップが
+         * 古い個数を出し続けていた。
+         */
+        await Promise.all([
+          refetch(),
+          refetchHero(),
+          refetchInventory(),
+          mutate("/api/billing/wallet"),
+        ]);
       }
     } catch {
-      setActionError("Network error");
+      setLastResult({ monsterId, tone: "error", message: "Network error" });
     } finally {
       setBusy(null);
     }
@@ -129,16 +241,18 @@ export default function MonstersPage() {
     });
 
   async function handleSetPartner(monsterId: string) {
-    setActionError(null);
-    setSuccessMsg(null);
+    setLastResult(null);
     try {
       await setPartner(monsterId);
     } catch (error) {
-      setActionError(
-        error instanceof Error
-          ? error.message
-          : "パートナーを設定できませんでした。もう一度お試しください。",
-      );
+      setLastResult({
+        monsterId,
+        tone: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "パートナーを設定できませんでした。もう一度お試しください。",
+      });
     }
   }
 
@@ -309,16 +423,6 @@ export default function MonstersPage() {
             </button>
           </div>
         )}
-        {successMsg && (
-          <p className="mt-4 rounded border border-accent/30 bg-accent/10 px-3 py-2 text-[13px] text-accent">
-            {successMsg}
-          </p>
-        )}
-        {actionError && (
-          <p className="mt-4 rounded border border-pink/30 bg-pink/10 px-3 py-2 text-[13px] text-pink">
-            {actionError}
-          </p>
-        )}
 
         {/* grouped dex */}
         <div className="mt-4 space-y-2">
@@ -348,6 +452,7 @@ export default function MonstersPage() {
                         evolving: evolving === m.id,
                         changingPath: changingPath === m.id,
                       }}
+                      result={lastResult?.monsterId === m.id ? lastResult : null}
                       onSetPartner={() => void handleSetPartner(m.id)}
                       onLevelUp={() => void handleLevelUp(m.id)}
                       onEvolve={() => void handleEvolve(m.id)}
@@ -377,6 +482,7 @@ function MonsterCard({
   isRecent,
   mint,
   busy,
+  result,
   onSetPartner,
   onLevelUp,
   onEvolve,
@@ -389,6 +495,7 @@ function MonsterCard({
   isRecent: boolean;
   mint: CommemorativeMintPlate | undefined;
   busy: { levelingUp: boolean; evolving: boolean; changingPath: boolean };
+  result: { tone: "success" | "error"; message: string } | null;
   onSetPartner: () => void;
   onLevelUp: () => void;
   onEvolve: () => void;
@@ -400,8 +507,19 @@ function MonsterCard({
   const evoStage = evolutionStage(m);
   const canEvolve = canEvolveMonster(m);
   const canLevelUp = canLevelUpMonster(m);
-  const levelUpCost = getMonsterLevelUpCost(m.level);
   const acquisitionHint = buildAcquisitionHint(m);
+  // 育成の数値はすべて BE 由来。届いていなければ操作もコストも出さない。
+  const progression = m.progression;
+  const levelUpCost = progression?.nextLevelUpSoulCost ?? null;
+  const soulShortfall =
+    levelUpCost !== null && m.soulCount < levelUpCost ? levelUpCost - m.soulCount : 0;
+
+  /*
+   * 素材を消費する操作は押す前に確認する。以前は確認なしのクリック即実行で、
+   * 何をいくつ使うかも出していなかった（深淵の証は 20,000 コイン相当）。
+   * ショップ・鋳造・工房が確認を持つのに育成だけ無かった非対称を埋める。
+   */
+  const [pendingRitual, setPendingRitual] = useState<"evolve" | "change-path" | null>(null);
 
   // art tint by activity state (green evolution / gold awaken / pink berserk)
   const artBorder = berserk
@@ -562,42 +680,83 @@ function MonsterCard({
       )}
 
       {/* management actions (real functionality, kept subtle) */}
-      {m.isOwned && (
+      {m.isOwned && progression && (
         <div className="mt-2 space-y-1" onClick={(e) => e.stopPropagation()}>
-          {canLevelUp && (
+          {/* 次の節目までの距離。「あと何をすれば何が起きるか」を常に1つ先に見せる。 */}
+          {progression.nextGateLevel !== null && progression.soulsToNextGate !== null && (
+            <p className="text-[9.5px] leading-5 text-text-faint">
+              {progression.soulsToNextGate > 0
+                ? `次の節目 Lv.${progression.nextGateLevel} まで ${progression.soulsToNextGate.toLocaleString("ja-JP")} ${m.attributeName ?? "soul"}`
+                : `Lv.${progression.nextGateLevel} 到達 — ${GATE_READY_LABEL[progression.nextGateKind ?? "BASIC_EVOLUTION"]}`}
+            </p>
+          )}
+
+          {canLevelUp && levelUpCost !== null && (
             <button
               type="button"
               onClick={onLevelUp}
-              disabled={m.soulCount < levelUpCost || busy.levelingUp}
+              disabled={soulShortfall > 0 || busy.levelingUp}
               className="w-full rounded border border-accent/40 px-2 py-1 text-[10px] text-accent transition-opacity hover:bg-accent/[0.08] disabled:cursor-not-allowed disabled:opacity-30"
             >
               {busy.levelingUp ? "…" : `Lv UP (${levelUpCost} ${m.attributeName ?? "soul"})`}
             </button>
           )}
-          {canEvolve && (
-            <button
-              type="button"
-              onClick={onEvolve}
-              disabled={busy.evolving}
-              className="w-full rounded border border-purple/40 px-2 py-1 text-[10px] text-purple transition-opacity hover:bg-purple/[0.08] disabled:cursor-not-allowed disabled:opacity-30"
-            >
-              {busy.evolving ? "…" : `進化 (Lv${MONSTER_EVOLUTION_LEVEL}+)`}
-            </button>
+          {/*
+            押せない理由を書く。以前はボタンが薄くなるだけで、なぜ押せないのかを
+            どこにも出していなかった（ショップ側は不足額を説明しているのに非対称だった）。
+          */}
+          {canLevelUp && soulShortfall > 0 && (
+            <p className="rounded-[4px] border border-line bg-bg-elev-2 px-2 py-1 text-[9.5px] leading-5 text-text-dim">
+              {m.attributeName ?? "soul"}の魂があと {soulShortfall.toLocaleString("ja-JP")} 必要です
+              （所持 {m.soulCount.toLocaleString("ja-JP")}）。PR をマージするか魂パックで集められます。
+            </p>
           )}
-          {awakened && (
-            <button
-              type="button"
-              onClick={onChangePath}
-              disabled={busy.changingPath}
-              className="w-full rounded border border-line-strong px-2 py-1 text-[10px] text-text-dim transition-opacity hover:text-text disabled:cursor-not-allowed disabled:opacity-30"
-            >
-              {busy.changingPath ? "…" : "路線変更"}
-            </button>
+
+          {canEvolve && progression.branchEvolution && (
+            <RitualAction
+              busy={busy.evolving}
+              confirming={pendingRitual === "evolve"}
+              label="進化"
+              level={m.level}
+              requirement={progression.branchEvolution}
+              tone="purple"
+              onCancel={() => setPendingRitual(null)}
+              onConfirm={() => {
+                setPendingRitual(null);
+                onEvolve();
+              }}
+              onRequest={() => setPendingRitual("evolve")}
+            />
           )}
-          {!canLevelUp && !canEvolve && m.level >= MONSTER_MAX_LEVEL && (
+          {awakened && progression.pathChange && (
+            <RitualAction
+              busy={busy.changingPath}
+              confirming={pendingRitual === "change-path"}
+              label="路線変更"
+              level={m.level}
+              requirement={progression.pathChange}
+              tone="neutral"
+              onCancel={() => setPendingRitual(null)}
+              onConfirm={() => {
+                setPendingRitual(null);
+                onChangePath();
+              }}
+              onRequest={() => setPendingRitual("change-path")}
+            />
+          )}
+          {isMonsterMaxLevel(m) && !canEvolve && (
             <div className="rounded border border-line py-1 text-center text-[10px] font-bold tracking-widest text-text-faint">
-              Lv.{MONSTER_MAX_LEVEL}
+              Lv.{progression.maxLevel}
             </div>
+          )}
+
+          {result && (
+            <InlineActionResult
+              title={result.tone === "success" ? "完了しました" : "実行できませんでした"}
+              tone={result.tone}
+            >
+              {result.message}
+            </InlineActionResult>
           )}
         </div>
       )}

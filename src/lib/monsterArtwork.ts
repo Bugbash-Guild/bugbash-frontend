@@ -34,8 +34,13 @@ const MONSTER_FORM_STAGES = [
 type MonsterFormStage = (typeof MONSTER_FORM_STAGES)[number];
 type MonsterArtworkByStage = Record<MonsterFormStage, MonsterArtwork>;
 
-const EVOLUTION_LEVEL = 30;
-const FINAL_FORM_LEVEL = 80;
+/*
+ * formStage が届かなかったときだけ使う保険のしきい値。
+ * BE（MonsterProgressionRules.BASIC_EVOLUTION_LEVEL）と同じ Lv20 に合わせている。
+ * 以前はここだけ Lv30 で、進化ボタンの出る Lv とも見た目の変わる Lv とも
+ * 食い違っていた。
+ */
+const BASIC_EVOLUTION_LEVEL = 20;
 
 const MONSTER_ARTWORK: MonsterArtworkEntry[] = [
   {
@@ -223,15 +228,15 @@ function resolveFormStage({
   const currentLevel = level ?? 1;
   const state = awakeningState?.toUpperCase();
 
-  if (state === "AWAKENED") {
-    return currentLevel >= FINAL_FORM_LEVEL ? "AWAKENED_FINAL" : "AWAKENED";
-  }
+  /*
+   * 最終進化はレベルではなく儀式（進化の輝石3個）で決まるので、レベルからは推測しない。
+   * 以前は Lv80 以上を *_FINAL と見なしていたが、これは実装に無いルールで、
+   * 未実施のモンスターに最終形態の絵を出しうる推測だった。
+   */
+  if (state === "AWAKENED") return "AWAKENED";
+  if (state === "BERSERK") return "BERSERK";
 
-  if (state === "BERSERK") {
-    return currentLevel >= FINAL_FORM_LEVEL ? "BERSERK_FINAL" : "BERSERK";
-  }
-
-  return currentLevel >= EVOLUTION_LEVEL ? "EVO" : "BASE";
+  return currentLevel >= BASIC_EVOLUTION_LEVEL ? "EVO" : "BASE";
 }
 
 function isMonsterFormStage(

@@ -6,6 +6,7 @@ import { mutate } from "swr";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
+import { MONSTERS_OWNED_KEY } from "@/hooks/useMonsters";
 import { usePityCounter } from "@/hooks/usePityCounter";
 import { useSummon } from "@/hooks/useSummon";
 import { useSummonDisclosure } from "@/hooks/useSummonDisclosure";
@@ -109,7 +110,7 @@ export default function SummonPage() {
         refetchHistory(),
         refetchHero(),
         mutate("/api/billing/wallet"),
-        mutate("monsters-compendium"),
+        mutate(MONSTERS_OWNED_KEY),
       ]);
     } catch {
       // error displayed via summonError state
@@ -127,7 +128,7 @@ export default function SummonPage() {
         refetchHistory(),
         refetchHero(),
         mutate("/api/billing/wallet"),
-        mutate("monsters-compendium"),
+        mutate(MONSTERS_OWNED_KEY),
       ]);
     } catch {
       // error displayed via summonError state

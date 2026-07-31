@@ -85,10 +85,11 @@ describe("monster artwork catalog", () => {
   });
 
   it("can derive Null Pointer artwork from legacy level and awakening state data", () => {
+    // formStage が無いときの保険。しきい値は BE の ①普通進化（Lv20）に合わせる。
     assert.equal(
       getMonsterArtwork({
         name: "Null Pointer Axolotl",
-        level: 29,
+        level: 19,
         awakeningState: "NORMAL",
       })?.src,
       "/monsters/null-pointer-axolotl.png",
@@ -96,16 +97,32 @@ describe("monster artwork catalog", () => {
     assert.equal(
       getMonsterArtwork({
         name: "Null Pointer Axolotl",
-        level: 30,
+        level: 20,
         awakeningState: "NORMAL",
       })?.src,
       "/monsters/dereference-newt.png",
     );
+  });
+
+  it("never infers the final form from level alone", () => {
+    /*
+     * 最終進化は Lv100 到達 + 輝石3個の儀式で決まる。レベルだけで *_FINAL を
+     * 出すと、儀式をしていないモンスターに最終形態の絵を見せることになる。
+     * Lv100 でも覚醒どまり（optional-guardian）で、最終形態の
+     * safe-memory-oracle は formStage が明示されたときだけ出る。
+     */
     assert.equal(
       getMonsterArtwork({
         name: "Null Pointer Axolotl",
-        level: 80,
+        level: 100,
         awakeningState: "AWAKENED",
+      })?.src,
+      "/monsters/optional-guardian.png",
+    );
+    assert.equal(
+      getMonsterArtwork({
+        name: "Null Pointer Axolotl",
+        formStage: "AWAKENED_FINAL",
       })?.src,
       "/monsters/safe-memory-oracle.png",
     );

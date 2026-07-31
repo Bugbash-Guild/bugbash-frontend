@@ -6,7 +6,12 @@ import useSWR from 'swr';
 
 import { asArray, fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
 import { fetchMasterJson } from '@/lib/masterData';
-import type { AwakeningState, Monster, MonsterFormStage } from '@/types/monster';
+import type {
+    AwakeningState,
+    Monster,
+    MonsterFormStage,
+    MonsterProgression,
+} from '@/types/monster';
 import { useRedirectOnUnauthorized } from './useRedirectOnUnauthorized';
 
 type AllMonstersDto = {
@@ -35,11 +40,18 @@ type OwnedMonstersDto = {
         attribute: string;
         attributeName: string;
         attributeEmoji: string;
+        progression?: MonsterProgression;
     }[];
 };
 
 const CATALOG_KEY = '/api/monsters/all';
-const OWNED_KEY = '/api/monsters/owned';
+/**
+ * 所持モンスターの SWR キー。図鑑を再検証したい側（召喚など）はこれを import する。
+ * 以前は呼び出し側が "monsters-compendium" という実在しない文字列を mutate して
+ * おり、召喚で新種を引いても図鑑のキャッシュが更新されないままだった。
+ */
+export const MONSTERS_OWNED_KEY = '/api/monsters/owned';
+const OWNED_KEY = MONSTERS_OWNED_KEY;
 
 /** マスタデータはリリースでしか変わらないので、遷移ごとに取り直さない。 */
 const CATALOG_DEDUPING_INTERVAL_MS = 5 * 60 * 1000;
@@ -117,6 +129,8 @@ export function useMonsters() {
                 formStage: ownedMonster?.formStage,
                 assetUrl: ownedMonster?.assetUrl,
                 artworkByStage: ownedMonster?.artworkByStage ?? m.artworkByStage,
+                // 育成コストは BE 由来。届いていなければ表示しない（フロントで式を持たない）。
+                progression: ownedMonster?.progression,
             };
         });
     }, [catalog.data, owned.data]);
