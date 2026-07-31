@@ -108,7 +108,7 @@ const routes = {
   // 値はBEの SubscriptionPlan / AdventurerPassBenefits と同じ形。FEはこれ以外の数値を出さない。
   // 計測の受け口。返さないと画面側で 404 が出て、確認のたびにノイズになる。
   "/api/analytics/events": { recorded: 0 },
-  "/api/billing/subscription/plan": { plan: "ADVENTURER_PASS", priceJpyTaxIncluded: 780, monthlyRuneGrant: 150, partnerSoulMultiplier: 2, normalHardPityThreshold: 80, normalPassHardPityThreshold: 70, limitedHardPityPull: 60, limitedPassHardPityPull: 50 },
+  "/api/billing/subscription/plan": { plan: "ADVENTURER_PASS", priceJpyTaxIncluded: 780, monthlyRuneGrant: 150, partnerSoulMultiplier: 2, normalHardPityThreshold: 80, normalPassHardPityThreshold: 70, normalSoftPityThreshold: 60, normalPassSoftPityThreshold: 50, limitedHardPityPull: 60, limitedPassHardPityPull: 50 },
   "/api/billing/rune-products": [
     { id: "rune_starter", sku: "rune_starter", priceJpyTaxIncluded: 480, runeAmount: 170, bonusRune: 0, totalRune: 170, firstPurchaseOnly: true },
     { id: "rune_60", sku: "rune_60", priceJpyTaxIncluded: 240, runeAmount: 60, bonusRune: 0, totalRune: 60, firstPurchaseOnly: false },
@@ -126,7 +126,7 @@ const routes = {
   "/api/hero/partner": { partnerMonsterId: "m-1" },
   "/api/summon/disclosure": {
     name: "通常召喚", description: "APIから提供される説明文。", currency: "GUILD_COIN",
-    singlePullCost: 300, tenPullCost: 3000, hardPityPull: 80, softPityPull: 60,
+    singlePullCost: 300, tenPullCost: 3000, hardPityPull: 80, softPityPull: 60, adventurerPassSoftPityPull: 50,
     adventurerPassHardPityPull: 70, guaranteeType: "SR_OR_ABOVE",
     rates: [{ rarity: "SSR", percent: 3 }, { rarity: "SR", percent: 12 }, { rarity: "R", percent: 35 }, { rarity: "N", percent: 50 }],
     items: [], stockPolicy: null,

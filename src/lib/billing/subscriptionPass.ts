@@ -52,6 +52,7 @@ export function buildPassBenefits(plan: SubscriptionPlanInfo | null): string[] {
     `月${plan.monthlyRuneGrant.toLocaleString("ja-JP")}ルーン付与`,
     `PRマージ時の相棒魂×${plan.partnerSoulMultiplier}`,
     `通常召喚 天井${plan.normalHardPityThreshold}→${plan.normalPassHardPityThreshold}`,
+    `通常召喚 確率上昇の開始${plan.normalSoftPityThreshold}→${plan.normalPassSoftPityThreshold}`,
     `限定召喚 天井${plan.limitedHardPityPull}→${plan.limitedPassHardPityPull}`,
   ];
 }

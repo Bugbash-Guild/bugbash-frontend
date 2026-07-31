@@ -38,12 +38,21 @@ export function selectEffectivePityDisclosure(
   disclosure: SummonDisclosureResponse,
   passEntitled: boolean,
 ): SummonDisclosureResponse {
-  if (!passEntitled || disclosure.adventurerPassHardPityPull == null)
+  if (!passEntitled) return disclosure;
+  /*
+    天井は硬・軟の両方が短縮される。ハードだけ差し替えると、
+    加入者に「ソフト60 / ハード70」という実際とは違う区間を見せてしまう。
+    サーバが送っていない値は差し替えない（推測しない）。
+  */
+  const hardPityPull = disclosure.adventurerPassHardPityPull ?? disclosure.hardPityPull;
+  const softPityPull = disclosure.adventurerPassSoftPityPull ?? disclosure.softPityPull;
+  if (
+    hardPityPull === disclosure.hardPityPull &&
+    softPityPull === disclosure.softPityPull
+  ) {
     return disclosure;
-  return {
-    ...disclosure,
-    hardPityPull: disclosure.adventurerPassHardPityPull,
-  };
+  }
+  return { ...disclosure, hardPityPull, softPityPull };
 }
 
 export type PassPityUpsell = {

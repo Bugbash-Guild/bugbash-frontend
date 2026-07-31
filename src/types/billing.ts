@@ -55,6 +55,8 @@ export type SubscriptionPlanInfo = {
   monthlyRuneGrant: number;
   normalHardPityThreshold: number;
   normalPassHardPityThreshold: number;
+  normalPassSoftPityThreshold: number;
+  normalSoftPityThreshold: number;
   partnerSoulMultiplier: number;
   plan: string;
   priceJpyTaxIncluded: number;
