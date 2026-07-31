@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import {
   ADVENTURER_PASS_PLAN,
+  buildPassBenefits,
   buildSubscriptionCheckoutRequest,
   clearSubscriptionCheckoutIdempotencyKey,
   formatPassPrice,
@@ -13,7 +14,7 @@ import {
   subscriptionCheckoutIdempotencyStorageKey,
   toPassStatusPresentation,
 } from "./subscriptionPass";
-import type { SubscriptionStatus } from "@/types/billing";
+import type { SubscriptionPlanInfo, SubscriptionStatus } from "@/types/billing";
 
 class MemoryStorage implements Pick<Storage, "getItem" | "removeItem" | "setItem"> {
   private readonly values = new Map<string, string>();
@@ -30,6 +31,18 @@ class MemoryStorage implements Pick<Storage, "getItem" | "removeItem" | "setItem
     this.values.set(key, value);
   }
 }
+
+/** サーバから届く値。フロントはこれ以外の数値を表示してはいけない。 */
+const planInfo: SubscriptionPlanInfo = {
+  limitedHardPityPull: 60,
+  limitedPassHardPityPull: 50,
+  monthlyRuneGrant: 150,
+  normalHardPityThreshold: 80,
+  normalPassHardPityThreshold: 70,
+  partnerSoulMultiplier: 2,
+  plan: "ADVENTURER_PASS",
+  priceJpyTaxIncluded: 780,
+};
 
 const notSubscribed: SubscriptionStatus = {
   cancelScheduled: false,
@@ -48,17 +61,51 @@ const activeSubscription: SubscriptionStatus = {
 };
 
 describe("subscription pass helpers", () => {
-  it("keeps pass price and benefits aligned with the UX spec", () => {
+  it("shows the price the server actually charges, not a built-in one", () => {
     assert.equal(ADVENTURER_PASS_PLAN, "ADVENTURER_PASS");
-    assert.equal(formatPassPrice(), "¥780/月（税込）");
+    assert.equal(formatPassPrice(planInfo), "¥780/月（税込）");
+    // 価格が変わったらそのまま表示に出る（直書きなら出ない）
+    assert.equal(
+      formatPassPrice({ ...planInfo, priceJpyTaxIncluded: 980 }),
+      "¥980/月（税込）",
+    );
+  });
 
-    const presentation = toPassStatusPresentation(notSubscribed);
-    assert.deepEqual(presentation.benefits, [
+  it("says nothing rather than guessing when the plan has not loaded", () => {
+    // 既定値へ落とすと、実際の請求額と違う金額を見せることになる。
+    assert.equal(formatPassPrice(null), null);
+    assert.deepEqual(buildPassBenefits(null), []);
+  });
+
+  it("builds every benefit line from server values", () => {
+    assert.deepEqual(buildPassBenefits(planInfo), [
       "月150ルーン付与",
       "PRマージ時の相棒魂×2",
       "通常召喚 天井80→70",
       "限定召喚 天井60→50",
     ]);
+    assert.deepEqual(
+      buildPassBenefits({
+        ...planInfo,
+        limitedPassHardPityPull: 40,
+        monthlyRuneGrant: 200,
+      }),
+      [
+        "月200ルーン付与",
+        "PRマージ時の相棒魂×2",
+        "通常召喚 天井80→70",
+        "限定召喚 天井60→40",
+      ],
+    );
+  });
+
+  it("reports a non-subscriber as such, with no cancel button to press", () => {
+    assert.deepEqual(toPassStatusPresentation(notSubscribed), {
+      cancelButtonVisible: false,
+      periodEndText: null,
+      statusLabel: "未加入",
+      statusTone: "inactive",
+    });
   });
 
   it("requires adult age verification before subscription checkout", () => {
@@ -82,12 +129,6 @@ describe("subscription pass helpers", () => {
 
   it("summarizes active and cancel-scheduled subscriptions without hiding cancellation", () => {
     assert.deepEqual(toPassStatusPresentation(activeSubscription), {
-      benefits: [
-        "月150ルーン付与",
-        "PRマージ時の相棒魂×2",
-        "通常召喚 天井80→70",
-        "限定召喚 天井60→50",
-      ],
       cancelButtonVisible: true,
       periodEndText: "2026年8月9日まで有効",
       statusLabel: "加入中",
@@ -101,12 +142,6 @@ describe("subscription pass helpers", () => {
         status: "CANCEL_SCHEDULED",
       }),
       {
-        benefits: [
-          "月150ルーン付与",
-          "PRマージ時の相棒魂×2",
-          "通常召喚 天井80→70",
-          "限定召喚 天井60→50",
-        ],
         cancelButtonVisible: false,
         periodEndText: "2026年8月9日まで特典は有効です。それ以降更新されません。",
         statusLabel: "解約予定",

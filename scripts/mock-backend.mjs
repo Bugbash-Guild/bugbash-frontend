@@ -105,6 +105,8 @@ const routes = {
   },
   "/api/billing/wallet": { guildCoinBalance: 16475, runeBalance: 340, paidRuneBalance: 190, freeRuneBalance: 150 },
   "/api/billing/subscription": { plan: null, status: "NONE", currentPeriodEnd: null, cancelScheduled: false, entitled: false },
+  // 値はBEの SubscriptionPlan / AdventurerPassBenefits と同じ形。FEはこれ以外の数値を出さない。
+  "/api/billing/subscription/plan": { plan: "ADVENTURER_PASS", priceJpyTaxIncluded: 780, monthlyRuneGrant: 150, partnerSoulMultiplier: 2, normalHardPityThreshold: 80, normalPassHardPityThreshold: 70, limitedHardPityPull: 60, limitedPassHardPityPull: 50 },
   "/api/billing/rune-products": [
     { id: "rune_starter", sku: "rune_starter", priceJpyTaxIncluded: 480, runeAmount: 170, bonusRune: 0, totalRune: 170, firstPurchaseOnly: true },
     { id: "rune_60", sku: "rune_60", priceJpyTaxIncluded: 240, runeAmount: 60, bonusRune: 0, totalRune: 60, firstPurchaseOnly: false },

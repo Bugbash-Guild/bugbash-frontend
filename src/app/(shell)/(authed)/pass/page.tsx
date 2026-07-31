@@ -11,12 +11,14 @@ import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { ShopTabs } from "@/components/ShopTabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useSubscriptionPlan } from "@/hooks/useSubscriptionPlan";
 import { clearAgeVerification } from "@/lib/billing/ageVerification";
 import { writePendingOrder } from "@/lib/billing/pendingGrant";
 import { readBillingErrorMessage } from "@/lib/billing/runeCheckout";
 import {
   buildSubscriptionCheckoutRequest,
   clearSubscriptionCheckoutIdempotencyKey,
+  buildPassBenefits,
   formatPassPrice,
   getOrCreateSubscriptionCheckoutIdempotencyKey,
   getPassCheckoutEligibility,
@@ -57,6 +59,7 @@ export default function PassPage() {
     subscription,
     updateSubscription,
   } = useSubscription(isAuthenticated);
+  const { plan } = useSubscriptionPlan();
 
   const [ageGateOpen, setAgeGateOpen] = useState(false);
   const [agreementChecked, setAgreementChecked] = useState(false);
@@ -71,6 +74,9 @@ export default function PassPage() {
 
 
   const effectiveSubscription = subscription ?? EMPTY_SUBSCRIPTION;
+  // 価格も特典もサーバの値。届いていなければ「—」を出し、既定値で埋めない。
+  const priceText = formatPassPrice(plan);
+  const benefits = buildPassBenefits(plan);
   const presentation = useMemo(
     () => toPassStatusPresentation(effectiveSubscription),
     [effectiveSubscription],
@@ -216,7 +222,9 @@ export default function PassPage() {
             </div>
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <div className="text-[28px] font-semibold text-text">{formatPassPrice()}</div>
+                <div className="text-[28px] font-semibold text-text">
+                  {priceText ?? "—"}
+                </div>
                 <div className="mt-2 text-[12px] leading-6 text-text-dim">
                   成人（18歳以上）の方のみご加入いただけます。
                 </div>
@@ -232,7 +240,7 @@ export default function PassPage() {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {presentation.benefits.map((benefit) => (
+              {benefits.map((benefit) => (
                 <div key={benefit} className="border border-line bg-bg px-3 py-3">
                   <span className="text-[12px] text-text">{benefit}</span>
                 </div>
@@ -289,7 +297,7 @@ export default function PassPage() {
                     )}
                     <button
                       className="w-full bg-accent px-3 py-2 text-[12px] font-semibold text-bg hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-40"
-                      disabled={!eligibility.allowed || subscriptionLoading}
+                      disabled={!eligibility.allowed || subscriptionLoading || priceText == null}
                       onClick={openSubscriptionConfirm}
                       type="button"
                     >
@@ -331,7 +339,7 @@ export default function PassPage() {
             <div className="space-y-2 border border-line bg-bg px-3 py-3 text-[12px]">
               <div className="flex justify-between gap-3">
                 <span className="text-text-faint">金額</span>
-                <span className="text-text">{formatPassPrice()}</span>
+                <span className="text-text">{priceText ?? "—"}</span>
               </div>
               <div className="flex justify-between gap-3">
                 <span className="text-text-faint">課金周期</span>
@@ -352,7 +360,7 @@ export default function PassPage() {
             <div className="mt-3 border border-line bg-bg px-3 py-3">
               <div className="mb-2 text-[11px] text-text-faint">特典内容</div>
               <ul className="space-y-1 text-[12px] text-text">
-                {presentation.benefits.map((benefit) => (
+                {benefits.map((benefit) => (
                   <li key={benefit}>・{benefit}</li>
                 ))}
               </ul>
@@ -394,7 +402,7 @@ export default function PassPage() {
               </button>
               <button
                 className="bg-accent px-3 py-1.5 text-[12px] font-semibold text-bg hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-40"
-                disabled={checkoutInFlight || !agreementChecked}
+                disabled={checkoutInFlight || !agreementChecked || priceText == null}
                 onClick={() => void submitSubscriptionCheckout()}
                 type="button"
               >

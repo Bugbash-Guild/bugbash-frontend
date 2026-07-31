@@ -44,6 +44,22 @@ export type SubscriptionStatus = {
   entitled: boolean;
 };
 
+/**
+ * パスの価格と特典。値はすべてサーバの定義（GET /api/billing/subscription/plan）。
+ * ここに書かれた数値をフロントで補完してはいけない。実際の請求額と違う
+ * 金額を見せることになる。
+ */
+export type SubscriptionPlanInfo = {
+  limitedHardPityPull: number;
+  limitedPassHardPityPull: number;
+  monthlyRuneGrant: number;
+  normalHardPityThreshold: number;
+  normalPassHardPityThreshold: number;
+  partnerSoulMultiplier: number;
+  plan: string;
+  priceJpyTaxIncluded: number;
+};
+
 export type CreateSubscriptionCheckoutRequest = {
   plan: "ADVENTURER_PASS";
   idempotencyKey: string;
