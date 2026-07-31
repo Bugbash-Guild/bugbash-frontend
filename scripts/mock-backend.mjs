@@ -61,7 +61,7 @@ const routes = {
       rewards: [
         { rewardType: "xp", quantity: 100, detail: { levelBefore: 50, levelAfter: 51 } },
         { rewardType: "monster", quantity: 1, detail: { name: "ドラゴン", emoji: "\u25c6", rarity: "SSR" } },
-        { rewardType: "coin", quantity: 400, detail: null },
+        { rewardType: "coin", quantity: 400, detail: { base: 100, largePrBonus: 0, streakBonus: 300, dailyPolicyPercent: 100 } },
         { rewardType: "soul", quantity: 10, detail: null },
       ] },
     { id: "a2", activityType: "PR_MERGED", acknowledged: false,
@@ -70,7 +70,7 @@ const routes = {
       rewards: [
         { rewardType: "xp", quantity: 100, detail: { levelBefore: 50, levelAfter: 50 } },
         { rewardType: "monster", quantity: 1, detail: { name: "狼", emoji: "\u25c6", rarity: "R" } },
-        { rewardType: "coin", quantity: 100, detail: null },
+        { rewardType: "coin", quantity: 50, detail: { base: 100, largePrBonus: 0, streakBonus: 0, dailyPolicyPercent: 50 } },
         { rewardType: "soul", quantity: 10, detail: null },
       ] },
     { id: "a3", activityType: "PR_MERGED", acknowledged: false,
@@ -79,7 +79,7 @@ const routes = {
       rewards: [
         { rewardType: "xp", quantity: 100, detail: { levelBefore: 49, levelAfter: 50 } },
         { rewardType: "monster", quantity: 1, detail: { name: "スライム", emoji: "\u25c6", rarity: "N" } },
-        { rewardType: "coin", quantity: 100, detail: null },
+        { rewardType: "coin", quantity: 100, detail: { base: 100, largePrBonus: 0, streakBonus: 0, dailyPolicyPercent: 100 } },
         { rewardType: "soul", quantity: 10, detail: null },
       ] },
     { id: "a4", activityType: "PR_MERGED", acknowledged: false,
@@ -88,7 +88,7 @@ const routes = {
       rewards: [
         { rewardType: "xp", quantity: 100, detail: { levelBefore: 49, levelAfter: 49 } },
         { rewardType: "monster", quantity: 1, detail: { name: "ゾンビ", emoji: "\u25c6", rarity: "R" } },
-        { rewardType: "coin", quantity: 100, detail: null },
+        { rewardType: "coin", quantity: 100, detail: { base: 100, largePrBonus: 0, streakBonus: 0, dailyPolicyPercent: 100 } },
         { rewardType: "soul", quantity: 10, detail: null },
       ] },
     { id: "a5", activityType: "PR_MERGED", acknowledged: false,
@@ -97,7 +97,7 @@ const routes = {
       rewards: [
         { rewardType: "xp", quantity: 100, detail: { levelBefore: 48, levelAfter: 49 } },
         { rewardType: "monster", quantity: 1, detail: { name: "フェニックス", emoji: "\u25c6", rarity: "SSR" } },
-        { rewardType: "coin", quantity: 100, detail: null },
+        { rewardType: "coin", quantity: 100, detail: { base: 100, largePrBonus: 0, streakBonus: 0, dailyPolicyPercent: 100 } },
         { rewardType: "soul", quantity: 10, detail: null },
       ] },
     ],
