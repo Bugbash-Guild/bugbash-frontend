@@ -3,6 +3,7 @@
 import useSWR from "swr";
 
 import { fetchJson, isUnauthorizedApiError } from "@/lib/apiError";
+import { fetchMasterJson } from "@/lib/masterData";
 import type {
   MonsterSkinCatalogItem,
   OwnedSkinCatalogItem,
@@ -31,12 +32,10 @@ function visibleError(error: unknown): string | null {
 export function useSkinCatalog(enabled: boolean) {
   const catalog = useSWR<MonsterSkinCatalogResponse>(
     enabled ? "/api/skins" : null,
+    // スキンカタログはマスタデータ（詳細は src/lib/masterData.ts）。
+    // 一方 /api/skins/owned は下のとおりヒーロー固有なので no-store のまま。
     (url: string) =>
-      fetchJson<MonsterSkinCatalogResponse>(
-        url,
-        { cache: "no-store" },
-        "skin catalog",
-      ),
+      fetchMasterJson<MonsterSkinCatalogResponse>(url, "skin catalog"),
     { shouldRetryOnError: false },
   );
   const owned = useSWR<OwnedMonsterSkinCatalogResponse>(

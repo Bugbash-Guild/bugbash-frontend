@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import useSWR from 'swr';
 
 import { asArray, fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
+import { fetchMasterJson } from '@/lib/masterData';
 import type { AwakeningState, Monster, MonsterFormStage } from '@/types/monster';
 import { useRedirectOnUnauthorized } from './useRedirectOnUnauthorized';
 
@@ -43,7 +44,8 @@ const OWNED_KEY = '/api/monsters/owned';
 /** マスタデータはリリースでしか変わらないので、遷移ごとに取り直さない。 */
 const CATALOG_DEDUPING_INTERVAL_MS = 5 * 60 * 1000;
 
-const fetchCatalog = (url: string) => fetchJson<AllMonstersDto>(url, undefined, 'monsters/all');
+// マスタ側は BE の Cache-Control に従わせる（詳細は src/lib/masterData.ts）。
+const fetchCatalog = (url: string) => fetchMasterJson<AllMonstersDto>(url, 'monsters/all');
 const fetchOwned = (url: string) => fetchJson<OwnedMonstersDto>(url, undefined, 'monsters/owned');
 
 export function useMonsters() {

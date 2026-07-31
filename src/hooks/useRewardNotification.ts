@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
+import { fetchWithEarly } from '@/lib/earlyFetch';
 import type { Activity, ActivitiesResponse } from '@/types/activity';
 
 export function useRewardNotification(isAuthenticated: boolean) {
@@ -13,7 +14,7 @@ export function useRewardNotification(isAuthenticated: boolean) {
 
         const fetchUnread = async () => {
             try {
-                const res = await fetch('/api/hero/activities?unreadOnly=true&limit=50');
+                const res = await fetchWithEarly('/api/hero/activities?unreadOnly=true&limit=50');
                 if (!res.ok) return;
                 const data = (await res.json()) as ActivitiesResponse;
                 if (data.activities.length > 0) {

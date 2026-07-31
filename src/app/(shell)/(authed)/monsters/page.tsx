@@ -15,7 +15,7 @@ import { useInventory } from "@/hooks/useInventory";
 import { useMonsters } from "@/hooks/useMonsters";
 import { usePartner } from "@/hooks/usePartner";
 import { useSkinCatalog } from "@/hooks/useSkinCatalog";
-import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
+import { useMyCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { matchMintToOwnedMonster } from "@/lib/commemorativeMint";
 import { buildAcquisitionHint, buildDexProgress } from "@/lib/dexProgress";
 import {
@@ -69,7 +69,7 @@ function RarityChip({ rarity }: { rarity: RarityKey }) {
 }
 
 export default function MonstersPage() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { monsters, ownedDegraded, loading, error, refetch } = useMonsters();
   const { partnerId, setPartner } = usePartner();
   const { ownedSkins, skins: skinCatalog } = useSkinCatalog(isAuthenticated);
@@ -80,7 +80,8 @@ export default function MonstersPage() {
     [skinCatalog],
   );
   const { refetch: refetchHero } = useHero(isAuthenticated);
-  const { mints } = usePublicCommemorativeMints(user?.githubId);
+  // githubId (auth/status の応答) を待たず、最初のリクエスト波に乗せる
+  const { mints } = useMyCommemorativeMints(isAuthenticated);
   const [filter, setFilter] = useState<FilterKey>("all");
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);

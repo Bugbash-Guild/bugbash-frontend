@@ -2,12 +2,13 @@
 
 import useSWR from "swr";
 
-import { asArray, fetchJson, isUnauthorizedApiError } from "@/lib/apiError";
+import { asArray, isUnauthorizedApiError } from "@/lib/apiError";
+import { fetchMasterJson } from "@/lib/masterData";
 import type { RuneProduct } from "@/types/billing";
 import { useRedirectOnUnauthorized } from "./useRedirectOnUnauthorized";
 
 const fetcher = async (url: string) => {
-  return fetchJson<RuneProduct[]>(url, { cache: "no-store" }, "billing/rune-products");
+  return fetchMasterJson<RuneProduct[]>(url, "billing/rune-products");
 };
 
 export function useRuneProducts(enabled: boolean) {

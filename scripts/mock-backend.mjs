@@ -179,6 +179,7 @@ const routes = {
   "/api/heroes/haseryo0403/commemorative-mints": [],
   "/api/badges/catalog": [],
   "/api/heroes/me/badges/progress": [],
+  "/api/heroes/me/commemorative-mints": [],
   // 一覧系APIは配列を返す契約。オブジェクトにすると呼び出し側の .map が落ちる
   "/api/v1/leaderboard": Array.from({ length: 10 }, (_, i) => ({
     rank: i + 1,

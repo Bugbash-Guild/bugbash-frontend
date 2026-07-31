@@ -3,6 +3,7 @@
 import useSWR from "swr";
 
 import { asArray, fetchJson, isUnauthorizedApiError } from "@/lib/apiError";
+import { fetchMasterJson } from "@/lib/masterData";
 import type {
   BadgeCatalogItem,
   BadgeProgress,
@@ -11,8 +12,12 @@ import type {
 } from "@/types/badge";
 import { useRedirectOnUnauthorized } from "./useRedirectOnUnauthorized";
 
+/** ヒーロー固有データ。常に最新が要るので毎回取り直す。 */
 const fetcher = async <T>(url: string) =>
   fetchJson<T>(url, { cache: "no-store" }, url);
+
+/** バッジ定義・工房レベル定義はマスタデータ（詳細は src/lib/masterData.ts）。 */
+const masterFetcher = async <T>(url: string) => fetchMasterJson<T>(url);
 
 function visibleError(error: unknown): string | null {
   if (!error || isUnauthorizedApiError(error)) return null;
@@ -22,7 +27,7 @@ function visibleError(error: unknown): string | null {
 export function useBadges(enabled: boolean) {
   const catalog = useSWR<BadgeCatalogItem[]>(
     enabled ? "/api/badges/catalog" : null,
-    fetcher,
+    masterFetcher,
     { shouldRetryOnError: false },
   );
   const progress = useSWR<BadgeProgress[]>(
@@ -32,7 +37,7 @@ export function useBadges(enabled: boolean) {
   );
   const levelDefs = useSWR<ForgeLevelDef[]>(
     enabled ? "/api/forge/level-defs?track=BADGE" : null,
-    fetcher,
+    masterFetcher,
     { shouldRetryOnError: false },
   );
 

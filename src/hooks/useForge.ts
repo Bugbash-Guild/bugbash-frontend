@@ -9,6 +9,7 @@ import { useWallet } from "@/hooks/useWallet";
 import { readBillingErrorMessage } from "@/lib/billing/runeCheckout";
 import { ForgeIdempotencyKeys } from "@/lib/forge";
 import { asArray, fetchJson, isUnauthorizedApiError } from "@/lib/apiError";
+import { fetchMasterJson } from "@/lib/masterData";
 import type {
   ForgeLevelDef,
   ForgeUpgradeRequest,
@@ -50,7 +51,8 @@ export function useForge(enabled: boolean) {
   );
   const definitions = useSWR<ForgeLevelDef[]>(
     enabled ? "/api/forge/level-defs?track=MONSTER" : null,
-    (url: string) => fetchJson<ForgeLevelDef[]>(url, { cache: "no-store" }, url),
+    // レベル定義はマスタデータ（詳細は src/lib/masterData.ts）。
+    (url: string) => fetchMasterJson<ForgeLevelDef[]>(url),
     { shouldRetryOnError: false },
   );
   const { wallet, loading: walletLoading, error: walletError, refetch: refetchWallet } =
