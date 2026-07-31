@@ -3,6 +3,8 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { describe, it } from "node:test";
 
+import { findShopTab, SHOP_TABS } from "./shopNav";
+
 const PAGE_URL = new URL("../app/(shell)/(authed)/shop/skins/page.tsx", import.meta.url);
 const SHOP_PAGE_URL = new URL("../app/(shell)/(authed)/shop/page.tsx", import.meta.url);
 
@@ -24,16 +26,18 @@ describe("/shop/skins catalog route", () => {
   });
 
   it("exposes the skin catalog from the shared shop tabs", async () => {
-    // The tab bar now lives in the shared ShopTabs component, rendered by all
-    // three shop leaves (the sidebar has a single ~/shop entry).
+    // The tab bar lives in the shared ShopTabs component, rendered by all four
+    // shop leaves (the sidebar has a single ~/shop entry). Assert against the
+    // nav model rather than the component source, so the link is verified even
+    // as the markup changes.
     const shopPage = await readFile(SHOP_PAGE_URL, "utf8");
     assert.match(shopPage, /<ShopTabs current="items" \/>/);
 
-    const shopTabs = await readFile(
-      new URL("../components/ShopTabs.tsx", import.meta.url),
-      "utf8",
+    const skins = findShopTab("skins");
+    assert.equal(skins.href, "/shop/skins");
+    assert.ok(
+      SHOP_TABS.some((tab) => tab.key === "skins"),
+      "スキンはショップのタブから辿れなければならない",
     );
-    assert.match(shopTabs, /href: "\/shop\/skins"/);
-    assert.match(shopTabs, /SKINS/);
   });
 });

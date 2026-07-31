@@ -105,6 +105,8 @@ const routes = {
   },
   "/api/billing/wallet": { guildCoinBalance: 16475, runeBalance: 340, paidRuneBalance: 190, freeRuneBalance: 150 },
   "/api/billing/subscription": { plan: null, status: "NONE", currentPeriodEnd: null, cancelScheduled: false, entitled: false },
+  // 値はBEの SubscriptionPlan / AdventurerPassBenefits と同じ形。FEはこれ以外の数値を出さない。
+  "/api/billing/subscription/plan": { plan: "ADVENTURER_PASS", priceJpyTaxIncluded: 780, monthlyRuneGrant: 150, partnerSoulMultiplier: 2, normalHardPityThreshold: 80, normalPassHardPityThreshold: 70, limitedHardPityPull: 60, limitedPassHardPityPull: 50 },
   "/api/billing/rune-products": [
     { id: "rune_starter", sku: "rune_starter", priceJpyTaxIncluded: 480, runeAmount: 170, bonusRune: 0, totalRune: 170, firstPurchaseOnly: true },
     { id: "rune_60", sku: "rune_60", priceJpyTaxIncluded: 240, runeAmount: 60, bonusRune: 0, totalRune: 60, firstPurchaseOnly: false },
@@ -138,7 +140,10 @@ const routes = {
   "/api/summon/pity": { poolKey: "NORMAL", pullCount: 46, isSoftPity: false, isHardPity: false },
   "/api/summon/limited/pity": { poolKey: "LIMITED", pullCount: 12, isSoftPity: false, isHardPity: false },
   "/api/summon/history": [],
+  // 残高も返す（実BEは返す）。返さないと「残高不明」の見え方の確認になってしまう。
   "/api/shop/items": {
+    guildCoinBalance: 16475,
+    runeBalance: 340,
     items: [
       { itemId: "fire-soul-pack-s", name: "炎の魂パック・小", description: "炎属性のモンスターに50魂を指定して付与", currency: "RUNE", price: 30, category: "SOUL_PACK", iconEmoji: "🔮", assetUrl: null, variantGroup: "attribute-soul-pack", attribute: "fire", attributeLabel: "炎", sizeSuffix: "s", sizeLabel: "小" },
       { itemId: "fire-soul-pack-m", name: "炎の魂パック・中", description: "炎属性のモンスターに150魂を指定して付与", currency: "RUNE", price: 80, category: "SOUL_PACK", iconEmoji: "🔮", assetUrl: null, variantGroup: "attribute-soul-pack", attribute: "fire", attributeLabel: "炎", sizeSuffix: "m", sizeLabel: "中" },

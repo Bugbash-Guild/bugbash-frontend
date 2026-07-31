@@ -35,7 +35,7 @@ function PriceTag({
   return (
     <span
       className={`text-[13px] font-semibold tabular-nums ${
-        presentation.canAfford ? "text-text" : "text-pink"
+        presentation.affordability === "insufficient" ? "text-pink" : "text-text"
       }`}
     >
       {presentation.priceLabel}

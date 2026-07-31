@@ -19,8 +19,10 @@ export function useShop(enabled: boolean) {
 
     return {
         items: data?.items ?? [],
-        guildCoinBalance: data?.guildCoinBalance ?? 0,
-        runeBalance: data?.runeBalance ?? 0,
+        // 未取得を 0 に丸めない。0 に丸めると「残高が届いていないだけ」で
+        // 全商品が買えない扱いになる（実際そう見えていた）。
+        guildCoinBalance: data?.guildCoinBalance ?? null,
+        runeBalance: data?.runeBalance ?? null,
         loading: isLoading,
         error: error && !isUnauthorizedApiError(error) ? String(error.message ?? error) : null,
         refetch: () => mutate(),
