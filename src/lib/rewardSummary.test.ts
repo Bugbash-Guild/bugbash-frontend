@@ -16,6 +16,7 @@ function activity(
     coinDetail?: Record<string, unknown>;
     levelAfter?: number;
     metadata?: Record<string, unknown> | undefined;
+    items?: { itemId: string; name: string; quantity: number }[];
     monsters?: { name: string; rarity: string }[];
     soul?: number;
     xp?: number;
@@ -45,6 +46,13 @@ function activity(
     });
   if (opts.soul != null)
     rewards.push({ detail: {}, occurredAt: "", quantity: opts.soul, rewardType: "soul" as const });
+  for (const item of opts.items ?? [])
+    rewards.push({
+      detail: { iconEmoji: "💎", itemId: item.itemId, name: item.name },
+      occurredAt: "",
+      quantity: item.quantity,
+      rewardType: "item" as const,
+    });
 
   return {
     activityType: "PR_MERGED",
@@ -83,9 +91,33 @@ describe("buildRewardSummary", () => {
       2,
     );
 
-    assert.deepEqual(s.totals, { coin: 300, monsterCount: 3, soul: 15, xp: 300 });
+    assert.deepEqual(s.totals, {
+      coin: 300,
+      itemCount: 0,
+      monsterCount: 3,
+      soul: 15,
+      xp: 300,
+    });
     assert.equal(s.entries.length, 2);
     assert.equal(s.hiddenCount, 1, "打ち切った件数は表に出す");
+  });
+
+  it("surfaces dropped materials so the evolution stone is not a silent drop", () => {
+    // 以前は付与だけで記録が無く、次にインベントリを見るまで気づけなかった。
+    const s = buildRewardSummary([
+      activity(1, {
+        items: [{ itemId: "evolution-stone", name: "進化の輝石", quantity: 1 }],
+        xp: 100,
+      }),
+      activity(2, {
+        items: [{ itemId: "evolution-stone", name: "進化の輝石", quantity: 1 }],
+        xp: 100,
+      }),
+    ]);
+
+    assert.equal(s.totals.itemCount, 2);
+    assert.equal(s.entries[0]?.items[0]?.name, "進化の輝石");
+    assert.equal(s.entries[0]?.items[0]?.quantity, 1);
   });
 
   it("reports the highest level reached and whether any level up happened", () => {
@@ -127,7 +159,13 @@ describe("buildRewardSummary", () => {
 
   it("handles an activity with no rewards at all", () => {
     const s = buildRewardSummary([activity(1)]);
-    assert.deepEqual(s.totals, { coin: 0, monsterCount: 0, soul: 0, xp: 0 });
+    assert.deepEqual(s.totals, {
+      coin: 0,
+      itemCount: 0,
+      monsterCount: 0,
+      soul: 0,
+      xp: 0,
+    });
     assert.equal(s.entries.length, 1);
   });
 });
@@ -135,13 +173,29 @@ describe("buildRewardSummary", () => {
 describe("formatRewardTotals", () => {
   it("omits zero rows and uses the display currency names", () => {
     assert.deepEqual(
-      formatRewardTotals({ coin: 900, monsterCount: 5, soul: 50, xp: 700 }),
-      ["+700 XP", "+900 ギルドコイン", "+50 魂", "5 体"],
+      formatRewardTotals({
+        coin: 900,
+        itemCount: 2,
+        monsterCount: 5,
+        soul: 50,
+        xp: 700,
+      }),
+      ["+700 XP", "+900 ギルドコイン", "+50 魂", "素材 2 個", "5 体"],
     );
-    assert.deepEqual(formatRewardTotals({ coin: 0, monsterCount: 0, soul: 0, xp: 100 }), [
-      "+100 XP",
-    ]);
-    assert.deepEqual(formatRewardTotals({ coin: 0, monsterCount: 0, soul: 0, xp: 0 }), []);
+    assert.deepEqual(
+      formatRewardTotals({
+        coin: 0,
+        itemCount: 0,
+        monsterCount: 0,
+        soul: 0,
+        xp: 100,
+      }),
+      ["+100 XP"],
+    );
+    assert.deepEqual(
+      formatRewardTotals({ coin: 0, itemCount: 0, monsterCount: 0, soul: 0, xp: 0 }),
+      [],
+    );
   });
 });
 

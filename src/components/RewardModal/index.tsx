@@ -88,6 +88,26 @@ function EntryRow({ entry }: { entry: RewardEntry }) {
                 </div>
             )}
 
+            {/*
+              素材のドロップ（進化の輝石など）。以前はサイレントで、次にログインして
+              インベントリを見るまで気づけなかった。進化はモンスター育成の山場なので、
+              その素材がこのPRから来たことをその場で述べる。
+            */}
+            {entry.items.length > 0 && (
+                <div className="mt-2 space-y-1">
+                    {entry.items.map((item) => (
+                        <div
+                            className="flex items-center gap-1.5 rounded-[3px] border border-purple/30 bg-purple/[0.06] px-2 py-1 text-[11px] text-purple"
+                            key={item.itemId}
+                        >
+                            <span aria-hidden="true">{item.iconEmoji}</span>
+                            <span className="font-bold">{item.name}</span>
+                            <span className="text-text-dim">×{item.quantity}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             {(numbers.length > 0 || entry.levelAfter != null) && (
                 <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-text-dim">
                     {numbers.map((n) => (

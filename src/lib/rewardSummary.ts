@@ -1,5 +1,11 @@
 import { RARITY_ORDER } from "@/constants/rarity";
-import type { Activity, CoinDetail, MonsterDetail, XpDetail } from "@/types/activity";
+import type {
+  Activity,
+  CoinDetail,
+  ItemDetail,
+  MonsterDetail,
+  XpDetail,
+} from "@/types/activity";
 
 /**
  * 未読報酬モーダルの表示モデル。
@@ -15,16 +21,23 @@ import type { Activity, CoinDetail, MonsterDetail, XpDetail } from "@/types/acti
  */
 export type RewardTotals = {
   coin: number;
+  /** 素材アイテムの合計個数（進化の輝石など）。 */
+  itemCount: number;
   monsterCount: number;
   soul: number;
   xp: number;
 };
+
+/** ドロップした素材と、その回で得た個数。 */
+export type RewardItem = ItemDetail & { quantity: number };
 
 export type RewardEntry = {
   coin: number;
   /** コインの内訳（BEが分解した値。無ければ null）。 */
   coinDetail: CoinDetail | null;
   id: number;
+  /** このPRで拾った素材（進化の輝石など）。 */
+  items: RewardItem[];
   /** このPRで到達したレベル（上がっていなければ null）。 */
   levelAfter: number | null;
   monsters: MonsterDetail[];
@@ -70,6 +83,10 @@ function isCoinDetail(d: unknown): d is CoinDetail {
   );
 }
 
+function isItemDetail(d: unknown): d is ItemDetail {
+  return typeof d === "object" && d !== null && "itemId" in d && "name" in d;
+}
+
 function metadataOf(activity: Activity) {
   // metadata は型上必須だが実際には欠けて届くことがある（#143）。
   const m = (activity.metadata ?? {}) as {
@@ -93,6 +110,7 @@ function entryOf(activity: Activity): RewardEntry {
   let levelAfter: number | null = null;
   let coinDetail: CoinDetail | null = null;
   const monsters: MonsterDetail[] = [];
+  const items: RewardItem[] = [];
 
   for (const reward of rewards) {
     const quantity = Number.isFinite(reward.quantity) ? reward.quantity : 0;
@@ -100,6 +118,11 @@ function entryOf(activity: Activity): RewardEntry {
       case "coin":
         coin += quantity;
         if (isCoinDetail(reward.detail)) coinDetail = reward.detail;
+        break;
+      case "item":
+        if (isItemDetail(reward.detail)) {
+          items.push({ ...reward.detail, quantity });
+        }
         break;
       case "soul":
         soul += quantity;
@@ -120,6 +143,7 @@ function entryOf(activity: Activity): RewardEntry {
     coin,
     coinDetail,
     id: activity.id,
+    items,
     levelAfter,
     monsters,
     soul,
@@ -142,11 +166,13 @@ export function buildRewardSummary(
   const totals = all.reduce<RewardTotals>(
     (acc, e) => ({
       coin: acc.coin + e.coin,
+      itemCount:
+        acc.itemCount + e.items.reduce((sum, item) => sum + item.quantity, 0),
       monsterCount: acc.monsterCount + e.monsters.length,
       soul: acc.soul + e.soul,
       xp: acc.xp + e.xp,
     }),
-    { coin: 0, monsterCount: 0, soul: 0, xp: 0 },
+    { coin: 0, itemCount: 0, monsterCount: 0, soul: 0, xp: 0 },
   );
 
   const levels = all.map((e) => e.levelAfter).filter((l): l is number => l != null);
@@ -206,6 +232,8 @@ export function formatRewardTotals(totals: RewardTotals): string[] {
   if (totals.coin > 0)
     parts.push(`+${totals.coin.toLocaleString("ja-JP")} ギルドコイン`);
   if (totals.soul > 0) parts.push(`+${totals.soul.toLocaleString("ja-JP")} 魂`);
+  if (totals.itemCount > 0)
+    parts.push(`素材 ${totals.itemCount.toLocaleString("ja-JP")} 個`);
   if (totals.monsterCount > 0)
     parts.push(`${totals.monsterCount.toLocaleString("ja-JP")} 体`);
   return parts;

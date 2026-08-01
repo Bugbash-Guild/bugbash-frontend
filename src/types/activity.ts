@@ -1,4 +1,4 @@
-export type RewardType = 'xp' | 'monster' | 'soul' | 'coin';
+export type RewardType = 'xp' | 'monster' | 'soul' | 'coin' | 'item';
 
 export type XpDetail = { levelBefore: number; levelAfter: number };
 
@@ -26,10 +26,24 @@ export type SoulDetail = {
 };
 export type MonsterDetail = { name: string; rarity: string; emoji: string };
 
+/**
+ * 素材アイテムのドロップ（BE: RewardSnapshot.Item）。
+ *
+ * 進化の輝石は以前サイレントドロップで、入手経路がユーザーから追跡できず
+ * 「PRを頑張ると進化に近づく」という因果が切れていた。
+ */
+export type ItemDetail = { itemId: string; name: string; iconEmoji: string };
+
 export type ActivityReward = {
     rewardType: RewardType;
     quantity: number;
-    detail: XpDetail | MonsterDetail | CoinDetail | SoulDetail | Record<string, unknown>;
+    detail:
+        | XpDetail
+        | MonsterDetail
+        | CoinDetail
+        | SoulDetail
+        | ItemDetail
+        | Record<string, unknown>;
     occurredAt: string;
 };
 

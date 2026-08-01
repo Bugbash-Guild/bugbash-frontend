@@ -27,8 +27,14 @@ import {
   meetsLevel,
 } from "@/lib/monsterProgression";
 import { InlineActionResult } from "@/components/InlineActionResult";
+import { EvolutionRitual } from "@/components/EvolutionRitual";
 import type { CommemorativeMintPlate } from "@/types/commemorativeMint";
-import type { AwakeningState, Monster, RitualRequirement } from "@/types/monster";
+import type {
+  AwakeningState,
+  Monster,
+  MonsterFormStage,
+  RitualRequirement,
+} from "@/types/monster";
 
 type RarityKey = "SSR" | "SR" | "R" | "N";
 type FilterKey = "all" | RarityKey;
@@ -187,6 +193,13 @@ export default function MonstersPage() {
     tone: "success" | "error";
     message: string;
   } | null>(null);
+  /** 進化の儀式演出。分岐進化に成功したときだけ立つ。 */
+  const [ritual, setRitual] = useState<{
+    awakeningState: AwakeningState;
+    assetUrl: string | null;
+    formStage: MonsterFormStage;
+    monsterName: string;
+  } | null>(null);
 
   async function runAction(
     monsterId: string,
@@ -231,7 +244,24 @@ export default function MonstersPage() {
   const handleLevelUp = (id: string) =>
     runAction(id, "level-up", setLevelingUp, (b) => `Lv.${b.newLevel ?? "?"} に上昇！`);
   const handleEvolve = (id: string) =>
-    runAction(id, "evolve", setEvolving, (b) => `覚醒：${b.awakeningState ?? "?"}`);
+    runAction(id, "evolve", setEvolving, (b) => {
+      const state = b.awakeningState as AwakeningState | undefined;
+      /*
+       * 分岐進化は育成の最大の山場で、覚醒か暴走かはランダムに決まる。
+       * これまで結果はテキスト1行で流れるだけだったので、姿が変わる瞬間を出す。
+       */
+      if (state === "AWAKENED" || state === "BERSERK") {
+        const monster = monsters.find((m) => m.id === id);
+        setRitual({
+          awakeningState: state,
+          assetUrl: monster?.artworkByStage?.[state] ?? null,
+          formStage: state,
+          monsterName: monster?.name ?? "モンスター",
+        });
+      }
+      const label = state ? (AWAKENING_LABEL[state] ?? String(state)) : "?";
+      return `進化：${label}`;
+    });
   const handleChangePath = (id: string) =>
     runAction(id, "change-path", setChangingPath, (b) => {
       const label = b.awakeningState
@@ -302,6 +332,15 @@ export default function MonstersPage() {
 
   return (
     <>
+      {ritual && (
+        <EvolutionRitual
+          assetUrl={ritual.assetUrl}
+          awakeningState={ritual.awakeningState}
+          formStage={ritual.formStage}
+          monsterName={ritual.monsterName}
+          onClose={() => setRitual(null)}
+        />
+      )}
       <ConsoleTopbar command="cat dex/*.card --format=detailed" path="~/monsters" showWallet />
       <div className="px-4 py-5 md:px-9 md:py-6">
         {/* page header + filters */}
