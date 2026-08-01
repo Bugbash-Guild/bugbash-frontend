@@ -3,7 +3,9 @@
 import Link from "next/link";
 
 import { useWallet } from "@/hooks/useWallet";
+import { buildGrowthAction } from "@/lib/growthAction";
 import { buildNextActions, type NextActionRow } from "@/lib/nextAction";
+import type { Monster } from "@/types/monster";
 
 /**
  * 「いま、できること」を通貨ごとに1行だけ提示する。
@@ -48,11 +50,14 @@ export function NextActionStrip({
   enabled,
   guildCoinBalance,
   limitedPullCost,
+  monsters,
   normalPullCost,
 }: {
   enabled: boolean;
   guildCoinBalance: number | null | undefined;
   limitedPullCost: number | null | undefined;
+  /** 育成行を出すために使う。未取得なら育成行は出ない。 */
+  monsters: Monster[];
   normalPullCost: number | null | undefined;
 }) {
   const { wallet } = useWallet(enabled);
@@ -63,11 +68,34 @@ export function NextActionStrip({
     normalPullCost,
     runeBalance: wallet?.runeBalance,
   });
+  const growth = buildGrowthAction(monsters);
 
-  if (rows.length === 0) return null;
+  if (rows.length === 0 && growth === null) return null;
 
   return (
     <div className="mb-3.5 space-y-2">
+      {/*
+        育成を先頭に置く。育てられる相棒がいることに気づく場所が home に無く、
+        図鑑を開いて全カードを見るまで分からなかった。
+        名声圏の行為なので緑。できることが無ければ出さない（催促にしない）。
+      */}
+      {growth && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[6px] border border-accent/30 bg-accent/[0.05] px-4 py-3">
+          <p className="text-[12px] text-text-dim">
+            <span className="text-[10px] uppercase tracking-[0.14em] text-text-faint">
+              READY
+            </span>
+            <span className="mx-2 text-text-faint">·</span>
+            <b className="text-accent">{growth.monsterName}</b> {growth.detail}
+          </p>
+          <Link
+            className="shrink-0 rounded-[4px] border border-accent/40 bg-accent/[0.08] px-4 py-1.5 text-[12px] font-semibold text-accent transition-[filter] hover:brightness-110"
+            href={growth.href}
+          >
+            {growth.kind === "ritual" ? "進化へ →" : "育成へ →"}
+          </Link>
+        </div>
+      )}
       {rows.map((row) => {
         const tone = TONE[row.currency];
         return (

@@ -185,6 +185,7 @@ export default function Home() {
               enabled={isAuthenticated}
               guildCoinBalance={hero.guildCoinBalance}
               limitedPullCost={limitedSummon?.singlePullCost}
+              monsters={monsters}
               normalPullCost={normalSummon?.singlePullCost}
             />
 
