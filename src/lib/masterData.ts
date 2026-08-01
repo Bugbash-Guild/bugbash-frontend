@@ -18,6 +18,7 @@ const MASTER_DATA_PATHS: ReadonlySet<string> = new Set([
     '/api/forge/level-defs',
     '/api/monsters',
     '/api/monsters/all',
+    '/api/rewards/daily-policy',
     '/api/skins',
     '/api/summon/disclosure',
     '/api/summon/limited/disclosure',

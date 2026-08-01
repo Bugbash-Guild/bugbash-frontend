@@ -10,6 +10,7 @@ import { useMyCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { useSummonDisclosure } from "@/hooks/useSummonDisclosure";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { FirstQuestChecklist } from "@/components/FirstQuestChecklist";
+import { DailyRewardPolicyNote } from "@/components/DailyRewardPolicyNote";
 import { NextActionStrip } from "@/components/NextActionStrip";
 import { TermLoading } from "@/components/TermLoading";
 import { GameAssetFallback } from "@/components/GameAssetFallback";
@@ -403,6 +404,12 @@ export default function Home() {
                   );
                 })}
               </div>
+              {/*
+                同日のマージ本数による減衰ルールの開示。報酬が減った回にだけ出る
+                報酬モーダルの注記と対になる「常設のルール説明」。
+                既定は畳んでおき、知りたい人だけが開く。
+              */}
+              <DailyRewardPolicyNote />
             </div>
           </>
         )}

@@ -9,6 +9,8 @@ type Quest = {
   label: string;
   done: boolean;
   action?: { label: string; href: string; external?: boolean };
+  /** 行き先が無いステップで「どうすれば達成されるか」を述べる。 */
+  hint?: string;
 };
 
 /**
@@ -49,7 +51,13 @@ export function FirstQuestChecklist({
       label: "最初の相棒モンスターを迎える",
       // owned 取得が壊れている間は「未達」と断定しない（判定不能扱いで達成表示）
       done: ownedDegraded || ownedMonsterCount > 0,
-      action: { label: "召喚へ", href: "/summon" },
+      /*
+       * ここに「召喚へ」を出してはいけない。通常召喚のプールは魂パックと
+       * 進化素材だけで、モンスターは1体も入っていない（モンスターはPRマージと
+       * 有料の限定召喚からのみ）。CTA を押しても達成できない嘘の導線だった。
+       * 実際には PR がマージされた時点で自動的に迎えられるので、それを述べる。
+       */
+      hint: "PR がマージされると自動的に迎えられます",
     },
   ];
 
@@ -90,6 +98,11 @@ export function FirstQuestChecklist({
             <span className={quest.done ? "text-text-faint line-through" : "text-text"}>
               {quest.label}
             </span>
+            {!quest.done && !quest.action && quest.hint && (
+              <span className="ml-auto shrink-0 text-[11px] text-text-faint">
+                {quest.hint}
+              </span>
+            )}
             {!quest.done &&
               quest.action &&
               (quest.action.external ? (
