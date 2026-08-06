@@ -68,6 +68,8 @@ export function useAuth() {
             // サーバ側でセッション破棄と bb.authed の削除まで行われる。
             // 成功時の 302 は追わず、こちらでフル遷移する（SWR キャッシュに
             // 残った本人データをクライアント側に持ち越さないため）。
+            // 前提: バックエンドの CSRF は無効（SecurityConfig）。有効化する
+            // 場合はこの POST にトークンを載せる改修が必要になる。
             await fetch('/logout', { method: 'POST', redirect: 'manual' });
         } catch {
             // ネットワーク断でもローカルの目印は消えているので /login に送る。

@@ -18,9 +18,10 @@ const REFRESH_INTERVAL_MS = 60_000;
 
 const fetcher = async (url: string): Promise<Activity[]> => {
     const res = await fetchWithEarly(url);
-    // 失敗時は「未読なし」として静かに次のポーリングへ。報酬モーダルは
-    // 祝い事の演出であり、取得エラーを画面に出す場所ではない。
-    if (!res.ok) return [];
+    // 失敗は throw して SWR に「前回の正常値を保持」させる。[] を返すと
+    // 一時的な 5xx でも成功扱いでキャッシュされ、開いているモーダルが
+    // 未読のまま消えて次の成功ポーリングで再登場（二重の祝い）してしまう。
+    if (!res.ok) throw new Error(`unread activities fetch failed: ${res.status}`);
     const data = (await res.json()) as ActivitiesResponse;
     return data.activities;
 };
@@ -39,15 +40,21 @@ export function useRewardNotification(isAuthenticated: boolean) {
     const checked = data !== undefined;
 
     const acknowledge = async () => {
-        // 楽観クリア + 失敗時ロールバック（fire-and-forget だと失敗時に
-        // 通知がローカルから消えたままサーバ上は未読のまま残る — issue #127）
-        const previous = unread;
-        void mutate([], { revalidate: false });
+        // 楽観クリア + 失敗時ロールバック（issue #127）。async mutate に
+        // 包むことで POST 完了までキーがロックされ、途中に始まった
+        // フォーカス再検証が古い未読を書き戻してモーダルを再表示する
+        // 競合を防ぐ。
         try {
-            const res = await fetch('/api/hero/acknowledge', { method: 'POST' });
-            if (!res.ok) void mutate(previous, { revalidate: false });
+            await mutate(
+                async () => {
+                    const res = await fetch('/api/hero/acknowledge', { method: 'POST' });
+                    if (!res.ok) throw new Error(`acknowledge failed: ${res.status}`);
+                    return [];
+                },
+                { optimisticData: [], revalidate: false, rollbackOnError: true },
+            );
         } catch {
-            void mutate(previous, { revalidate: false });
+            // ロールバック済み。未読は残っているので次の操作でまた開ける
         }
     };
 

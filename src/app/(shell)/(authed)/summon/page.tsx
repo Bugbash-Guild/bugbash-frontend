@@ -104,7 +104,8 @@ export default function SummonPage() {
   const coinBalance = hero?.guildCoinBalance ?? 0;
   const tenConfirmation: LimitedPullConfirmation | null = useMemo(() => {
     const cost = disclosure?.tenPullCost;
-    if (disclosure == null || cost == null) return null;
+    // hero 未着だと残高 0 と表示してしまうため、揃うまで確認は出さない
+    if (disclosure == null || cost == null || hero == null) return null;
     return {
       balanceLabel: formatSummonCurrencyCost(coinBalance, disclosure.currency),
       canAfford: coinBalance >= cost,
@@ -112,7 +113,7 @@ export default function SummonPage() {
       costLabel: formatSummonCurrencyCost(cost, disclosure.currency),
       pullCount: 10,
     };
-  }, [coinBalance, disclosure]);
+  }, [coinBalance, disclosure, hero]);
   const effectiveDisclosure =
     disclosure && subscription
       ? selectEffectivePityDisclosure(disclosure, subscription.entitled)
@@ -311,7 +312,10 @@ export default function SummonPage() {
         {tenConfirmOpen && tenConfirmation && (
           <LimitedPullConfirmModal
             confirmation={tenConfirmation}
-            loading={summoning}
+            // 召喚が返ってから再取得完了までの間に summoning=false の瞬間があり、
+            // 結果モーダルを閉じると armed 状態の確認ボタンが露出して二重召喚
+            // できてしまう。結果表示中も無効のままにする
+            loading={summoning || result != null}
             onCancel={() => {
               if (!summoning) setTenConfirmOpen(false);
             }}
