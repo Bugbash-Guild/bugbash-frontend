@@ -23,6 +23,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # ユニットテスト（課金ロジック・法定ページガード含む 280件超）を
+      # マージゲートにする。これまで lint + build のみでテストは未実行だった。
+      - name: Run tests
+        run: npm test
+
       - name: Run lint
         run: npm run lint
 

@@ -51,9 +51,6 @@ const HERO_ASCII = [
 
 function GithubAppBanner() {
   const appSlug = process.env.NEXT_PUBLIC_GITHUB_APP_SLUG ?? "";
-  const installUrl = appSlug
-    ? `https://github.com/apps/${appSlug}/installations/new`
-    : "#";
 
   return (
     <div className="mb-4 border border-gold/40 rounded-[6px] p-3.5 flex items-center justify-between gap-4"
@@ -64,14 +61,22 @@ function GithubAppBanner() {
           PRをマージするとXPを獲得できます。インストールすることで自動的に追跡が開始されます。
         </div>
       </div>
-      <a
-        href={installUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="shrink-0 px-4 py-1.5 rounded text-[12px] font-semibold text-bg bg-gold hover:opacity-90 transition-opacity"
-      >
-        インストール
-      </a>
+      {appSlug ? (
+        <a
+          href={`https://github.com/apps/${appSlug}/installations/new`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 px-4 py-1.5 rounded text-[12px] font-semibold text-bg bg-gold hover:opacity-90 transition-opacity"
+        >
+          インストール
+        </a>
+      ) : (
+        // slug 未設定＝ゲーム開始経路が存在しない構成ミス。href="#" の
+        // 死んだボタンで隠さず、はっきり見えるようにする（P0: 流入ゼロ化の原因）
+        <span className="shrink-0 px-4 py-1.5 rounded text-[11px] border border-pink/40 text-pink">
+          導入リンク未設定（NEXT_PUBLIC_GITHUB_APP_SLUG）
+        </span>
+      )}
     </div>
   );
 }
@@ -157,19 +162,23 @@ export default function Home() {
           <GithubAppBanner />
         )}
 
-        {/* GitHub App manage link — shown when already installed */}
-        {!heroLoading && hero?.hasGithubAppInstalled && (
-          <div className="text-[11px] text-text-faint text-right mb-3">
-            <a
-              href={`https://github.com/apps/${process.env.NEXT_PUBLIC_GITHUB_APP_SLUG ?? ""}/installations/new`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-text-dim transition-colors"
-            >
-              + GitHub App にリポジトリを追加
-            </a>
-          </div>
-        )}
+        {/* GitHub App manage link — shown when already installed.
+            slug 未設定だと https://github.com/apps//installations/new という
+            壊れた URL になるため、その場合はリンク自体を出さない */}
+        {!heroLoading &&
+          hero?.hasGithubAppInstalled &&
+          process.env.NEXT_PUBLIC_GITHUB_APP_SLUG && (
+            <div className="text-[11px] text-text-faint text-right mb-3">
+              <a
+                href={`https://github.com/apps/${process.env.NEXT_PUBLIC_GITHUB_APP_SLUG}/installations/new`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-text-dim transition-colors"
+              >
+                + GitHub App にリポジトリを追加
+              </a>
+            </div>
+          )}
 
         {heroLoading || !hero ? (
           <TermLoading lines={["query hero.stats", "render holo-card"]} />

@@ -61,6 +61,23 @@ export function useAuth() {
         window.location.href = '/oauth2/authorization/github';
     };
 
+    const logout = async () => {
+        clearSessionHint();
+        try {
+            // rewrite 経由でバックエンドの /logout（Spring Security）に届く。
+            // サーバ側でセッション破棄と bb.authed の削除まで行われる。
+            // 成功時の 302 は追わず、こちらでフル遷移する（SWR キャッシュに
+            // 残った本人データをクライアント側に持ち越さないため）。
+            // 前提: バックエンドの CSRF は無効（SecurityConfig）。有効化する
+            // 場合はこの POST にトークンを載せる改修が必要になる。
+            await fetch('/logout', { method: 'POST', redirect: 'manual' });
+        } catch {
+            // ネットワーク断でもローカルの目印は消えているので /login に送る。
+            // セッション自体はサーバ側の期限で失効する。
+        }
+        window.location.href = '/login';
+    };
+
     return {
         // 未解決の間は先読みを信じる。誤っていても API は 401 を返すため、
         // 表示が一瞬進むだけで /login へ送られる。
@@ -75,5 +92,6 @@ export function useAuth() {
          */
         isAuthResolved: isResolved,
         login,
+        logout,
     };
 }

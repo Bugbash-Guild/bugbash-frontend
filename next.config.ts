@@ -44,6 +44,13 @@ const nextConfig: NextConfig = {
         source: "/login/:path*",
         destination: `${backendUrl}/login/:path*`,
       },
+      // ログアウトも同じ理由でフロントエンドドメイン経由にする
+      // （セッション Cookie はフロントエンドドメインに載っているため、
+      //  バックエンドへ直接 POST しても Cookie が付かず無効化できない）
+      {
+        source: "/logout",
+        destination: `${backendUrl}/logout`,
+      },
     ];
   },
 };

@@ -43,7 +43,7 @@ export function AgeVerificationModal({
       }
 
       const verification = (await response.json()) as AgeVerificationResponse;
-      markAgeVerified(window.localStorage);
+      markAgeVerified(window.localStorage, verification.ageGroup);
       setResult(verification);
       onVerified?.(verification);
     } catch {

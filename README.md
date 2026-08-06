@@ -10,6 +10,10 @@ npm run dev
 
 [http://localhost:3000](http://localhost:3000)を開く
 
+環境変数の全一覧は [`.env.example`](.env.example) を参照。
+特に **`NEXT_PUBLIC_GITHUB_APP_SLUG` は本番必須** — 未設定だと GitHub App の
+導入リンクが描画されず、PR 追跡（＝ゲーム開始経路）が丸ごと機能しない。
+
 外部アセット置き場を使う場合は、バックエンドの `BUGBASH_ASSETS_BASE_URL` と同じURLをフロントエンドにも設定してください。
 バックエンドは同じ置き場の `asset-manifest.json` に載っている画像だけURLを返します。
 
