@@ -52,7 +52,7 @@ type RetireResult = {
 
 export default function BillingManagementPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const {
     error: walletError,
     loading: walletLoading,
@@ -363,7 +363,18 @@ export default function BillingManagementPage() {
                 </p>
                 {retireResult ? (
                   <div className="mt-4 border border-accent/40 bg-accent/10 px-3 py-2 text-[12px] text-accent">
-                    退会処理が完了しました。失効ルーン: {retireResult.expiredRuneBalance.toLocaleString("ja-JP")}
+                    <p>
+                      退会処理が完了しました。失効ルーン: {retireResult.expiredRuneBalance.toLocaleString("ja-JP")}
+                    </p>
+                    {/* 退会後にセッションが生き続けると「退会したのに操作できる」状態に
+                        なるため、内訳を見せたうえでログアウトへ誘導する */}
+                    <button
+                      className="mt-2 border border-accent px-3 py-1.5 text-[12px] text-accent hover:bg-accent hover:text-bg"
+                      onClick={() => void logout()}
+                      type="button"
+                    >
+                      ログアウトする
+                    </button>
                   </div>
                 ) : (
                   <button

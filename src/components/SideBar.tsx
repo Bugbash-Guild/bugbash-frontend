@@ -57,7 +57,7 @@ function NavLink({
  */
 export function SideBarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const { hero } = useHero(isAuthenticated);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -153,6 +153,17 @@ export function SideBarContent({ onNavigate }: { onNavigate?: () => void }) {
                   {item.label}
                 </Link>
               ))}
+              <div className="mx-2 my-1.5 border-t border-line" />
+              {/* ログアウト。BE の /logout（Spring Security）は前から存在して
+                  いたが、FE から呼ぶ手段がどこにも無かった（共用PCで詰む） */}
+              <button
+                className="flex w-full items-center rounded px-[10px] py-1.5 text-left text-[12px] text-text hover:bg-bg-elev"
+                onClick={() => void logout()}
+                type="button"
+              >
+                <span className="mr-2 inline-block w-[16px] text-center text-text-dim">⏻</span>
+                ログアウト
+              </button>
               <div className="mx-2 my-1.5 border-t border-line" />
               {legalFooterLinks.map((link) => (
                 <Link

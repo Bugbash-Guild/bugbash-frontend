@@ -11,7 +11,7 @@
     "assets:upload:r2": "tsx scripts/upload-game-assets-r2.ts",
     "dev": "next dev --turbopack",
     "dev:mock": "node scripts/mock-backend.mjs",
-    "build": "next build --turbopack",
+    "build": "next build",
     "check:visual": "node scripts/check-visual.mjs",
     "start": "next start",
     "lint": "next lint",

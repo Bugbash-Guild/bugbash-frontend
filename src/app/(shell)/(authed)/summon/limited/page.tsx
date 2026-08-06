@@ -121,7 +121,9 @@ export default function LimitedSummonPage() {
       refetchPity(),
       refetchHistory(),
       refetchWallet(),
-      mutate("monsters-compendium"),
+      // マスタは変わらないので所持だけ再検証する（"monsters-compendium" は
+      // 購読者のいない死にキーだった）
+      mutate("/api/monsters/owned"),
     ]);
   }
 

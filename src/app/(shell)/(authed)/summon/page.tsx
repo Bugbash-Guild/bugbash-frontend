@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { mutate } from "swr";
 
 import { trackFunnelEvent, useTrackScreenView } from "@/hooks/useFunnelTracking";
@@ -16,8 +16,10 @@ import { DisclosureModal } from "@/components/billing/DisclosureModal";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { ItemVisual } from "@/components/ItemVisual";
 import { LegalFooter } from "@/components/LegalFooter";
+import { LimitedPullConfirmModal } from "@/components/summon/LimitedPullConfirmModal";
 import { LimitedSummonBanner } from "@/components/summon/LimitedSummonBanner";
 import { PityMeter } from "@/components/summon/PityMeter";
+import type { LimitedPullConfirmation } from "@/lib/limitedSummon";
 import {
   buildPassPityUpsell,
   formatSummonCurrencyCost,
@@ -94,6 +96,23 @@ export default function SummonPage() {
 
   const [disclosureOpen, setDisclosureOpen] = useState(false);
   const [result, setResult] = useState<SummonResult | null>(null);
+  const [tenConfirmOpen, setTenConfirmOpen] = useState(false);
+
+  // コイン建てでも 10 連は誤タップ 1 回で 3,000 コインが消えるため、
+  // 有料（ルーン）側と同じ確認モーダルを挟む。通貨が安いからといって
+  // 保護水準を下げない（限定側だけ確認がある非対称の解消）。
+  const coinBalance = hero?.guildCoinBalance ?? 0;
+  const tenConfirmation: LimitedPullConfirmation | null = useMemo(() => {
+    const cost = disclosure?.tenPullCost;
+    if (disclosure == null || cost == null) return null;
+    return {
+      balanceLabel: formatSummonCurrencyCost(coinBalance, disclosure.currency),
+      canAfford: coinBalance >= cost,
+      cost,
+      costLabel: formatSummonCurrencyCost(cost, disclosure.currency),
+      pullCount: 10,
+    };
+  }, [coinBalance, disclosure]);
   const effectiveDisclosure =
     disclosure && subscription
       ? selectEffectivePityDisclosure(disclosure, subscription.entitled)
@@ -125,7 +144,9 @@ export default function SummonPage() {
         refetchHistory(),
         refetchHero(),
         mutate("/api/billing/wallet"),
-        mutate("monsters-compendium"),
+        // 結果モーダルの CTA「図鑑で確認 →」の遷移先を最新にする。
+        // マスタ(/api/monsters/all)は変わらないので所持だけ再検証する。
+        mutate("/api/monsters/owned"),
       ]);
     } catch {
       // error displayed via summonError state
@@ -144,11 +165,16 @@ export default function SummonPage() {
         refetchHistory(),
         refetchHero(),
         mutate("/api/billing/wallet"),
-        mutate("monsters-compendium"),
+        mutate("/api/monsters/owned"),
       ]);
     } catch {
       // error displayed via summonError state
     }
+  }
+
+  async function handleConfirmTen() {
+    await handlePullTen();
+    setTenConfirmOpen(false);
   }
 
   return (
@@ -213,8 +239,8 @@ export default function SummonPage() {
                 {summoning ? "召喚中…" : "[ 召喚 × 1 ]"}
               </button>
               <button
-                onClick={handlePullTen}
-                disabled={summoning || !effectiveDisclosure}
+                onClick={() => setTenConfirmOpen(true)}
+                disabled={summoning || !effectiveDisclosure || !tenConfirmation}
                 className="flex-1 rounded border border-gold py-3.5 text-[13px] text-gold transition-colors hover:bg-gold hover:text-bg disabled:opacity-40"
               >
                 {summoning ? "召喚中…" : "[ 10連召喚 ]"}
@@ -281,6 +307,17 @@ export default function SummonPage() {
         <div className="max-w-4xl">
           <LegalFooter />
         </div>
+
+        {tenConfirmOpen && tenConfirmation && (
+          <LimitedPullConfirmModal
+            confirmation={tenConfirmation}
+            loading={summoning}
+            onCancel={() => {
+              if (!summoning) setTenConfirmOpen(false);
+            }}
+            onConfirm={() => void handleConfirmTen()}
+          />
+        )}
 
         {/* ── Result modal ── */}
         {result && (

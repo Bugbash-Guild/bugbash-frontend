@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { AgeVerificationModal } from "@/components/billing/AgeVerificationModal";
@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { trackFunnelEvent, useTrackScreenView } from "@/hooks/useFunnelTracking";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useSubscriptionPlan } from "@/hooks/useSubscriptionPlan";
-import { clearAgeVerification } from "@/lib/billing/ageVerification";
+import { clearAgeVerification, readVerifiedAgeGroup } from "@/lib/billing/ageVerification";
 import { writePendingOrder } from "@/lib/billing/pendingGrant";
 import { readBillingErrorMessage } from "@/lib/billing/runeCheckout";
 import {
@@ -74,6 +74,12 @@ export default function PassPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [openConfirmAfterAge, setOpenConfirmAfterAge] = useState(false);
   const [verifiedAgeGroup, setVerifiedAgeGroup] = useState<AgeGroup | null>(null);
+
+  // /shop/runes と同じく、申告済みなら再申告を求めない（訪問のたびに
+  // モーダルが出る画面間の不一致を解消）。強制はサーバ側ゲートが行う。
+  useEffect(() => {
+    setVerifiedAgeGroup(readVerifiedAgeGroup(window.localStorage));
+  }, []);
 
 
   const effectiveSubscription = subscription ?? EMPTY_SUBSCRIPTION;
