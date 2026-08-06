@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { ConsoleEmptyState } from "@/components/ConsoleEmptyState";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { TermLoading } from "@/components/TermLoading";
 import { ItemVisual } from "@/components/ItemVisual";
@@ -125,6 +126,16 @@ export default function ItemsPage() {
 
         {loading && <TermLoading className="mb-4" lines={["query inventory --grid"]} />}
         {error && <p className="mb-4 text-[13px] text-pink">error: {error}</p>}
+
+        {/* 空スロットの壁を無言で見せない。何を入れる場所かと入手先を案内する。 */}
+        {!loading && !error && occupied === 0 && (
+          <ConsoleEmptyState
+            action={{ href: "/summon", label: "召喚で素材を引く" }}
+            className="mb-4"
+            glyph="🎒"
+            message="持ち物はまだ空です。魂や進化の素材を集めて、相棒モンスターの育成に使いましょう。"
+          />
+        )}
 
         {/* layout: grids + selected panel */}
         <div className="grid grid-cols-1 items-start gap-[18px] xl:grid-cols-[minmax(0,1fr)_260px]">

@@ -102,6 +102,12 @@ export default function SummonPage() {
   // 有料（ルーン）側と同じ確認モーダルを挟む。通貨が安いからといって
   // 保護水準を下げない（限定側だけ確認がある非対称の解消）。
   const coinBalance = hero?.guildCoinBalance ?? 0;
+  // 残高不足で単発を押すとサーバエラーになるだけなので、押せなくする
+  // （10連が確認モーダルで守られているのに単発だけ素通しだった）。
+  const singlePullCost = disclosure?.singlePullCost ?? null;
+  // hero 未着の間は 0 残高として「コイン不足」を誤表示しない（10連と同じ扱い）
+  const canAffordSingle =
+    hero == null || singlePullCost == null || coinBalance >= singlePullCost;
   const tenConfirmation: LimitedPullConfirmation | null = useMemo(() => {
     const cost = disclosure?.tenPullCost;
     // hero 未着だと残高 0 と表示してしまうため、揃うまで確認は出さない
@@ -145,9 +151,9 @@ export default function SummonPage() {
         refetchHistory(),
         refetchHero(),
         mutate("/api/billing/wallet"),
-        // 結果モーダルの CTA「図鑑で確認 →」の遷移先を最新にする。
-        // マスタ(/api/monsters/all)は変わらないので所持だけ再検証する。
-        mutate("/api/monsters/owned"),
+        // コイン召喚は魂・進化素材（＝持ち物）を出す。結果モーダルの
+        // 「持ち物で確認 →」で最新の在庫が見えるよう inventory を再検証する。
+        mutate("/api/inventory"),
       ]);
     } catch {
       // error displayed via summonError state
@@ -166,7 +172,7 @@ export default function SummonPage() {
         refetchHistory(),
         refetchHero(),
         mutate("/api/billing/wallet"),
-        mutate("/api/monsters/owned"),
+        mutate("/api/inventory"),
       ]);
     } catch {
       // error displayed via summonError state
@@ -191,7 +197,8 @@ export default function SummonPage() {
               </span>
             </h1>
             <p className="mt-1 text-[12px] text-text-dim">
-              ギルドコイン（活動で獲得）で相棒を召喚します。
+              ギルドコイン（活動で獲得）で魂や進化の素材を引きます。相棒モンスターは
+              PR のマージや限定召喚で仲間になります。
             </p>
           </div>
         </div>
@@ -234,10 +241,10 @@ export default function SummonPage() {
             <div className="flex gap-3">
               <button
                 onClick={handlePullOnce}
-                disabled={summoning || !effectiveDisclosure}
+                disabled={summoning || !effectiveDisclosure || !canAffordSingle}
                 className="flex-1 rounded border border-accent bg-accent py-3.5 text-[14px] font-semibold text-bg transition-[filter] hover:brightness-110 disabled:opacity-40"
               >
-                {summoning ? "召喚中…" : "[ 召喚 × 1 ]"}
+                {summoning ? "召喚中…" : canAffordSingle ? "[ 召喚 × 1 ]" : "コイン不足"}
               </button>
               <button
                 onClick={() => setTenConfirmOpen(true)}
@@ -290,7 +297,7 @@ export default function SummonPage() {
               <div className="text-[12px] text-text-faint py-8 text-center leading-6">
                 まだ召喚履歴がありません。
                 <br />
-                左の [ 召喚 × 1 ] から最初の相棒を迎えましょう。
+                左の [ 召喚 × 1 ] から魂や進化素材を引けます。
               </div>
             ) : (
               <div className="space-y-0">
@@ -364,9 +371,9 @@ export default function SummonPage() {
               <div className="mt-4 flex gap-2">
                 <Link
                   className="flex-1 rounded border border-accent/40 py-2 text-center text-[13px] text-accent transition-colors hover:bg-accent/[0.08]"
-                  href="/monsters"
+                  href="/items"
                 >
-                  [ 図鑑で確認 → ]
+                  [ 持ち物で確認 → ]
                 </Link>
                 <button
                   onClick={() => setResult(null)}

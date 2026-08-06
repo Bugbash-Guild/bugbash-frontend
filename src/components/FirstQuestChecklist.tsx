@@ -46,10 +46,12 @@ export function FirstQuestChecklist({
     },
     {
       key: "first-monster",
-      label: "最初の相棒モンスターを迎える",
+      // 最初の相棒は PR のマージで仲間になる（通常召喚では出ない）。
+      // 図鑑で「これから集まる相棒」を見せる（達成不能な召喚へは送らない）。
+      label: "最初の相棒モンスターを迎える（PR マージで仲間になる）",
       // owned 取得が壊れている間は「未達」と断定しない（判定不能扱いで達成表示）
       done: ownedDegraded || ownedMonsterCount > 0,
-      action: { label: "召喚へ", href: "/summon" },
+      action: { label: "図鑑を見る", href: "/monsters" },
     },
   ];
 
