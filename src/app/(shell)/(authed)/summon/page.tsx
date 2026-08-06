@@ -105,7 +105,9 @@ export default function SummonPage() {
   // 残高不足で単発を押すとサーバエラーになるだけなので、押せなくする
   // （10連が確認モーダルで守られているのに単発だけ素通しだった）。
   const singlePullCost = disclosure?.singlePullCost ?? null;
-  const canAffordSingle = singlePullCost == null || coinBalance >= singlePullCost;
+  // hero 未着の間は 0 残高として「コイン不足」を誤表示しない（10連と同じ扱い）
+  const canAffordSingle =
+    hero == null || singlePullCost == null || coinBalance >= singlePullCost;
   const tenConfirmation: LimitedPullConfirmation | null = useMemo(() => {
     const cost = disclosure?.tenPullCost;
     // hero 未着だと残高 0 と表示してしまうため、揃うまで確認は出さない
@@ -149,9 +151,9 @@ export default function SummonPage() {
         refetchHistory(),
         refetchHero(),
         mutate("/api/billing/wallet"),
-        // 結果モーダルの CTA「図鑑で確認 →」の遷移先を最新にする。
-        // マスタ(/api/monsters/all)は変わらないので所持だけ再検証する。
-        mutate("/api/monsters/owned"),
+        // コイン召喚は魂・進化素材（＝持ち物）を出す。結果モーダルの
+        // 「持ち物で確認 →」で最新の在庫が見えるよう inventory を再検証する。
+        mutate("/api/inventory"),
       ]);
     } catch {
       // error displayed via summonError state
@@ -170,7 +172,7 @@ export default function SummonPage() {
         refetchHistory(),
         refetchHero(),
         mutate("/api/billing/wallet"),
-        mutate("/api/monsters/owned"),
+        mutate("/api/inventory"),
       ]);
     } catch {
       // error displayed via summonError state
