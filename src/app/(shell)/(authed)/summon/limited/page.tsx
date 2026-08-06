@@ -237,9 +237,6 @@ export default function LimitedSummonPage() {
                       目玉: {featuredDisplay.name}
                     </div>
                   )}
-                  <div className="mt-2 text-[11px] text-text-faint">
-                    提供期間: 開催情報は運営告知をご確認ください。
-                  </div>
                   {disclosure && (
                     <div className="mt-2 text-[11px] text-text-faint">
                       {buildLimitedStockPolicyCopy(disclosure.stockPolicy)}

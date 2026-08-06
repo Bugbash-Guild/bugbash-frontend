@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect } from 'react';
 
 import { MonsterVisual } from '@/components/MonsterVisual';
@@ -131,6 +132,13 @@ function EntryRow({ entry }: { entry: RewardEntry }) {
 export function RewardModal({ activities, onClose }: Props) {
     const summary = buildRewardSummary(activities);
     const totals = formatRewardTotals(summary.totals);
+    // マージの喜びが最高潮のこの瞬間に行き止まりだったのを、次の一歩に繋ぐ。
+    // 新しい相棒がいれば図鑑へ、いなくても得た XP・魂・コインは相棒の育成に
+    // 使うので、どちらも図鑑（＝育成の場）へ手渡す。
+    const acquiredMonster = summary.entries.some((entry) => entry.monsters.length > 0);
+    const nextStep = acquiredMonster
+        ? { href: '/monsters', label: '図鑑で新しい相棒を見る →' }
+        : { href: '/monsters', label: '相棒を育てにいく →' };
 
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
@@ -206,7 +214,7 @@ export function RewardModal({ activities, onClose }: Props) {
                 </div>
 
                 {/* claim */}
-                <div className="shrink-0 border-t border-line px-4 py-3">
+                <div className="shrink-0 space-y-2 border-t border-line px-4 py-3">
                     <button
                         className="w-full rounded-[4px] py-2.5 text-[13px] font-semibold tracking-[0.05em] transition-opacity hover:opacity-80"
                         onClick={onClose}
@@ -215,6 +223,14 @@ export function RewardModal({ activities, onClose }: Props) {
                     >
                         {summary.leveledUp ? 'CLAIM & LEVEL UP' : 'CLAIM'}
                     </button>
+                    {/* onClose も呼ぶことで、遷移と同時に既読化する */}
+                    <Link
+                        className="block w-full rounded-[4px] border border-accent/40 py-2 text-center text-[12px] text-accent transition-[filter] hover:brightness-110"
+                        href={nextStep.href}
+                        onClick={onClose}
+                    >
+                        {nextStep.label}
+                    </Link>
                 </div>
             </div>
         </div>
