@@ -13,6 +13,7 @@ import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { TermLoading } from "@/components/TermLoading";
 import { ShopTabs } from "@/components/ShopTabs";
 import { useAuth } from "@/hooks/useAuth";
+import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { useMonsters } from "@/hooks/useMonsters";
 import { usePurchase } from "@/hooks/usePurchase";
 import { useSkinCatalog } from "@/hooks/useSkinCatalog";
@@ -163,6 +164,15 @@ function SkinCatalogContent() {
     setActionNotice(null);
     resetPurchase();
   }
+
+  // Esc・Tab循環・背後のスクロールロックは共通フックへ。詳細パネルは縦に長く、
+  // 背後の一覧がスクロールできると「どこを見ているか」が分からなくなる。
+  const detailPanelRef = useModalDismiss({
+    // 購入・装備の通信中は閉じない（closeDetails の既存ガードと同じ条件）
+    dismissible: !purchasing && !equipping,
+    onDismiss: closeDetails,
+    open: selected != null,
+  });
 
   async function handlePurchase(skin: PresentedSkinCatalogItem) {
     setActionNotice(null);
@@ -374,15 +384,18 @@ function SkinCatalogContent() {
 
       {selected && (
         <div
-          aria-labelledby="skin-detail-title"
-          aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-8"
           onClick={closeDetails}
-          role="dialog"
+          role="presentation"
         >
+          {/* dialog はオーバーレイではなくパネル（中身の箱）が名乗る */}
           <div
+            aria-labelledby="skin-detail-title"
+            aria-modal="true"
             className="max-h-full w-full max-w-2xl overflow-y-auto border border-line-strong bg-bg-elev p-5"
             onClick={(event) => event.stopPropagation()}
+            ref={detailPanelRef}
+            role="dialog"
           >
             <div className="flex items-start justify-between gap-4">
               <div>

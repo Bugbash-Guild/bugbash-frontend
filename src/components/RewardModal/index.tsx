@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
 
 import { MonsterVisual } from '@/components/MonsterVisual';
 import { RARITY_COLOR } from '@/constants/rarity';
+import { useModalDismiss } from '@/hooks/useModalDismiss';
 import {
     buildRewardSummary,
     formatCoinBreakdown,
@@ -158,15 +158,10 @@ export function RewardModal({ activities, onClaim, onDismiss }: Props) {
         ? { href: '/monsters', label: '図鑑で新しい相棒を見る →' }
         : { href: '/monsters', label: '相棒を育てにいく →' };
 
-    // Esc は「閉じるだけ」で既読化しない。未読は残り、次にホームを開いた
-    // とき（または次のセッション）にまた表示される。
-    useEffect(() => {
-        const handler = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onDismiss();
-        };
-        window.addEventListener('keydown', handler);
-        return () => window.removeEventListener('keydown', handler);
-    }, [onDismiss]);
+    // Esc は「閉じるだけ」で既読化しない（onClaim ではなく onDismiss を渡す）。
+    // 未読は残り、次にホームを開いたとき（または次のセッション）にまた表示される。
+    // Tab の循環・初期フォーカス・背後のスクロールロックも同時にここが持つ。
+    const panelRef = useModalDismiss({ onDismiss });
 
     return (
         // 背景クリックも Esc と同じ「閉じるだけ」。誤クリックで報酬明細を
@@ -174,9 +169,14 @@ export function RewardModal({ activities, onClaim, onDismiss }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onDismiss}>
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
             <div
+                // 見出し要素（h2）を持たない画面なので、aria-labelledby ではなく
+                // aria-label で名前を与える（MobileNavDrawer と同じ流儀）。
+                // ヘッダの `$ git log …` を参照させると読み上げが記号列になる。
+                aria-label="未受け取りの報酬"
                 aria-modal="true"
                 className="relative z-10 flex max-h-[85vh] w-[440px] max-w-full flex-col overflow-hidden rounded-[8px] border border-line"
                 onClick={(e) => e.stopPropagation()}
+                ref={panelRef}
                 role="dialog"
                 style={{ background: 'var(--bg-elev)' }}
             >
@@ -257,9 +257,16 @@ export function RewardModal({ activities, onClaim, onDismiss }: Props) {
                       背景クリック・Esc と同じ「閉じるだけ」を、明示的な選択肢
                       としても置く。挙動だけ黙って変えると「閉じたのに消えない」
                       に見えるため、また表示されることをラベルで先に宣言する。
+
+                      data-autofocus をここに置くのは、このモーダルが本人の操作
+                      なしに（セッション開始時に自動で）開くため。初期フォーカスが
+                      CLAIM だと、別の入力のつもりで押した Enter 一回で明細が
+                      既読化されて二度と読めなくなる。既定のフォーカスは常に
+                      「失わない側」に置く。
                     */}
                     <button
                         className="block w-full py-1 text-center text-[11px] text-text-faint transition-colors hover:text-text-dim"
+                        data-autofocus
                         onClick={onDismiss}
                         type="button"
                     >

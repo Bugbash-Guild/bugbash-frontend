@@ -68,7 +68,9 @@ function HeroRow({
 
       {/* hero */}
       <div className="flex items-center gap-2.5 min-w-0">
+        {/* 頭文字タイルは login の重複表示なので、読み上げからは外す */}
         <div
+          aria-hidden
           className="w-7 h-7 rounded-sm flex items-center justify-center shrink-0 text-[12px] font-bold text-bg"
           style={{ background: rankColor }}
         >
@@ -87,9 +89,10 @@ function HeroRow({
         {level}
       </div>
 
-      {/* xp */}
+      {/* xp — 桁区切りは他画面と同じ ja-JP 固定。素の toLocaleString() は
+          閲覧者のブラウザ言語で区切り文字が変わり、同じ画面内で表記が割れる */}
       <div className="hidden text-right text-[13px] text-text-dim sm:block">
-        {totalExperience.toLocaleString()}
+        {totalExperience.toLocaleString("ja-JP")}
       </div>
 
       {/* streak（/me には無いフィールドなので、自分の圏外行では出さない） */}
@@ -126,21 +129,29 @@ export default function LeaderboardPage() {
     <>
       <ConsoleTopbar command="./rank --all --sort xp" path="~/leaderboard" showWallet />
       <div className="px-4 py-5 md:px-9 md:py-6 min-h-screen">
+        {/* 他画面（Monster Dex / Inventory / バッジ）と同じく見出しを持たせる。
+            この画面だけ h1 が無く、行の意味を説明する文も無かった */}
+        <div className="mb-4">
+          <h1 className="text-[28px] font-semibold tracking-[-0.015em]">Leaderboard</h1>
+          <p className="mt-1.5 text-[12.5px] text-text-dim">
+            累計XP順。行を選ぶとその勇者の公開プロフィールへ移動します。
+          </p>
+        </div>
 
-        {loading ? (
-          <TermLoading lines={["query leaderboard --sort xp"]} />
-        ) : error && entries.length === 0 ? (
+        {error && entries.length === 0 ? (
           // 取得失敗を「まだ誰もいない」空状態として見せない（嘘の状態の一掃）。
           // 定期再検証の失敗で手元に前回データが残っている間は、エラーで
           // 塗り潰さずそのまま表示を続ける（次の再検証で自然に回復する）。
           <div className="flex flex-wrap items-center justify-between gap-3 border border-pink/30 bg-pink/10 px-4 py-4 text-[12px] text-pink">
             <span>ランキングの読み込みに失敗しました。</span>
+            {/* 取得のやり直しは他画面と同じ「再読み込み」。「再試行」は
+                変更操作（強化・鋳造）のやり直しに使い分けられている */}
             <button
               className="text-text underline underline-offset-4 hover:text-accent"
               onClick={() => void refetch()}
               type="button"
             >
-              再試行
+              再読み込み
             </button>
           </div>
         ) : (
@@ -156,56 +167,64 @@ export default function LeaderboardPage() {
               <span className="hidden text-right lg:block">STREAK</span>
             </div>
 
-            {entries.length === 0 && (
-              <ConsoleEmptyState
-                className="m-4"
-                glyph="▲"
-                message="まだランキングがありません。PR をマージした勇者から順に載ります。"
-                action={{ label: "自分のホームへ", href: "/" }}
-              />
-            )}
-
-            {entries.map((entry) => (
-              <HeroRow
-                key={entry.heroId}
-                heroId={entry.heroId}
-                isSelf={selfHeroId != null && entry.heroId === selfHeroId}
-                level={entry.level}
-                login={entry.githubLogin ?? entry.heroId}
-                rank={entry.rank}
-                streakDays={entry.streakDays}
-                totalExperience={entry.totalExperience}
-              />
-            ))}
-
-            {/* 圏外の自分。表示中の一覧に自分が居ないときだけ「…」区切りで足す */}
-            {showSelfRow && me != null && selfHeroId != null && (
+            {/* 読み込み中も枠と列見出しを残す。以前は表ごと TermLoading に
+                差し替えていたため、データ到着でページが一段ずれていた */}
+            {loading ? (
+              <TermLoading className="px-4 py-4" lines={["query leaderboard --sort xp"]} />
+            ) : (
               <>
-                <div
-                  aria-hidden
-                  className="border-b border-line px-4 py-1 text-center text-[11px] tracking-[0.4em] text-text-faint"
-                >
-                  …
-                </div>
-                <HeroRow
-                  heroId={selfHeroId}
-                  isSelf
-                  level={me.level}
-                  login={me.githubLogin ?? user?.username ?? selfHeroId}
-                  rank={me.rank}
-                  streakDays={null}
-                  totalExperience={me.experience}
-                />
-              </>
-            )}
+                {entries.length === 0 && (
+                  <ConsoleEmptyState
+                    className="m-4"
+                    glyph="▲"
+                    message="まだランキングがありません。PR をマージした勇者から順に載ります。"
+                    action={{ label: "自分のホームへ", href: "/" }}
+                  />
+                )}
 
-            {/* 凡例: 実際に届いた件数から言える事実のみ（定数の直書きはしない）。
-                この行がある間は直前の行が :last-child でなくなり border-b を
-                持つため、こちら側に border-t を足すと線が二重になる。 */}
-            {legend != null && (
-              <div className="px-4 py-2 text-[10px] text-text-faint">
-                {legend} · 60秒ごとに自動更新
-              </div>
+                {entries.map((entry) => (
+                  <HeroRow
+                    key={entry.heroId}
+                    heroId={entry.heroId}
+                    isSelf={selfHeroId != null && entry.heroId === selfHeroId}
+                    level={entry.level}
+                    login={entry.githubLogin ?? entry.heroId}
+                    rank={entry.rank}
+                    streakDays={entry.streakDays}
+                    totalExperience={entry.totalExperience}
+                  />
+                ))}
+
+                {/* 圏外の自分。表示中の一覧に自分が居ないときだけ「…」区切りで足す */}
+                {showSelfRow && me != null && selfHeroId != null && (
+                  <>
+                    <div
+                      aria-hidden
+                      className="border-b border-line px-4 py-1 text-center text-[11px] tracking-[0.4em] text-text-faint"
+                    >
+                      …
+                    </div>
+                    <HeroRow
+                      heroId={selfHeroId}
+                      isSelf
+                      level={me.level}
+                      login={me.githubLogin ?? user?.username ?? selfHeroId}
+                      rank={me.rank}
+                      streakDays={null}
+                      totalExperience={me.experience}
+                    />
+                  </>
+                )}
+
+                {/* 凡例: 実際に届いた件数から言える事実のみ（定数の直書きはしない）。
+                    この行がある間は直前の行が :last-child でなくなり border-b を
+                    持つため、こちら側に border-t を足すと線が二重になる。 */}
+                {legend != null && (
+                  <div className="px-4 py-2 text-[10px] text-text-faint">
+                    {legend} · 60秒ごとに自動更新
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

@@ -7,6 +7,7 @@ import {
   SummonResultGrid,
   type SummonResultGridItem,
 } from "@/components/summon/SummonResultGrid";
+import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { SUMMON_CURRENCY_SYMBOL } from "@/lib/summonDisplay";
 import {
   buildSummonResultPityText,
@@ -48,24 +49,26 @@ export function LimitedSummonResultModal({
     return () => window.clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key !== "Escape") return;
+  // Esc の意味がここだけ2段階ある: 展開演出の途中は「演出をスキップ」（結果を
+  // 見ないまま閉じてしまわない）、展開後は「閉じる」。フックは onDismiss を
+  // 毎レンダー最新に差し替えるので、revealed をそのまま見て分岐してよい。
+  const panelRef = useModalDismiss({
+    onDismiss: () => {
       if (revealed) onClose();
       else setRevealed(true);
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose, revealed]);
+    },
+  });
 
   return (
-    <div
-      aria-labelledby="limited-result-title"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
-      role="dialog"
-    >
-      <div className="max-h-[88vh] w-full max-w-2xl overflow-y-auto border border-line bg-bg-elev p-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+      {/* role="dialog" はオーバーレイではなくパネル（中身の箱）側に置く */}
+      <div
+        aria-labelledby="limited-result-title"
+        aria-modal="true"
+        className="max-h-[88vh] w-full max-w-2xl overflow-y-auto border border-line bg-bg-elev p-5"
+        ref={panelRef}
+        role="dialog"
+      >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
             <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-text-faint">

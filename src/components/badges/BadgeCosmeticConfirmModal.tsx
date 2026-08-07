@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { FiTool, FiX } from "react-icons/fi";
 
+import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { COSMETIC_ONLY_COPY } from "@/lib/badges";
 import type { BadgeProgress, ForgeLevelDef } from "@/types/badge";
 
@@ -27,14 +30,23 @@ export function BadgeCosmeticConfirmModal({
   showRetry,
   showTopUp,
 }: BadgeCosmeticConfirmModalProps) {
+  // ルーンを消費する確定操作なので、実行中（inFlight）は Esc でも閉じない
+  // ＝ ✕ / キャンセルボタンが disabled なのと同じ扱い。
+  const panelRef = useModalDismiss({
+    onDismiss: onClose,
+    dismissible: !inFlight,
+  });
+
   return (
-    <div
-      aria-labelledby="badge-cosmetic-confirm-title"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
-      role="dialog"
-    >
-      <div className="w-full max-w-md border border-purple/50 bg-bg-elev shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+      {/* role="dialog" はオーバーレイではなくパネル（中身の箱）側に置く */}
+      <div
+        aria-labelledby="badge-cosmetic-confirm-title"
+        aria-modal="true"
+        className="w-full max-w-md border border-purple/50 bg-bg-elev shadow-2xl"
+        ref={panelRef}
+        role="dialog"
+      >
         <div className="flex items-center justify-between border-b border-line px-4 py-3">
           <div>
             <div className="text-[10px] uppercase tracking-[0.12em] text-purple">
@@ -113,8 +125,11 @@ export function BadgeCosmeticConfirmModal({
           )}
 
           <div className="flex justify-end gap-2">
+            {/* 初期フォーカスはキャンセル側。開いた直後の Enter 連打で
+                ルーンが消費されないようにする */}
             <button
               className="border border-line px-3 py-2 text-[12px] text-text-dim hover:bg-bg-elev-2 disabled:opacity-50"
+              data-autofocus
               disabled={inFlight}
               onClick={onClose}
               type="button"

@@ -7,6 +7,7 @@ import { mutate } from "swr";
 import { trackFunnelEvent, useTrackScreenView } from "@/hooks/useFunnelTracking";
 import { useAuth } from "@/hooks/useAuth";
 import { useHero } from "@/hooks/useHero";
+import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { usePityCounter } from "@/hooks/usePityCounter";
 import { useSummon } from "@/hooks/useSummon";
 import { useSummonDisclosure } from "@/hooks/useSummonDisclosure";
@@ -142,14 +143,12 @@ export default function SummonPage() {
     return result.data.results;
   }, [result]);
 
-  useEffect(() => {
-    if (!result) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setResult(null);
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [result]);
+  // Esc の自前ハンドラは共通フックへ集約（Tab 循環と背後のスクロールロックも同時に入る）。
+  // 結果モーダルは「閉じる」だけが取り消しなので、Esc は setResult(null) に対応させる。
+  const resultPanelRef = useModalDismiss({
+    onDismiss: () => setResult(null),
+    open: result != null,
+  });
 
 
   async function handlePullOnce() {
@@ -364,8 +363,10 @@ export default function SummonPage() {
           <div
             className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
             onClick={() => setResult(null)}
+            role="presentation"
           >
             <div
+              ref={resultPanelRef}
               role="dialog"
               aria-modal="true"
               aria-label="召喚結果"
@@ -411,7 +412,10 @@ export default function SummonPage() {
                 >
                   [ 持ち物で確認 → ]
                 </Link>
+                {/* 初期フォーカスは「閉じるだけ」のこちらへ。確認ボタンを連打した
+                    流れで Enter が残ると、先頭の持ち物リンクで画面外へ飛ばされる */}
                 <button
+                  data-autofocus
                   onClick={() => setResult(null)}
                   className="flex-1 py-2 rounded border border-line text-text-dim text-[13px] hover:border-accent hover:text-accent transition-colors"
                 >

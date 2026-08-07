@@ -11,6 +11,7 @@ import { SubscriptionStatusSummary } from "@/components/billing/SubscriptionStat
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { useAuth } from "@/hooks/useAuth";
+import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useWallet } from "@/hooks/useWallet";
@@ -86,6 +87,17 @@ export default function BillingManagementPage() {
   const cancelInFlightRef = useRef(false);
   const retireInFlightRef = useRef(false);
 
+  /*
+    退会モーダルは元々オーバーレイのクリックでも Esc でも閉じられず、
+    Tab は背後の課金履歴へ抜けていた。共通フックで Esc・Tab循環・
+    背後のスクロールロックをまとめて入れる。
+  */
+  const retirePanelRef = useModalDismiss({
+    // 退会処理中は閉じない（POST の結果が分からないまま消さない）
+    dismissible: !retireInFlight,
+    onDismiss: () => setRetireConfirmOpen(false),
+    open: retireConfirmOpen,
+  });
 
 
   const effectiveSubscription = subscription ?? EMPTY_SUBSCRIPTION;
@@ -424,13 +436,15 @@ export default function BillingManagementPage() {
       />
 
       {retireConfirmOpen && (
-        <div
-          aria-labelledby="retire-account-title"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
-          role="dialog"
-        >
-          <section className="w-full max-w-lg border border-pink/40 bg-bg-elev p-5 shadow-[0_24px_80px_rgba(0,0,0,0.65)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          {/* dialog はオーバーレイではなくパネル（中身の箱）が名乗る */}
+          <section
+            aria-labelledby="retire-account-title"
+            aria-modal="true"
+            className="w-full max-w-lg border border-pink/40 bg-bg-elev p-5 shadow-[0_24px_80px_rgba(0,0,0,0.65)]"
+            ref={retirePanelRef}
+            role="dialog"
+          >
             <div className="flex items-start justify-between gap-3">
               <h2 id="retire-account-title" className="text-[17px] font-semibold text-text">
                 退会を確定しますか?
@@ -459,8 +473,11 @@ export default function BillingManagementPage() {
             </label>
             {retireError && <p className="mt-3 text-[12px] text-pink">{retireError}</p>}
             <div className="mt-5 flex justify-end gap-2">
+              {/* この画面で最も危険な操作。初期フォーカスは必ず「戻る」側に置き、
+                  Enter 連打でアカウント削除が走らないようにする */}
               <button
                 className="border border-line px-3 py-2 text-[12px] text-text-dim"
+                data-autofocus
                 disabled={retireInFlight}
                 onClick={() => setRetireConfirmOpen(false)}
                 type="button"

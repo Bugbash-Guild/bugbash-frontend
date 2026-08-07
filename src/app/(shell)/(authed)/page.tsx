@@ -46,6 +46,24 @@ function formatTimeAgo(isoString: string): string {
   return `${Math.floor(hours / 24)}日前`;
 }
 
+/**
+ * 相対時刻だけだと「120日前」でいつの出来事か分からなくなる。
+ * ホバー（title）と <time dateTime> に絶対時刻を持たせて、
+ * 見た目の簡潔さを保ったまま日付を失わないようにする。
+ * 読めない値では null を返し、何も足さない（formatTimeAgo と同方針）。
+ */
+function formatAbsoluteTime(isoString: string): string | null {
+  const at = new Date(isoString);
+  if (Number.isNaN(at.getTime())) return null;
+  return at.toLocaleString("ja-JP", {
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 const HERO_ASCII = [
   "    ╔═══╗    ",
   "    ║ ◆ ║    ",
@@ -183,14 +201,17 @@ export default function Home() {
           hero?.hasGithubAppInstalled &&
           hero.totalPrsMerged > 0 &&
           process.env.NEXT_PUBLIC_GITHUB_APP_SLUG && (
-            <div className="text-[11px] text-text-faint text-right mb-3">
+            <div className="text-right mb-3">
+              {/* 文字だけの当たり判定（11px・1行）だと指で狙えない。
+                  最小44px高のヒット領域を持たせ、末尾の → は
+                  TrackingReadyPanel の同一導線と表記を揃えるため */}
               <a
                 href={`https://github.com/apps/${process.env.NEXT_PUBLIC_GITHUB_APP_SLUG}/installations/new`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-text-dim transition-colors"
+                className="inline-flex min-h-11 items-center rounded px-2 text-[11px] text-text-faint transition-colors hover:text-text-dim"
               >
-                + GitHub App にリポジトリを追加
+                + GitHub App にリポジトリを追加 →
               </a>
             </div>
           )}
@@ -360,8 +381,16 @@ export default function Home() {
                         }} />
                     ))}
                   </div>
+                  {/* 直上の "12,345 / 20,000 XP" と同じ行で読む数字なので、
+                      桁区切りと欠損時の "—" を揃える（素の 7655 が並ばないように） */}
                   <div className="text-[13px] text-text-faint mt-2">
-                    <span className="text-text-dim">{hero.experienceToNextLevel} XP</span> to Lv.{hero.level + 1}
+                    <span className="text-text-dim">
+                      {Number.isFinite(hero.experienceToNextLevel)
+                        ? hero.experienceToNextLevel.toLocaleString("ja-JP")
+                        : "—"}{" "}
+                      XP
+                    </span>{" "}
+                    to Lv.{hero.level + 1}
                   </div>
                 </div>
               </div>
@@ -384,17 +413,21 @@ export default function Home() {
               <div className="bg-bg-elev border border-line rounded-[6px] overflow-hidden">
                 <div className="px-3.5 py-2.5 border-b border-line flex items-center justify-between">
                   <span className="text-[10px] text-text-faint tracking-[0.12em]">git log --activity</span>
-                  {/* 打ち切っていることを黙らない: 折りたたみ中は「直近6件 / 全N件」 */}
+                  {/* 打ち切っていることを黙らない: 折りたたみ中は「直近6件 / 取得済みN件」。
+                      "全N件" とは言えない — BE の /hero/activities は既定 limit=20 の
+                      ページングで、ここに届くのは常に直近分だけ（hasMore はフックが
+                      畳んでいて FE 側に残っていない）。手元にある件数だけを言う */}
                   <span className="text-[10px] text-text-faint">
                     {activities.length > ACTIVITY_PREVIEW_COUNT
                       ? showAllActivities
-                        ? `全${activities.length}件`
-                        : `直近${ACTIVITY_PREVIEW_COUNT}件 / 全${activities.length}件`
+                        ? `取得済み${activities.length}件`
+                        : `直近${ACTIVITY_PREVIEW_COUNT}件 / 取得済み${activities.length}件`
                       : `${activities.length} events`}
                   </span>
                 </div>
+                {/* 待ちの表現をページ内で揃える（上の hero パネルは TermLoading） */}
                 {activitiesLoading && (
-                  <div className="px-3.5 py-4 text-[12px] text-text-faint">loading…</div>
+                  <TermLoading className="px-3.5 py-4" lines={["query hero.activities"]} />
                 )}
                 {!activitiesLoading && activities.length === 0 && (
                   <div className="px-3.5 py-4 text-[12px] text-text-faint">
@@ -416,6 +449,7 @@ export default function Home() {
                   const meta = isPrMergedMetadata(a.metadata) ? a.metadata : null;
                   const repoName = meta?.repositoryFullName.split("/")[1] ?? "—";
                   const prUrl = meta ? buildPrUrl(meta.repositoryFullName, meta.prNumber) : null;
+                  const occurredAbsolute = formatAbsoluteTime(a.occurredAt);
                   return (
                     <div key={a.id} className={`px-3.5 py-3 flex gap-3 ${i < visible.length - 1 ? "border-b border-line" : ""}`}>
                       <div className="w-8 h-8 rounded-[4px] shrink-0 bg-bg-elev-2 border border-line flex items-center justify-center text-base">
@@ -439,7 +473,8 @@ export default function Home() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-[12px] text-text flex items-center gap-1.5 flex-wrap">
-                          <span className="text-gold">+{xpGained} XP</span>
+                          {/* 大きなPRでは4桁に届くので、他のXP表示と同じ桁区切りにする */}
+                          <span className="text-gold">+{xpGained.toLocaleString("ja-JP")} XP</span>
                           {monster && (
                             <>
                               <span className="text-text-faint">·</span>
@@ -470,9 +505,18 @@ export default function Home() {
                             ) : (
                               <span className="text-accent-2 mr-1">{repoName}#{meta.prNumber}</span>
                             ))}
-                          <span className="text-text-faint">{meta?.title}</span>
+                          {/* truncate で消える分を hover で読めるようにする
+                              （図鑑カードの出自PRと同じ扱い） */}
+                          <span className="text-text-faint" title={meta?.title}>{meta?.title}</span>
                         </div>
-                        <div className="text-[10px] text-text-faint mt-0.5">{formatTimeAgo(a.occurredAt)}</div>
+                        <div className="text-[10px] text-text-faint mt-0.5">
+                          <time
+                            dateTime={occurredAbsolute ? a.occurredAt : undefined}
+                            title={occurredAbsolute ?? undefined}
+                          >
+                            {formatTimeAgo(a.occurredAt)}
+                          </time>
+                        </div>
                       </div>
                     </div>
                   );
@@ -487,7 +531,7 @@ export default function Home() {
                   >
                     {showAllActivities
                       ? `[ 直近${ACTIVITY_PREVIEW_COUNT}件に戻す ▴ ]`
-                      : `[ すべて表示 — 全${activities.length}件 ▾ ]`}
+                      : `[ すべて表示 — 取得済み${activities.length}件 ▾ ]`}
                   </button>
                 )}
               </div>
