@@ -14,6 +14,8 @@ describe('resolveBackendPath', () => {
         assert.equal(resolveBackendPath(['hero', 'stats']), '/api/v1/hero/stats');
         assert.equal(resolveBackendPath(['hero', 'activities']), '/api/v1/hero/activities');
         assert.equal(resolveBackendPath(['leaderboard']), '/api/v1/leaderboard');
+        // 自分の順位。LeaderboardController のベースパス /api/v1/leaderboard に合わせる
+        assert.equal(resolveBackendPath(['leaderboard', 'me']), '/api/v1/leaderboard/me');
         assert.equal(
             resolveBackendPath(['github', 'app', 'installation']),
             '/api/v1/github/app/installation',

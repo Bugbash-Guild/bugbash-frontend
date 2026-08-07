@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { trackFunnelEvent } from "@/hooks/useFunnelTracking";
 import { useAuth } from "@/hooks/useAuth";
+import { useRuneProducts } from "@/hooks/useRuneProducts";
+import { buildLimitedSummonEquivalentText } from "@/lib/billing/runeConversion";
 import {
   buildBillingReturnMessage,
   getReturnPollDelayMs,
@@ -40,6 +42,15 @@ export default function BillingReturnPage() {
   const [pollAttempt, setPollAttempt] = useState(0);
   const [pollStartedAt, setPollStartedAt] = useState<number | null>(null);
   const [status, setStatus] = useState<BillingReturnStatus>("direct");
+
+  /*
+   * 付与ルーンの召喚回数換算に使う。ルーン購入の復帰時だけ取りに行き
+   * （マスタデータ・5分キャッシュ）、取れなければ換算行を出さないだけで
+   * この画面の本務（反映確認）には影響させない。
+   */
+  const { limitedSingleCostRune } = useRuneProducts(
+    isAuthenticated && (pendingOrder?.type === "rune" || confirmedType === "rune"),
+  );
 
 
   useEffect(() => {
@@ -116,6 +127,12 @@ export default function BillingReturnPage() {
       ? "冒険者パスが有効になりました。"
       : buildBillingReturnMessage(status, detectedRunes ?? undefined);
 
+  // 反映を確認できた付与量の言い換え。データが揃わなければ null（何も足さない）。
+  const grantedEquivalentText =
+    confirmedType === "rune" && detectedRunes != null
+      ? buildLimitedSummonEquivalentText(detectedRunes, limitedSingleCostRune)
+      : null;
+
   return (
     <>
       <ConsoleTopbar command="./wait-for-ledger" path="~/billing/return" showWallet />
@@ -183,30 +200,38 @@ export default function BillingReturnPage() {
               ルーン購入で /shop（コインのアイテム棚）に返していたため、
               買ったルーンの主要な使い道に繋がっていなかった。
             */
-            <div className="mt-4 flex flex-wrap gap-2">
-              {confirmedType === "subscription" ? (
-                <Link
-                  className="border border-accent px-3 py-1.5 text-[12px] text-accent hover:bg-accent hover:text-bg"
-                  href="/pass"
-                >
-                  パス画面へ
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    className="border border-rune-border bg-rune-bg px-3 py-1.5 text-[12px] text-rune hover:brightness-125"
-                    href="/summon/limited"
-                  >
-                    限定召喚へ →
-                  </Link>
-                  <Link
-                    className="border border-line px-3 py-1.5 text-[12px] text-text-dim hover:bg-bg-elev-2"
-                    href="/shop"
-                  >
-                    ショップへ戻る
-                  </Link>
-                </>
+            <div className="mt-4">
+              {/* 反映済みルーンの換算をCTAの隣に添える（取得できた時だけ） */}
+              {confirmedType !== "subscription" && grantedEquivalentText != null && (
+                <p className="mb-2 text-[11px] text-text-faint">
+                  ＝ {grantedEquivalentText}
+                </p>
               )}
+              <div className="flex flex-wrap gap-2">
+                {confirmedType === "subscription" ? (
+                  <Link
+                    className="border border-accent px-3 py-1.5 text-[12px] text-accent hover:bg-accent hover:text-bg"
+                    href="/pass"
+                  >
+                    パス画面へ
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      className="border border-rune-border bg-rune-bg px-3 py-1.5 text-[12px] text-rune hover:brightness-125"
+                      href="/summon/limited"
+                    >
+                      限定召喚へ →
+                    </Link>
+                    <Link
+                      className="border border-line px-3 py-1.5 text-[12px] text-text-dim hover:bg-bg-elev-2"
+                      href="/shop"
+                    >
+                      ショップへ戻る
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </section>

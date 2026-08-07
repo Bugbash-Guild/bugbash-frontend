@@ -6,7 +6,8 @@ import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { ConsoleEmptyState } from "@/components/ConsoleEmptyState";
 import { TermLoading } from "@/components/TermLoading";
 import { useAuth } from "@/hooks/useAuth";
-import { useLeaderboard } from "@/hooks/useLeaderboard";
+import { useLeaderboard, useLeaderboardMe } from "@/hooks/useLeaderboard";
+import { buildLeaderboardLegend, shouldAppendSelfRow } from "@/lib/leaderboardMe";
 
 const RANK_COLORS: Record<number, string> = {
   1: "var(--gold)",
@@ -20,11 +21,106 @@ const RANK_GLYPHS: Record<number, string> = {
   3: "▸",
 };
 
+/*
+ * 一覧の行と圏外の自分の行で同じ行様式を使うための共通コンポーネント。
+ * 行全体を /heroes/{heroId} へのリンクにする（従来は名前だけが
+ * クリック可能で、当たり判定が13pxの文字列しかなかった）。
+ * streakDays は /me 応答に存在しないため null を受け、無い値は「—」で
+ * 埋める（推測して数字を置かない）。
+ */
+function HeroRow({
+  heroId,
+  isSelf,
+  level,
+  login,
+  rank,
+  streakDays,
+  totalExperience,
+}: {
+  heroId: string;
+  isSelf: boolean;
+  level: number;
+  login: string;
+  rank: number;
+  streakDays: number | null;
+  totalExperience: number;
+}) {
+  const rankColor = RANK_COLORS[rank] ?? "var(--text-dim)";
+  const glyph = RANK_GLYPHS[rank] ?? "·";
+
+  return (
+    <Link
+      href={`/heroes/${encodeURIComponent(heroId)}`}
+      className={[
+        "group grid grid-cols-[2.5rem_1fr_3rem] px-4 py-3 border-b border-line last:border-b-0 items-center transition-colors sm:grid-cols-[3rem_1fr_4rem_6rem] lg:grid-cols-[3rem_1fr_4rem_6rem_5rem]",
+        isSelf
+          ? "border-l-2 border-l-accent bg-accent/[0.06]"
+          : "hover:bg-bg-elev-2",
+      ].join(" ")}
+    >
+      {/* rank */}
+      <div className="flex items-center gap-1.5">
+        <span className="text-[14px] font-bold" style={{ color: rankColor }}>
+          {glyph}
+        </span>
+        <span className="text-[12px] text-text-faint">{rank}</span>
+      </div>
+
+      {/* hero */}
+      <div className="flex items-center gap-2.5 min-w-0">
+        <div
+          className="w-7 h-7 rounded-sm flex items-center justify-center shrink-0 text-[12px] font-bold text-bg"
+          style={{ background: rankColor }}
+        >
+          {login[0]?.toUpperCase() ?? "?"}
+        </div>
+        <span className="text-[13px] text-text truncate group-hover:text-accent">{login}</span>
+        {isSelf && (
+          <span className="shrink-0 rounded-[2px] border border-accent/40 bg-accent/[0.08] px-1.5 py-px text-[9px] font-bold tracking-[0.1em] text-accent">
+            YOU
+          </span>
+        )}
+      </div>
+
+      {/* level */}
+      <div className="text-right text-[13px] font-semibold text-accent">
+        {level}
+      </div>
+
+      {/* xp */}
+      <div className="hidden text-right text-[13px] text-text-dim sm:block">
+        {totalExperience.toLocaleString()}
+      </div>
+
+      {/* streak（/me には無いフィールドなので、自分の圏外行では出さない） */}
+      <div className="hidden text-right text-[12px] text-text-faint lg:block">
+        {streakDays == null ? (
+          <span>—</span>
+        ) : streakDays > 1 ? (
+          <span className="text-gold">{streakDays}d active</span>
+        ) : (
+          <span>{streakDays}d</span>
+        )}
+      </div>
+    </Link>
+  );
+}
+
 export default function LeaderboardPage() {
   const { isAuthenticated, user } = useAuth();
   const { entries, loading, error, refetch } = useLeaderboard(isAuthenticated);
+  /*
+   * 自分の順位。圏外のときだけ末尾に行を足す。404（Hero不在）・BE未対応・
+   * 取得失敗はフック側で null に畳まれるため、ここでは分岐が増えない
+   * （me が無い＝行を足さないだけで、一覧の表示は変わらない）。
+   */
+  const { me } = useLeaderboardMe(isAuthenticated);
   // heroId == githubId は確立済みの契約（home が /api/heroes/{githubId}/... を使用）
   const selfHeroId = user?.githubId ?? null;
+
+  const showSelfRow = shouldAppendSelfRow(entries, selfHeroId, me);
+  // 件数の定数を直書きせず、届いた件数と /me の総数から言える事実だけを凡例にする
+  const legend = buildLeaderboardLegend(entries.length, me?.totalHeroes ?? null);
 
   return (
     <>
@@ -69,67 +165,48 @@ export default function LeaderboardPage() {
               />
             )}
 
-            {entries.map((entry) => {
-              const rankColor = RANK_COLORS[entry.rank] ?? "var(--text-dim)";
-              const glyph = RANK_GLYPHS[entry.rank] ?? "·";
-              const login = entry.githubLogin ?? entry.heroId;
+            {entries.map((entry) => (
+              <HeroRow
+                key={entry.heroId}
+                heroId={entry.heroId}
+                isSelf={selfHeroId != null && entry.heroId === selfHeroId}
+                level={entry.level}
+                login={entry.githubLogin ?? entry.heroId}
+                rank={entry.rank}
+                streakDays={entry.streakDays}
+                totalExperience={entry.totalExperience}
+              />
+            ))}
 
-              const isSelf = selfHeroId != null && entry.heroId === selfHeroId;
-              return (
+            {/* 圏外の自分。表示中の一覧に自分が居ないときだけ「…」区切りで足す */}
+            {showSelfRow && me != null && selfHeroId != null && (
+              <>
                 <div
-                  key={entry.heroId}
-                  className={[
-                    "grid grid-cols-[2.5rem_1fr_3rem] px-4 py-3 border-b border-line last:border-b-0 items-center transition-colors sm:grid-cols-[3rem_1fr_4rem_6rem] lg:grid-cols-[3rem_1fr_4rem_6rem_5rem]",
-                    isSelf
-                      ? "border-l-2 border-l-accent bg-accent/[0.06]"
-                      : "hover:bg-bg-elev-2",
-                  ].join(" ")}
+                  aria-hidden
+                  className="border-b border-line px-4 py-1 text-center text-[11px] tracking-[0.4em] text-text-faint"
                 >
-                  {/* rank */}
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[14px] font-bold" style={{ color: rankColor }}>
-                      {glyph}
-                    </span>
-                    <span className="text-[12px] text-text-faint">{entry.rank}</span>
-                  </div>
-
-                  {/* hero */}
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div
-                      className="w-7 h-7 rounded-sm flex items-center justify-center shrink-0 text-[12px] font-bold text-bg"
-                      style={{ background: rankColor }}
-                    >
-                      {login[0]?.toUpperCase() ?? "?"}
-                    </div>
-                    <Link className="text-[13px] text-text truncate hover:text-accent" href={`/heroes/${encodeURIComponent(entry.heroId)}`}>{login}</Link>
-                    {isSelf && (
-                      <span className="shrink-0 rounded-[2px] border border-accent/40 bg-accent/[0.08] px-1.5 py-px text-[9px] font-bold tracking-[0.1em] text-accent">
-                        YOU
-                      </span>
-                    )}
-                  </div>
-
-                  {/* level */}
-                  <div className="text-right text-[13px] font-semibold text-accent">
-                    {entry.level}
-                  </div>
-
-                  {/* xp */}
-                  <div className="hidden text-right text-[13px] text-text-dim sm:block">
-                    {entry.totalExperience.toLocaleString()}
-                  </div>
-
-                  {/* streak */}
-                  <div className="hidden text-right text-[12px] text-text-faint lg:block">
-                    {entry.streakDays > 1 ? (
-                      <span className="text-gold">{entry.streakDays}d active</span>
-                    ) : (
-                      <span>{entry.streakDays}d</span>
-                    )}
-                  </div>
+                  …
                 </div>
-              );
-            })}
+                <HeroRow
+                  heroId={selfHeroId}
+                  isSelf
+                  level={me.level}
+                  login={me.githubLogin ?? user?.username ?? selfHeroId}
+                  rank={me.rank}
+                  streakDays={null}
+                  totalExperience={me.experience}
+                />
+              </>
+            )}
+
+            {/* 凡例: 実際に届いた件数から言える事実のみ（定数の直書きはしない）。
+                この行がある間は直前の行が :last-child でなくなり border-b を
+                持つため、こちら側に border-t を足すと線が二重になる。 */}
+            {legend != null && (
+              <div className="px-4 py-2 text-[10px] text-text-faint">
+                {legend} · 60秒ごとに自動更新
+              </div>
+            )}
           </div>
         )}
       </div>

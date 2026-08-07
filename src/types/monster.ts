@@ -8,10 +8,23 @@ export type MonsterFormStage =
     | 'BERSERK'
     | 'BERSERK_FINAL';
 
+/**
+ * 所持個体の出自（どの PR のマージで仲間になったか）。
+ * BE が値を持たない個体（召喚出身・旧データ・未デプロイ環境）では
+ * フィールドごと欠けるか null。欠けているときは何も表示しない。
+ */
+export type MonsterAcquisition = {
+    repositoryFullName: string | null;
+    prNumber: number | null;
+    prTitle: string | null;
+};
+
 export type Monster = {
     id: string;
     /** 所持インスタンスの取得日時（ISO）。新着ハイライトに使う。 */
     acquiredAt?: string;
+    /** 所持個体の出自PR。未所持・データ欠損時は undefined/null。 */
+    acquisition?: MonsterAcquisition | null;
     ownedMonsterId?: string | number;
     slug?: string;
     name: string;

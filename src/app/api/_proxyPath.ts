@@ -5,6 +5,7 @@ const aliasBackendPaths = new Map<string, string>([
     ['hero/partner', '/api/v1/hero/partner'],
     ['hero/stats', '/api/v1/hero/stats'],
     ['leaderboard', '/api/v1/leaderboard'],
+    ['leaderboard/me', '/api/v1/leaderboard/me'],
     ['monsters/all', '/api/monsters'],
 ]);
 
