@@ -33,7 +33,12 @@ export function BadgeProgressStrip({ enabled }: { enabled: boolean }) {
   const milestone = error == null ? pickNearestBadgeMilestone(progress) : null;
 
   return (
-    <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3 rounded-[6px] border border-line bg-bg-elev px-4 py-3">
+    // 行全体を /badges への1つのリンクにする。右端の小さな文字だけが
+    // 当たり判定だと入口として弱い（「導線がわかりづらい」フィードバック対応）
+    <Link
+      className="mb-3.5 flex flex-wrap items-center justify-between gap-3 rounded-[6px] border border-line bg-bg-elev px-4 py-3 transition-colors hover:border-accent/40"
+      href="/badges"
+    >
       <p className="text-[12px] text-text-dim">
         <span className="text-[10px] uppercase tracking-[0.14em] text-text-faint">
           BADGE
@@ -57,12 +62,9 @@ export function BadgeProgressStrip({ enabled }: { enabled: boolean }) {
           <>GitHub 活動の実績（バッジ）</>
         )}
       </p>
-      <Link
-        className="shrink-0 text-[11px] text-accent underline underline-offset-4 hover:brightness-110"
-        href="/badges"
-      >
+      <span className="shrink-0 text-[11px] text-accent underline underline-offset-4">
         実績を見る →
-      </Link>
-    </div>
+      </span>
+    </Link>
   );
 }

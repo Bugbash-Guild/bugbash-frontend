@@ -4,12 +4,17 @@
  *
  * 方針: **サイドバーには「セッションの起点」だけを置く**。
  * 実際の利用は次の4つで始まる — 何が起きた?(home) / 集めたものを見る(monsters) /
- * 引く(summon) / 見せる・比べる(profile, leaderboard)。課金の入口は shop 1つ。
+ * 引く(summon) / 比べる(leaderboard)。課金の入口は shop 1つ。
+ *
+ * 「自分」（プロフィール・実績バッジ・アカウント設定）はナビの世界には
+ * 置かず、フッターの HERO_STATUS ゾーンに集約する — 自分の名前と Lv が
+ * 出ている場所が自分のページへの扉、というオーナー判断（2026-08-07）。
+ * 以前ナビ2番目に注入していた ~/@username はこのゾーンへ移った。
  *
  * 起点にならない画面（items・badges・forge・mints・pass・summon/limited・billing）は
  * 廃止せず、それが必要になる文脈から入る:
  *   - items   → monsters の素材ストリップから
- *   - badges  → プロフィールのバッジ壁から
+ *   - badges  → HERO_STATUS メニュー / home の実績行 / プロフィールのバッジ壁から
  *   - forge   → monsters の ⚒ バッジ / スキン詳細の「マスタリーで深化」から
  *   - mints   → プロフィールの記念プレート棚から
  *   - pass    → shop のタブから
@@ -51,13 +56,21 @@ export const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
-/** HERO_STATUS フッターメニューの項目（アカウント圏）。 */
+/**
+ * HERO_STATUS フッターメニューの項目（「自分」ゾーン）。
+ * 実績バッジをここに常設する — 入口が home の実績行とプロフィール内リンク
+ * だけでは「どこから行くのか」が分からないというフィードバックへの回答。
+ */
 export const ACCOUNT_MENU_ITEMS: NavItem[] = [
+  { glyph: "⚔", label: "実績バッジ", href: "/badges" },
   { glyph: "⛭", label: "課金・アカウント設定", href: "/mypage/billing" },
 ];
 
-/** フッターに active 縁取りを出す「アカウント圏」パス。 */
-export const ACCOUNT_PATHS = ["/mypage/billing"];
+/**
+ * フッターに active 縁取りを出す「自分」ゾーンのパス。
+ * 自分の公開プロフィール（/heroes/{自分のid}）は動的なので SideBar 側で判定。
+ */
+export const ACCOUNT_PATHS = ["/mypage/billing", "/badges", "/mints"];
 
 /**
  * より具体的な href を優先する active 判定。
@@ -72,9 +85,6 @@ const SECTION_OF: Record<string, string> = {
   "/forge": "/monsters",
   "/pass": "/shop",
 };
-
-/** プロフィール項目を active 扱いにするページ（バッジ壁・記念プレート棚の実体）。 */
-export const PROFILE_ADJACENT_PATHS = ["/badges", "/mints"];
 
 export function isNavActive(
   pathname: string,

@@ -12,7 +12,6 @@ import {
   ACCOUNT_PATHS,
   isNavActive,
   NAV_SECTIONS,
-  PROFILE_ADJACENT_PATHS,
   type NavItem,
 } from "@/lib/navConfig";
 import { legalFooterLinks } from "@/lib/legalPages";
@@ -79,7 +78,11 @@ export function SideBarContent({
   const allHrefs = NAV_SECTIONS.flatMap((section) =>
     section.items.map((item) => item.href),
   );
-  const inAccountZone = ACCOUNT_PATHS.some((path) => pathname.startsWith(path));
+  // 「自分」ゾーン（プロフィール・バッジ・記念鋳造・課金設定）に居るあいだは
+  // フッターを縁取る。ナビ側にはこれらの項目が無いので、ここが現在地表示になる
+  const inAccountZone =
+    ACCOUNT_PATHS.some((path) => pathname.startsWith(path)) ||
+    (selfProfileHref != null && pathname === selfProfileHref);
   // progressRatio が NaN・負・1超だと width が "NaN%" や 100% 超になり
   // バーが壊れる。読めないときは塗らない（home の pct と同方針）。
   const heroProgressRatio =
@@ -112,47 +115,28 @@ export function SideBarContent({
         )}
       </div>
 
-      {/* ② ナビゲーション（NAVIGATION=名声 / SHOP=課金） */}
+      {/* ② ナビゲーション（NAVIGATION=名声 / SHOP=課金）。
+          「自分」（プロフィール・バッジ）はここに置かず、下の HERO_STATUS
+          ゾーンから入る — 自分の名前が出ている場所が自分のページへの扉
+          （オーナー判断 2026-08-07。旧: ~/@username をナビ2番目に注入） */}
       <div className="flex-1 overflow-y-auto">
-        {NAV_SECTIONS.map((section) => {
-          // 自分の公開プロフィールは正典（home.html）どおりナビ2番目。
-          // githubId が取れないときは出さない（捏造リンク禁止）。
-          const items: NavItem[] =
-            section.label === "NAVIGATION" && selfProfileHref && user
-              ? [
-                  section.items[0],
-                  {
-                    glyph: "@",
-                    label: `~/@${user.username}`,
-                    jaLabel: "プロフィール",
-                    href: selfProfileHref,
-                  },
-                  ...section.items.slice(1),
-                ]
-              : section.items;
-          return (
-            <div key={section.label}>
-              <p className="px-4 pb-2 pt-4 text-[10px] uppercase tracking-[0.16em] text-text-faint">
-                {section.label}
-              </p>
-              <nav className="flex flex-col gap-0.5 px-2">
-                {items.map((item) => (
-                  <NavLink
-                    key={item.href}
-                    item={item}
-                    isActive={
-                      item.href === selfProfileHref
-                        ? pathname === selfProfileHref ||
-                          PROFILE_ADJACENT_PATHS.includes(pathname)
-                        : isNavActive(pathname, item.href, allHrefs)
-                    }
-                    onNavigate={onNavigate}
-                  />
-                ))}
-              </nav>
-            </div>
-          );
-        })}
+        {NAV_SECTIONS.map((section) => (
+          <div key={section.label}>
+            <p className="px-4 pb-2 pt-4 text-[10px] uppercase tracking-[0.16em] text-text-faint">
+              {section.label}
+            </p>
+            <nav className="flex flex-col gap-0.5 px-2">
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.href}
+                  item={item}
+                  isActive={isNavActive(pathname, item.href, allHrefs)}
+                  onNavigate={onNavigate}
+                />
+              ))}
+            </nav>
+          </div>
+        ))}
       </div>
 
       {/* ③ HERO_STATUS フッター（クリックでアカウントメニュー開閉） */}
@@ -217,43 +201,73 @@ export function SideBarContent({
             </nav>
           )}
 
-          <button
-            aria-expanded={menuOpen}
-            aria-label="アカウントメニューを開閉"
-            className="w-full p-3 text-left transition-colors hover:bg-bg-elev"
-            onClick={() => setMenuOpen((open) => !open)}
-            type="button"
-          >
-            <p className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.08em] text-text-faint">
-              HERO_STATUS
-              <span aria-hidden className="text-[12px]">
-                {menuOpen ? "▾" : "▴"}
-              </span>
-            </p>
-            <div className="flex items-center gap-2">
-              <div
-                className="flex size-8 shrink-0 items-center justify-center rounded-sm text-[14px] font-bold text-white"
-                style={{
-                  background: "linear-gradient(135deg, var(--accent), var(--accent-2))",
-                }}
-              >
-                {user.username[0].toUpperCase()}
+          {/*
+            本人ブロック（名前・Lv・進捗）はクリックで自分の公開プロフィールへ。
+            ナビからプロフィール項目を外した代わりに、「自分の名前が出ている
+            場所＝自分のページへの扉」にする。行き先は eyebrow 右の
+            「@ プロフィール」で先に宣言する（黙って飛ばさない）。
+            メニュー開閉は右端のキャレット列に分離。
+          */}
+          {(() => {
+            const identityBody = (
+              <>
+                <p className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.08em] text-text-faint">
+                  HERO_STATUS
+                  {selfProfileHref != null && (
+                    <span className="normal-case tracking-normal">@ プロフィール →</span>
+                  )}
+                </p>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="flex size-8 shrink-0 items-center justify-center rounded-sm text-[14px] font-bold text-white"
+                    style={{
+                      background: "linear-gradient(135deg, var(--accent), var(--accent-2))",
+                    }}
+                  >
+                    {user.username[0].toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[12px] text-text">{user.username}</p>
+                    <p className="text-[10px] text-text-faint">Lv.{hero.level}</p>
+                  </div>
+                </div>
+                <div className="mt-2 h-1 overflow-hidden rounded-full bg-bg-elev">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${heroProgressRatio * 100}%`,
+                      background: "linear-gradient(135deg, var(--accent), var(--accent-2))",
+                    }}
+                  />
+                </div>
+              </>
+            );
+            return (
+              <div className="flex items-stretch">
+                {selfProfileHref != null ? (
+                  <Link
+                    className="min-w-0 flex-1 p-3 transition-colors hover:bg-bg-elev"
+                    href={selfProfileHref}
+                    onClick={onNavigate}
+                  >
+                    {identityBody}
+                  </Link>
+                ) : (
+                  // githubId が取れない間はリンクにしない（捏造リンク禁止）
+                  <div className="min-w-0 flex-1 p-3">{identityBody}</div>
+                )}
+                <button
+                  aria-expanded={menuOpen}
+                  aria-label="アカウントメニューを開閉"
+                  className="flex w-10 shrink-0 items-center justify-center border-l border-line text-[12px] text-text-dim transition-colors hover:bg-bg-elev hover:text-text"
+                  onClick={() => setMenuOpen((open) => !open)}
+                  type="button"
+                >
+                  <span aria-hidden>{menuOpen ? "▾" : "▴"}</span>
+                </button>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[12px] text-text">{user.username}</p>
-                <p className="text-[10px] text-text-faint">Lv.{hero.level}</p>
-              </div>
-            </div>
-            <div className="mt-2 h-1 overflow-hidden rounded-full bg-bg-elev">
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${heroProgressRatio * 100}%`,
-                  background: "linear-gradient(135deg, var(--accent), var(--accent-2))",
-                }}
-              />
-            </div>
-          </button>
+            );
+          })()}
         </div>
       )}
     </div>

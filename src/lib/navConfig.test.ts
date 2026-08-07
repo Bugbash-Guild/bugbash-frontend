@@ -1,18 +1,36 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { isNavActive, NAV_SECTIONS, runeChipTarget } from "./navConfig";
+import {
+  ACCOUNT_MENU_ITEMS,
+  ACCOUNT_PATHS,
+  isNavActive,
+  NAV_SECTIONS,
+  runeChipTarget,
+} from "./navConfig";
 
 const allHrefs = NAV_SECTIONS.flatMap((section) =>
   section.items.map((item) => item.href),
 );
 
 describe("NAV_SECTIONS", () => {
-  it("keeps the 6-item cap (5 static + injected profile)", () => {
-    // サイドバーは 6 項目上限（§7）。静的 5 + SideBar が注入する
-    // ~/@username で 6。ここが増えたら情報設計の再議論が要る。
+  it("keeps the nav to 5 items — 「自分」はフッターの HERO_STATUS ゾーンへ", () => {
+    // 旧: 静的5 + ~/@username 注入で6。オーナー判断（2026-08-07）で
+    // プロフィールをナビから外し HERO_STATUS ゾーンに集約した。
+    // ここが増えたら情報設計の再議論が要る。
     assert.equal(allHrefs.length, 5);
     assert.equal(new Set(allHrefs).size, allHrefs.length);
+    // プロフィールをナビへ再注入しない（HERO_STATUS ゾーンが扉）
+    assert.ok(!allHrefs.some((href) => href.startsWith("/heroes")));
+  });
+
+  it("keeps the badges entrance pinned in the HERO_STATUS menu", () => {
+    // バッジの常設入口。「導線がわかりづらい」フィードバックへの回答なので、
+    // メニューから消すときは代替の常設入口を用意すること。
+    assert.ok(ACCOUNT_MENU_ITEMS.some((item) => item.href === "/badges"));
+    // /badges・/mints 滞在中はフッター（自分ゾーン）が現在地表示になる
+    assert.ok(ACCOUNT_PATHS.includes("/badges"));
+    assert.ok(ACCOUNT_PATHS.includes("/mints"));
   });
 
   it("pairs every english command with a japanese sublabel", () => {
