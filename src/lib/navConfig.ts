@@ -1,5 +1,6 @@
 /**
- * サイドバー/モバイルドロワー共通のナビゲーション定義（single source of truth）。
+ * シェル（サイドバー/モバイルドロワー/トップバー）共通のナビゲーション定義
+ * （single source of truth）。
  *
  * 方針: **サイドバーには「セッションの起点」だけを置く**。
  * 実際の利用は次の4つで始まる — 何が起きた?(home) / 集めたものを見る(monsters) /
@@ -20,6 +21,12 @@
 export type NavItem = {
   glyph: string;
   label: string;
+  /**
+   * 日本語の補助ラベル（SideBar が 10px faint で併記）。
+   * 英語コマンド表記はコンソール美学として維持し、置き換えではなく
+   * 併記で初見の解読コストだけを消す（UX-BLUEPRINT-2026-08 §2）。
+   */
+  jaLabel?: string;
   href: string;
   paid?: boolean;
 };
@@ -30,15 +37,17 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     label: "NAVIGATION",
     items: [
-      { glyph: "⌂", label: "~/home", href: "/" },
-      { glyph: "◆", label: "~/monsters", href: "/monsters" },
-      { glyph: "≡", label: "~/summon", href: "/summon" },
-      { glyph: "▲", label: "~/leaderboard", href: "/leaderboard" },
+      { glyph: "⌂", label: "~/home", jaLabel: "ホーム", href: "/" },
+      { glyph: "◆", label: "~/monsters", jaLabel: "図鑑・育成", href: "/monsters" },
+      { glyph: "≡", label: "~/summon", jaLabel: "召喚", href: "/summon" },
+      { glyph: "▲", label: "~/leaderboard", jaLabel: "ランキング", href: "/leaderboard" },
     ],
   },
   {
     label: "SHOP",
-    items: [{ glyph: "$", label: "~/shop", href: "/shop", paid: true }],
+    items: [
+      { glyph: "$", label: "~/shop", jaLabel: "ショップ", href: "/shop", paid: true },
+    ],
   },
 ];
 
@@ -53,11 +62,14 @@ export const ACCOUNT_PATHS = ["/mypage/billing"];
 /**
  * より具体的な href を優先する active 判定。
  * サイドバー非掲載のページは、その入口となるセクションを active にする
- * （例: /items 閲覧中は ~/monsters、/forge は ~/shop）。
+ * （例: /items・/forge 閲覧中は ~/monsters、/pass は ~/shop）。
+ *
+ * /forge が ~/shop でなく ~/monsters なのは、工房が「買う」ではなく
+ * 手持ちを「育てる」文脈のため。入口も monsters の ⚒ バッジ側にある（§2）。
  */
 const SECTION_OF: Record<string, string> = {
   "/items": "/monsters",
-  "/forge": "/shop",
+  "/forge": "/monsters",
   "/pass": "/shop",
 };
 
@@ -77,4 +89,30 @@ export function isNavActive(
       other !== href && other.startsWith(href) && pathname.startsWith(other),
   );
   return !moreSpecific;
+}
+
+export type RuneChipTarget = {
+  href: "/summon/limited" | "/mypage/billing";
+  title: string;
+};
+
+/**
+ * トップバー（ConsoleTopbar）のルーン残高チップの行き先。
+ *
+ * 残高の隣に「使い道 / 管理場所」への扉を置く: 限定召喚が開催中なら
+ * その売り場（/summon/limited）、平時は残高の管理場所（/mypage/billing）。
+ *
+ * 開催中の判定根拠は限定開示APIの singlePullCost（正のコストが返る =
+ * 引ける池が実在する。LimitedSummonBanner と同じ述語）だけ。
+ * 未取得・取得失敗・コスト0以下の間は「開催中」を名乗らない —
+ * 事実で裏づけられない誘導はしない方針なので、迷ったら管理場所に落とす。
+ */
+export function runeChipTarget(
+  limitedSinglePullCost: number | null | undefined,
+): RuneChipTarget {
+  const limitedLive =
+    typeof limitedSinglePullCost === "number" && limitedSinglePullCost > 0;
+  return limitedLive
+    ? { href: "/summon/limited", title: "ルーン残高 — 限定召喚が開催中" }
+    : { href: "/mypage/billing", title: "ルーン残高 — 課金・アカウント設定で管理" };
 }

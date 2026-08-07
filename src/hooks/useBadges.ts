@@ -60,6 +60,31 @@ export function useBadges(enabled: boolean) {
   };
 }
 
+/**
+ * home の実績進捗行（BadgeProgressStrip）用の軽量版。progress 1 本だけを取る。
+ *
+ * BadgeProgress はカタログ相当のフィールド（displayName / tiers）を含む
+ * ため、この 1 リクエストで「次の Tier まであと N」を組める。home の初回
+ * リクエスト波にバッジ系 3 本（catalog / progress / level-defs）を足さない
+ * ための分離。SWR キーは useBadges の progress と同一なので、home → /badges
+ * と遷移してもキャッシュは共有され、二重取得にならない。
+ */
+export function useBadgeProgress(enabled: boolean) {
+  const progress = useSWR<BadgeProgress[]>(
+    enabled ? "/api/heroes/me/badges/progress" : null,
+    fetcher,
+    { shouldRetryOnError: false },
+  );
+
+  useRedirectOnUnauthorized(progress.error);
+
+  return {
+    error: visibleError(progress.error),
+    loading: progress.isLoading,
+    progress: asArray(progress.data),
+  };
+}
+
 /** 公開プロフィール向けの獲得済みバッジ（認証不要 / GET /api/heroes/{id}/badges）。 */
 export function usePublicHeroBadges(heroId: string | null | undefined) {
   const { data, error, isLoading } = useSWR<PublicHeroBadge[]>(

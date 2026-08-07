@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 
+import { ConsoleEmptyState } from "@/components/ConsoleEmptyState";
 import { GameAssetFallback } from "@/components/GameAssetFallback";
 import { InlineActionResult } from "@/components/InlineActionResult";
 import { LegalFooter } from "@/components/LegalFooter";
@@ -260,9 +261,22 @@ function SkinCatalogContent() {
 
         {loading ? (
           <TermLoading className="py-8" lines={["query skins --group=line", "sort --demand-first"]} />
+        ) : skins.length === 0 ? (
+          /*
+            カタログが本当に0件（＝準備中）のとき。取得エラー時は上のバナーが
+            状態を述べているので、「準備中」とは断定しない。
+          */
+          error ? null : (
+            <ConsoleEmptyState
+              action={{ href: "/monsters", label: "図鑑へ" }}
+              className="mt-4"
+              glyph="◇"
+              message="スキンは現在準備中です。図鑑でモンスターを育てて待ちましょう。"
+            />
+          )
         ) : lines.length === 0 ? (
           <div className="border border-dashed border-line-strong bg-bg-elev px-5 py-12 text-center text-[12px] text-text-dim">
-            公開中のスキンはありません。
+            この絞り込みに一致するスキンはありません。
           </div>
         ) : (
           <div className="space-y-7">
@@ -331,26 +345,29 @@ function SkinCatalogContent() {
           </div>
         )}
 
-        <section aria-labelledby="revival-heading" className="mt-8 border-y border-line bg-bg-elev px-4 py-4">
-          <p className="text-[9px] tracking-[0.12em] text-text-faint">RETURN SCHEDULE</p>
-          <h2 className="mt-1 text-[13px] font-semibold text-text" id="revival-heading">
-            復刻カレンダー
-          </h2>
-          <p className="mt-1 text-[10px] leading-5 text-text-dim">
-            初出時に案内された復刻月を、同一価格の予定として表示しています。
-          </p>
-          {revivalSchedule.length > 0 ? (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {revivalSchedule.map((entry) => (
-                <span className="border border-line-strong bg-bg px-2.5 py-1.5 text-[10px] text-text-dim" key={`${entry.skinId}-${entry.revivalMonth}`}>
-                  {entry.revivalMonth} · {entry.lineName}
-                </span>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-3 text-[10px] text-text-faint">復刻月が決まったラインはここに追加されます。</p>
-          )}
-        </section>
+        {/* 復刻カレンダーは公開中のスキンがあるときだけ（空棚に予定表だけ残さない） */}
+        {skins.length > 0 && (
+          <section aria-labelledby="revival-heading" className="mt-8 border-y border-line bg-bg-elev px-4 py-4">
+            <p className="text-[9px] tracking-[0.12em] text-text-faint">RETURN SCHEDULE</p>
+            <h2 className="mt-1 text-[13px] font-semibold text-text" id="revival-heading">
+              復刻カレンダー
+            </h2>
+            <p className="mt-1 text-[10px] leading-5 text-text-dim">
+              初出時に案内された復刻月を、同一価格の予定として表示しています。
+            </p>
+            {revivalSchedule.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {revivalSchedule.map((entry) => (
+                  <span className="border border-line-strong bg-bg px-2.5 py-1.5 text-[10px] text-text-dim" key={`${entry.skinId}-${entry.revivalMonth}`}>
+                    {entry.revivalMonth} · {entry.lineName}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 text-[10px] text-text-faint">復刻月が決まったラインはここに追加されます。</p>
+            )}
+          </section>
+        )}
 
         <LegalFooter />
       </div>
@@ -422,7 +439,10 @@ function SkinCatalogContent() {
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold text-accent">✓ 所有済み · St{selected.masteryLevel}</p>
-                  <Link className="mt-1 inline-block text-[10px] text-purple underline underline-offset-4" href="/forge">
+                  <Link
+                    className="mt-1 inline-block text-[10px] text-purple underline underline-offset-4"
+                    href={`/forge?skin=${encodeURIComponent(selected.skinId)}`}
+                  >
                     マスタリーで深化 →
                   </Link>
                 </div>

@@ -16,7 +16,19 @@ import type { Activity, MonsterDetail } from '@/types/activity';
 
 type Props = {
     activities: Activity[];
-    onClose: () => void;
+    /**
+     * 既読化（acknowledge）を伴う閉じ方。CLAIM ボタンと「次の一歩」リンク
+     * だけがこれを呼ぶ。報酬を「受け取った」と本人が明示した操作だけが
+     * 未読を消す。
+     */
+    onClaim: () => void;
+    /**
+     * 既読化しない閉じ方（背景クリック・Esc・「あとで受け取る」）。
+     * モーダルが閉じるだけで未読は残り、次にホームを開いたとき（または
+     * 次のセッション開始時）にまた表示される。誤クリック1回で報酬明細が
+     * 二度と見られなくなる事故を防ぐ（UX-BLUEPRINT §4）。
+     */
+    onDismiss: () => void;
 };
 
 function rarityColor(rarity: string): string {
@@ -128,8 +140,14 @@ function EntryRow({ entry }: { entry: RewardEntry }) {
  * どのモンスターがどのPRから来たか分からず、SSRと「+10 魂」が同じ重さだった。
  * いまは 合計 → PRごとの成果（モンスターを主役に）→ 打ち切り件数 の順で、
  * 件数が増えても高さが線形に伸びない。
+ *
+ * 閉じ方は2系統に分かれる（UX-BLUEPRINT §4）:
+ * - onClaim（CLAIM /「次の一歩」）だけが既読化する
+ * - onDismiss（背景クリック / Esc /「あとで受け取る」）は閉じるだけ。
+ *   以前はどの閉じ方でも既読化され、背景の誤クリック1回で報酬明細が
+ *   永久に消えていた。
  */
-export function RewardModal({ activities, onClose }: Props) {
+export function RewardModal({ activities, onClaim, onDismiss }: Props) {
     const summary = buildRewardSummary(activities);
     const totals = formatRewardTotals(summary.totals);
     // マージの喜びが最高潮のこの瞬間に行き止まりだったのを、次の一歩に繋ぐ。
@@ -140,16 +158,20 @@ export function RewardModal({ activities, onClose }: Props) {
         ? { href: '/monsters', label: '図鑑で新しい相棒を見る →' }
         : { href: '/monsters', label: '相棒を育てにいく →' };
 
+    // Esc は「閉じるだけ」で既読化しない。未読は残り、次にホームを開いた
+    // とき（または次のセッション）にまた表示される。
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
+            if (e.key === 'Escape') onDismiss();
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, [onClose]);
+    }, [onDismiss]);
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+        // 背景クリックも Esc と同じ「閉じるだけ」。誤クリックで報酬明細を
+        // 失わせない（既読化は下部の CLAIM /「次の一歩」だけ）。
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onDismiss}>
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
             <div
                 aria-modal="true"
@@ -213,24 +235,36 @@ export function RewardModal({ activities, onClose }: Props) {
                     )}
                 </div>
 
-                {/* claim */}
+                {/* claim — 既読化するのはこの2つ（CLAIM と「次の一歩」）だけ */}
                 <div className="shrink-0 space-y-2 border-t border-line px-4 py-3">
                     <button
                         className="w-full rounded-[4px] py-2.5 text-[13px] font-semibold tracking-[0.05em] transition-opacity hover:opacity-80"
-                        onClick={onClose}
+                        onClick={onClaim}
                         style={{ background: 'var(--accent)', color: 'var(--bg)' }}
                         type="button"
                     >
                         {summary.leveledUp ? 'CLAIM & LEVEL UP' : 'CLAIM'}
                     </button>
-                    {/* onClose も呼ぶことで、遷移と同時に既読化する */}
+                    {/* onClaim も呼ぶことで、遷移と同時に既読化する */}
                     <Link
                         className="block w-full rounded-[4px] border border-accent/40 py-2 text-center text-[12px] text-accent transition-[filter] hover:brightness-110"
                         href={nextStep.href}
-                        onClick={onClose}
+                        onClick={onClaim}
                     >
                         {nextStep.label}
                     </Link>
+                    {/*
+                      背景クリック・Esc と同じ「閉じるだけ」を、明示的な選択肢
+                      としても置く。挙動だけ黙って変えると「閉じたのに消えない」
+                      に見えるため、また表示されることをラベルで先に宣言する。
+                    */}
+                    <button
+                        className="block w-full py-1 text-center text-[11px] text-text-faint transition-colors hover:text-text-dim"
+                        onClick={onDismiss}
+                        type="button"
+                    >
+                        あとで受け取る（次回また表示されます）
+                    </button>
                 </div>
             </div>
         </div>

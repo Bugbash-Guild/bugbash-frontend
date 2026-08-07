@@ -19,6 +19,10 @@ import { LegalFooter } from "@/components/LegalFooter";
 import { LimitedPullConfirmModal } from "@/components/summon/LimitedPullConfirmModal";
 import { LimitedSummonBanner } from "@/components/summon/LimitedSummonBanner";
 import { PityMeter } from "@/components/summon/PityMeter";
+import {
+  SummonResultGrid,
+  type SummonResultGridItem,
+} from "@/components/summon/SummonResultGrid";
 import type { LimitedPullConfirmation } from "@/lib/limitedSummon";
 import {
   buildPassPityUpsell,
@@ -26,11 +30,14 @@ import {
   formatSummonCurrencyCost,
   selectEffectivePityDisclosure,
 } from "@/lib/summonPity";
-import { getSummonItemDisplay } from "@/lib/summonDisplay";
+import {
+  buildTenPullHonestyCopy,
+  getSummonItemDisplay,
+  SUMMON_CURRENCY_SYMBOL,
+} from "@/lib/summonDisplay";
 import type {
   ItemRarity,
   SummonHistoryEntry,
-  SummonItem,
   SummonOnceResponse,
   SummonTenResponse,
 } from "@/types/summon";
@@ -40,13 +47,6 @@ const RARITY_COLOR: Record<ItemRarity, string> = {
   R: "text-accent-2",
   SR: "text-purple",
   SSR: "text-gold",
-};
-
-const RARITY_BG: Record<ItemRarity, string> = {
-  N: "bg-bg-elev-2",
-  R: "bg-[#0e1a2e]",
-  SR: "bg-[#1a0e2e]",
-  SSR: "bg-[#2a1e06]",
 };
 
 type SummonResult =
@@ -129,6 +129,18 @@ export default function SummonPage() {
     disclosure && subscription
       ? buildPassPityUpsell(disclosure, subscription.entitled)
       : null;
+  // 「割引なし」は開示APIの実額（10連 = 単価×10）を確認できたときだけ出す
+  const tenPullHonestyCopy = buildTenPullHonestyCopy(disclosure);
+
+  // 結果グリッド（限定と共通）に渡す配列。単発も同じグリッドで表示する
+  const resultItems: SummonResultGridItem[] = useMemo(() => {
+    if (result == null) return [];
+    if (result.type === "once") {
+      const { assetUrl, isNew, itemId, rarity } = result.data;
+      return [{ assetUrl, isNew, itemId, rarity }];
+    }
+    return result.data.results;
+  }, [result]);
 
   useEffect(() => {
     if (!result) return;
@@ -194,7 +206,7 @@ export default function SummonPage() {
             <h1 className="flex items-center gap-2 text-[24px] font-semibold text-text">
               通常召喚
               <span className="rounded-[3px] border border-coin-border bg-coin-bg px-2 py-0.5 text-[11px] font-semibold text-coin">
-                🪙 COIN
+                {SUMMON_CURRENCY_SYMBOL.GUILD_COIN} COIN
               </span>
             </h1>
             <p className="mt-1 text-[12px] text-text-dim">
@@ -229,14 +241,23 @@ export default function SummonPage() {
               </button>
             </div>
 
-            {/* coin balance */}
+            {/* coin balance（記号はトップバーと同じ 🪙 に統一。◈ は廃止） */}
             <div className="flex items-center gap-2 text-[13px] px-1">
               <span className="text-text-faint">残高</span>
               <span className="text-gold font-semibold">
-                ◈ {(hero?.guildCoinBalance ?? 0).toLocaleString()}
+                {SUMMON_CURRENCY_SYMBOL.GUILD_COIN}{" "}
+                {(hero?.guildCoinBalance ?? 0).toLocaleString("ja-JP")}
               </span>
               <span className="text-text-faint">ギルドコイン</span>
             </div>
+
+            {/* 開示APIが取れないときは（ボタンを黙って無効化するのでなく）
+                限定側と同じ警告帯で理由を言う。確率を確認できない状態では引かせない */}
+            {(disclosureError || subscriptionError) && (
+              <div className="border border-pink/30 bg-pink/10 px-3 py-3 text-[12px] leading-5 text-pink">
+                召喚情報を取得できないため、現在は召喚できません。再読み込みしてお試しください。
+              </div>
+            )}
 
             {/* summon buttons */}
             <div className="flex gap-3">
@@ -268,6 +289,12 @@ export default function SummonPage() {
                 : "召喚コストを確認しています"}
             </div>
 
+            {tenPullHonestyCopy && (
+              <p className="text-[11px] text-text-faint px-1">
+                {tenPullHonestyCopy}
+              </p>
+            )}
+
             {/* pity counter */}
             <PityMeter
               disclosure={effectiveDisclosure}
@@ -296,9 +323,10 @@ export default function SummonPage() {
             </div>
             {entries.length === 0 ? (
               <div className="text-[12px] text-text-faint py-8 text-center leading-6">
+                {/* SPでは召喚パネルは左でなく上に積まれるため「左の」と言わない */}
                 まだ召喚履歴がありません。
                 <br />
-                左の [ 召喚 × 1 ] から魂や進化素材を引けます。
+                [ 召喚 × 1 ] から魂や進化素材を引けます。
               </div>
             ) : (
               <div className="space-y-0">
@@ -341,18 +369,16 @@ export default function SummonPage() {
               role="dialog"
               aria-modal="true"
               aria-label="召喚結果"
-              className="bg-bg-elev border border-line-strong rounded-lg p-6 w-full max-w-sm mx-4"
+              className="bg-bg-elev border border-line-strong rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[88vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="text-[10px] uppercase tracking-[0.12em] text-text-faint mb-4">
                 {result.type === "once" ? "SUMMON RESULT" : "10× SUMMON RESULT"}
               </div>
 
-              {result.type === "once" ? (
-                <SingleResult data={result.data} />
-              ) : (
-                <TenResult data={result.data} />
-              )}
+              {/* 結果グリッドは限定召喚と共通（名前表示・SR以上サマリ・
+                  SSR枠強調・レア別リビール込み） */}
+              <SummonResultGrid items={resultItems} />
 
               <div className="mt-4 text-[11px] text-text-dim space-y-0.5">
                 {/* 生カウンタ（pity: N pulls）は天井まで何回かをユーザーに
@@ -364,13 +390,20 @@ export default function SummonPage() {
                   )}
                 </div>
                 <div>
+                  {/* 記号はトップバーと同じ 🪙（summonDisplay の辞書）に統一 */}
                   残高:{" "}
                   <span className="text-gold">
-                    ◈ {result.data.coinsRemaining.toLocaleString()}
+                    {SUMMON_CURRENCY_SYMBOL.GUILD_COIN}{" "}
+                    {formatSummonCurrencyCost(
+                      result.data.coinsRemaining,
+                      "GUILD_COIN",
+                    )}
                   </span>
                 </div>
               </div>
 
+              {/* 限定モーダルの「図鑑で確認 / 続けて引く」と同じ2択。
+                  通常プールの排出先は魂・素材なので、確認先は持ち物にする */}
               <div className="mt-4 flex gap-2">
                 <Link
                   className="flex-1 rounded border border-accent/40 py-2 text-center text-[13px] text-accent transition-colors hover:bg-accent/[0.08]"
@@ -382,7 +415,7 @@ export default function SummonPage() {
                   onClick={() => setResult(null)}
                   className="flex-1 py-2 rounded border border-line text-text-dim text-[13px] hover:border-accent hover:text-accent transition-colors"
                 >
-                  [ 閉じる ]
+                  [ 続けて引く ]
                 </button>
               </div>
             </div>
@@ -398,67 +431,6 @@ export default function SummonPage() {
         />
       </div>
     </>
-  );
-}
-
-function SingleResult({ data }: { data: SummonOnceResponse }) {
-  const display = getSummonItemDisplay(data.itemId, data.assetUrl);
-  return (
-    <div className={`relative rounded-lg p-6 text-center ${RARITY_BG[data.rarity]}`}>
-      {data.isNew && (
-        <span className="absolute left-2 top-2 text-[9px] font-extrabold tracking-[0.12em] text-accent">
-          NEW
-        </span>
-      )}
-      <ItemVisual
-        alt={display.name}
-        assetUrl={display.assetUrl}
-        className="mx-auto mb-2 size-14"
-        sizes="56px"
-      />
-      <div
-        className={`text-[20px] font-bold mb-1 ${RARITY_COLOR[data.rarity]}`}
-      >
-        {data.rarity}
-      </div>
-      <div className="text-[15px] text-text">{display.name}</div>
-    </div>
-  );
-}
-
-function TenResult({ data }: { data: SummonTenResponse }) {
-  return (
-    <div className="grid grid-cols-5 gap-2">
-      {data.results.map((item, i) => (
-        <SummonCard key={`${item.itemId}-${i}`} item={item} />
-      ))}
-    </div>
-  );
-}
-
-function SummonCard({ item }: { item: SummonItem }) {
-  const display = getSummonItemDisplay(item.itemId, item.assetUrl);
-  return (
-    <div
-      className={`relative rounded p-2 text-center border border-line ${RARITY_BG[item.rarity]}`}
-    >
-      {item.isNew && (
-        <span className="absolute left-1 top-0.5 text-[8px] font-extrabold tracking-[0.1em] text-accent">
-          NEW
-        </span>
-      )}
-      <ItemVisual
-        alt={display.name}
-        assetUrl={display.assetUrl}
-        className="mx-auto size-7"
-        sizes="28px"
-      />
-      <div
-        className={`text-[10px] font-bold mt-0.5 ${RARITY_COLOR[item.rarity]}`}
-      >
-        {item.rarity}
-      </div>
-    </div>
   );
 }
 

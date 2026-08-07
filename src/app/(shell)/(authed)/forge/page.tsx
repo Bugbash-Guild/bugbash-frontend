@@ -32,6 +32,9 @@ export default function ForgePage() {
   const [notice, setNotice] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const skinParamAppliedRef = useRef(false);
+  // ?skin= はスキン起点（カタログ詳細・図鑑のコスメバッジ）からの到達。
+  // スキン詳細は固有URLを持たない（カタログ内モーダル）ため、復路は一覧へ。
+  const arrivedFromSkin = searchParams.get("skin") != null;
 
   // 選択の一元的な調停: 現在の選択が有効ならそのまま。無効なら、
   // 初回に限り ?skin= クエリを優先し（monsters のコスメバッジからの遷移）、
@@ -88,6 +91,16 @@ export default function ForgePage() {
     <>
       <ConsoleTopbar command="./skin-mastery --track=monster" path="~/forge" showWallet />
       <div className="min-h-full px-5 py-6 sm:px-9">
+        {arrivedFromSkin && (
+          <nav aria-label="パンくず" className="mb-3 text-[11px]">
+            <Link
+              className="text-text-dim underline underline-offset-4 hover:text-text"
+              href="/shop/skins"
+            >
+              ← スキン一覧へ
+            </Link>
+          </nav>
+        )}
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-[10px] tracking-[0.12em] text-text-faint">COSMETIC FORGE</p>

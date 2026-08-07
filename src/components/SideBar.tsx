@@ -46,7 +46,14 @@ function NavLink({
       >
         {item.glyph}
       </span>
-      {item.label}
+      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+      {item.jaLabel != null && (
+        // 英語コマンドの横に日本語を faint で併記。コマンド表記は美学として
+        // 維持し、初見の解読コストだけを消す（置き換えはしない — §2）
+        <span className="ml-2 shrink-0 text-[10px] text-text-faint">
+          {item.jaLabel}
+        </span>
+      )}
     </Link>
   );
 }
@@ -55,7 +62,14 @@ function NavLink({
  * サイドバーの中身。デスクトップの常設 aside と、モバイルの
  * MobileNavDrawer の両方から使う（onNavigate はドロワーを閉じる用）。
  */
-export function SideBarContent({ onNavigate }: { onNavigate?: () => void }) {
+export function SideBarContent({
+  onNavigate,
+  onRequestClose,
+}: {
+  onNavigate?: () => void;
+  /** ドロワー掲載時のみ渡される。chrome 行に ✕（閉じる）を出す。 */
+  onRequestClose?: () => void;
+}) {
   const pathname = usePathname();
   const { isAuthenticated, user, logout } = useAuth();
   const { hero } = useHero(isAuthenticated);
@@ -83,6 +97,19 @@ export function SideBarContent({ onNavigate }: { onNavigate?: () => void }) {
           <span className="size-2.5 rounded-full" style={{ background: "#27c93f" }} />
         </div>
         <span className="ml-auto text-[11px] text-text-faint">bugbash · v0.1.0</span>
+        {onRequestClose != null && (
+          // ドロワー時の明示的な閉じるボタン。オーバーレイクリックは
+          // 「知っている人の操作」なので、見えている出口を1つ置く。
+          // -my で行高は据え置き（デスクトップ表示と縦位置を揃える）。
+          <button
+            aria-label="ナビゲーションを閉じる"
+            className="-my-1.5 ml-2 flex size-7 shrink-0 items-center justify-center rounded border border-line text-[12px] text-text-dim transition-colors hover:text-text"
+            onClick={onRequestClose}
+            type="button"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       {/* ② ナビゲーション（NAVIGATION=名声 / SHOP=課金） */}
@@ -94,7 +121,12 @@ export function SideBarContent({ onNavigate }: { onNavigate?: () => void }) {
             section.label === "NAVIGATION" && selfProfileHref && user
               ? [
                   section.items[0],
-                  { glyph: "@", label: `~/@${user.username}`, href: selfProfileHref },
+                  {
+                    glyph: "@",
+                    label: `~/@${user.username}`,
+                    jaLabel: "プロフィール",
+                    href: selfProfileHref,
+                  },
                   ...section.items.slice(1),
                 ]
               : section.items;
