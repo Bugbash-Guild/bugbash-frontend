@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { getSummonItemDisplay } from './summonDisplay.ts';
+import {
+    buildTenPullHonestyCopy,
+    countSummonItemsSrOrAbove,
+    getSummonItemDisplay,
+    SUMMON_CURRENCY_SYMBOL,
+} from './summonDisplay.ts';
 
 describe('summon display catalog', () => {
     it('knows all backend-seeded normal summon items', () => {
@@ -40,5 +45,59 @@ describe('summon display catalog', () => {
 
     it('turns API-provided limited monster slugs into readable names', () => {
         assert.equal(getSummonItemDisplay('monster:seasonal-debugger').name, 'Seasonal Debugger');
+    });
+});
+
+describe('summon currency symbols', () => {
+    it('matches the topbar glyphs so the same currency never changes symbol per screen', () => {
+        assert.equal(SUMMON_CURRENCY_SYMBOL.GUILD_COIN, '🪙');
+        assert.equal(SUMMON_CURRENCY_SYMBOL.RUNE, '💎');
+    });
+});
+
+describe('countSummonItemsSrOrAbove', () => {
+    it('counts only SR and SSR from the server-returned results', () => {
+        assert.equal(
+            countSummonItemsSrOrAbove([
+                { rarity: 'N' },
+                { rarity: 'R' },
+                { rarity: 'SR' },
+                { rarity: 'SSR' },
+                { rarity: 'SSR' },
+            ]),
+            3,
+        );
+    });
+
+    it('returns zero when nothing is SR or above', () => {
+        assert.equal(countSummonItemsSrOrAbove([{ rarity: 'N' }, { rarity: 'R' }]), 0);
+        assert.equal(countSummonItemsSrOrAbove([]), 0);
+    });
+});
+
+describe('buildTenPullHonestyCopy', () => {
+    it('states the no-discount fact computed from disclosure values', () => {
+        assert.equal(
+            buildTenPullHonestyCopy({ singlePullCost: 30, tenPullCost: 300 }),
+            '10連の割引はありません（300 = 30×10）',
+        );
+    });
+
+    it('localizes large amounts', () => {
+        assert.equal(
+            buildTenPullHonestyCopy({ singlePullCost: 1000, tenPullCost: 10000 }),
+            '10連の割引はありません（10,000 = 1,000×10）',
+        );
+    });
+
+    it('says nothing while disclosure values are missing', () => {
+        assert.equal(buildTenPullHonestyCopy(null), null);
+        assert.equal(buildTenPullHonestyCopy({ singlePullCost: 30, tenPullCost: null }), null);
+        assert.equal(buildTenPullHonestyCopy({ singlePullCost: 0, tenPullCost: 300 }), null);
+    });
+
+    it('says nothing when the 10-pull is not exactly ten singles (the copy would be false)', () => {
+        assert.equal(buildTenPullHonestyCopy({ singlePullCost: 30, tenPullCost: 270 }), null);
+        assert.equal(buildTenPullHonestyCopy({ singlePullCost: 30, tenPullCost: 330 }), null);
     });
 });

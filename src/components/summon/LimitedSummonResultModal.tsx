@@ -3,30 +3,24 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { ItemVisual } from "@/components/ItemVisual";
-import { buildSummonResultPityText } from "@/lib/summonPity";
-import { getSummonItemDisplay } from "@/lib/summonDisplay";
-import type { ItemRarity, SummonDisclosureResponse } from "@/types/summon";
+import {
+  SummonResultGrid,
+  type SummonResultGridItem,
+} from "@/components/summon/SummonResultGrid";
+import { SUMMON_CURRENCY_SYMBOL } from "@/lib/summonDisplay";
+import {
+  buildSummonResultPityText,
+  formatSummonCurrencyCost,
+} from "@/lib/summonPity";
+import type { SummonDisclosureResponse } from "@/types/summon";
 
-export type LimitedResultItem = {
-  assetUrl?: string | null;
-  isNew?: boolean;
-  itemId: string;
-  rarity: ItemRarity;
-};
+export type LimitedResultItem = SummonResultGridItem;
 
 export type LimitedResultDisplay = {
   items: LimitedResultItem[];
   newPullCount?: number;
   reconciled: boolean;
   runesRemaining?: number;
-};
-
-const RARITY_CLASS: Record<ItemRarity, string> = {
-  N: "border-line text-text-dim",
-  R: "border-accent-2/50 text-accent-2",
-  SR: "border-purple/50 text-purple",
-  SSR: "border-gold/60 text-gold",
 };
 
 type LimitedSummonResultModalProps = {
@@ -110,38 +104,8 @@ export function LimitedSummonResultModal({
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-              {result.items.map((item, index) => {
-                const display = getSummonItemDisplay(
-                  item.itemId,
-                  item.assetUrl,
-                );
-                return (
-                  <div
-                    className={`min-h-32 border bg-bg p-3 text-center ${RARITY_CLASS[item.rarity]}`}
-                    key={`${item.itemId}-${index}`}
-                  >
-                    <ItemVisual
-                      alt={display.name}
-                      assetUrl={display.assetUrl}
-                      className="mx-auto size-12"
-                      sizes="48px"
-                    />
-                    <div className="mt-2 text-[10px] font-semibold">
-                      {item.rarity}
-                    </div>
-                    <div className="mt-1 break-words text-[11px] leading-4 text-text">
-                      {display.name}
-                    </div>
-                    {item.isNew && (
-                      <div className="mt-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-accent">
-                        NEW
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            {/* 結果グリッドは通常召喚と共通（SR以上サマリ・レア別リビール込み） */}
+            <SummonResultGrid items={result.items} />
 
             <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-text-faint">
               {/* 生カウンタ「pity: N pulls」は引き算を利用者に強いる。
@@ -155,8 +119,10 @@ export function LimitedSummonResultModal({
                 </span>
               )}
               {result.runesRemaining != null && (
+                // 通貨記号は summonDisplay の辞書に統一（通常側の ◈ との揺れ解消）
                 <span>
-                  残高: {result.runesRemaining.toLocaleString("ja-JP")} ルーン
+                  残高: {SUMMON_CURRENCY_SYMBOL.RUNE}{" "}
+                  {formatSummonCurrencyCost(result.runesRemaining, "RUNE")}
                 </span>
               )}
             </div>

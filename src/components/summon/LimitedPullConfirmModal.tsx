@@ -15,6 +15,9 @@ export function LimitedPullConfirmModal({
   onCancel,
   onConfirm,
 }: LimitedPullConfirmModalProps) {
+  // 単発（pullCount: 1）も同じモーダルを通す。文言は回数から導出する
+  const isTen = confirmation.pullCount === 10;
+  const actionLabel = isTen ? "10連召喚" : "召喚 × 1";
   return (
     <div
       aria-labelledby="limited-pull-confirm-title"
@@ -28,13 +31,13 @@ export function LimitedPullConfirmModal({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-text-faint">
-          CONFIRM 10-PULL
+          CONFIRM {confirmation.pullCount}-PULL
         </div>
         <h2
           className="text-[16px] font-semibold text-text"
           id="limited-pull-confirm-title"
         >
-          10連召喚を実行しますか？
+          {actionLabel}を実行しますか？
         </h2>
         <p className="mt-3 text-[13px] leading-6 text-text-dim">
           {confirmation.costLabel}を消費します（残高 {confirmation.balanceLabel}
@@ -56,7 +59,7 @@ export function LimitedPullConfirmModal({
             onClick={onConfirm}
             type="button"
           >
-            {loading ? "召喚中…" : "10連召喚する"}
+            {loading ? "召喚中…" : isTen ? "10連召喚する" : "召喚する"}
           </button>
         </div>
       </div>

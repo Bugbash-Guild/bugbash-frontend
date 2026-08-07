@@ -9,6 +9,7 @@ import { useHero } from "@/hooks/useHero";
 import { useMonsters } from "@/hooks/useMonsters";
 import { useMyCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { useSummonDisclosure } from "@/hooks/useSummonDisclosure";
+import { BadgeProgressStrip } from "@/components/BadgeProgressStrip";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { FirstQuestChecklist } from "@/components/FirstQuestChecklist";
 import { NextActionStrip } from "@/components/NextActionStrip";
@@ -235,6 +236,11 @@ export default function Home() {
               ownedDegraded={ownedDegraded}
               xpToNextLevel={hero.experienceToNextLevel}
             />
+
+            {/* 実績（バッジ）の進捗1行 — /badges への第二入口（従来は
+                プロフィール経由の単線）。目標系の行（距離行・節目行）の
+                並びの末尾に置き、次に到達が近い1件だけを出す */}
+            <BadgeProgressStrip enabled={isAuthenticated} />
 
             {/* HERO PANEL */}
             <div className="bg-bg-elev border border-line rounded-lg p-4 md:p-6 grid gap-5 md:gap-7 mb-3.5 relative overflow-hidden grid-cols-1 md:grid-cols-[auto_1fr]">

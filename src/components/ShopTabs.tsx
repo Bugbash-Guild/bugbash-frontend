@@ -1,6 +1,15 @@
-import Link from "next/link";
+"use client";
 
+import Link from "next/link";
+import useSWR from "swr";
+
+import { fetchMasterJson } from "@/lib/masterData";
 import { SHOP_TAB_GROUPS, type ShopTabKey } from "@/lib/shopNav";
+import type { MonsterSkinCatalogItem } from "@/lib/skinCatalog";
+
+type SkinCatalogResponse = {
+  skins: MonsterSkinCatalogItem[];
+};
 
 /**
  * ショップ4画面共通のナビゲーション（サイドバーは ~/shop 1項目に集約し、
@@ -10,8 +19,20 @@ import { SHOP_TAB_GROUPS, type ShopTabKey } from "@/lib/shopNav";
  * 導線だけを課金圏の琥珀で示す。押す前に「現金がかかるのか」が読めることを
  * 優先する。各画面が何をする場所かは、その画面の見出しが述べる
  * （`shopNav` の purpose / cost）。
+ *
+ * スキンタブの「準備中」注記: カタログが0件と**確認できたときだけ**付ける
+ * （取得前・取得失敗時は何も言わない）。/api/skins はマスタデータ
+ * （BE の Cache-Control 5分 + SWR キーを useSkinCatalog と共有）なので、
+ * タブのための追加コストはほぼない。スキンが公開されれば注記は自動で消える。
  */
 export function ShopTabs({ current }: { current: ShopTabKey }) {
+  const { data } = useSWR<SkinCatalogResponse>(
+    "/api/skins",
+    (url: string) => fetchMasterJson<SkinCatalogResponse>(url, "skin catalog"),
+    { revalidateOnFocus: false, shouldRetryOnError: false },
+  );
+  const skinsPreparing = data != null && data.skins.length === 0;
+
   return (
     <div className="min-w-0">
       <nav aria-label="ショップ" className="flex flex-wrap gap-x-5 gap-y-3">
@@ -24,6 +45,11 @@ export function ShopTabs({ current }: { current: ShopTabKey }) {
               {group.tabs.map((tab, index) => {
                 const border = index > 0 ? "border-l border-line" : "";
                 const money = tab.usesRealMoney ? "text-rune" : "text-text";
+                const preparingNote = tab.key === "skins" && skinsPreparing && (
+                  <span className="ml-1 text-[9px] font-normal text-text-faint">
+                    準備中
+                  </span>
+                );
                 return tab.key === current ? (
                   <span
                     aria-current="page"
@@ -31,6 +57,7 @@ export function ShopTabs({ current }: { current: ShopTabKey }) {
                     key={tab.key}
                   >
                     {tab.label}
+                    {preparingNote}
                   </span>
                 ) : (
                   <Link
@@ -39,6 +66,7 @@ export function ShopTabs({ current }: { current: ShopTabKey }) {
                     key={tab.key}
                   >
                     {tab.label}
+                    {preparingNote}
                   </Link>
                 );
               })}

@@ -2,11 +2,15 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import type { ReactNode } from "react";
 import { FiAward } from "react-icons/fi";
 
+import { AppShell } from "@/components/AppShell";
 import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
 import { ConsoleEmptyState } from "@/components/ConsoleEmptyState";
+import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { MonsterVisual } from "@/components/MonsterVisual";
+import { ShareProfileButton } from "@/components/ShareProfileButton";
 import { TermLoading } from "@/components/TermLoading";
 import { useAuth } from "@/hooks/useAuth";
 import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
@@ -167,7 +171,7 @@ export default function PublicHeroPage() {
     retry: retryProfile,
     unavailable,
   } = usePublicHeroProfile(heroId);
-  const { user } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   // バッジ管理・記念鋳造はサイドバーから外し、その実体であるこの2セクションから入る
   const isSelf = user?.githubId != null && user.githubId === heroId;
 
@@ -178,7 +182,7 @@ export default function PublicHeroPage() {
     .sort((a, b) => b.currentTier - a.currentTier || b.grade - a.grade)
     .slice(0, 2);
 
-  // public topbar — 取得状態に関係なく同じものを出す（handle は取得前は heroId のまま）
+  // 訪問者用 public topbar — 取得状態に関係なく同じものを出す（handle は取得前は heroId のまま）
   const topbar = (
     <div className="sticky top-0 z-20 flex h-[54px] items-center justify-between gap-4 border-b border-line bg-bg/[0.86] px-6 backdrop-blur">
       <div className="truncate text-[13px] text-text-dim">
@@ -188,212 +192,244 @@ export default function PublicHeroPage() {
         <span className="text-text-faint">$ </span>
         <span>curl bugbash.dev/@{handle}</span>
       </div>
-      <Link
-        className="shrink-0 rounded-[4px] border border-line px-3 py-1.5 text-[11px] text-text-dim transition-colors hover:text-accent"
-        href="/leaderboard"
-      >
-        ランキングへ戻る
-      </Link>
+      {isAuthenticated ? (
+        <Link
+          className="shrink-0 rounded-[4px] border border-line px-3 py-1.5 text-[11px] text-text-dim transition-colors hover:text-accent"
+          href="/leaderboard"
+        >
+          ランキングへ戻る
+        </Link>
+      ) : (
+        // 未ログイン訪問者はシェアURLから直接来ていて、ランキングを経由して
+        // いない —「戻る」に文脈がない。製品説明を兼ねるログイン画面へ送る
+        <Link
+          className="shrink-0 rounded-[4px] border border-line px-3 py-1.5 text-[11px] text-text-dim transition-colors hover:text-accent"
+          href="/login"
+        >
+          BugBashとは
+        </Link>
+      )}
     </div>
   );
+
+  // 自分のプロフィールはアプリのシェル（サイドバー+共通トップバー）内で表示する。
+  // ナビ6項目のうちここだけシェルの外へ抜けて、最も見せ甲斐のある画面で
+  // ナビが消える倒錯があった。訪問者には従来どおり公開用 topbar。
+  // 注意: AppShell は (shell) レイアウトで1度だけマウントされる想定のため、
+  // このページと (shell) 配下を行き来するとシェルは再マウントされる
+  // （サイドバーのスクロール位置・メニュー開閉状態は持ち越されない）。
+  const renderFrame = (children: ReactNode) =>
+    isSelf ? (
+      <AppShell>
+        <ConsoleTopbar command="./profile --public" path={`~/@${handle}`} showWallet />
+        {children}
+      </AppShell>
+    ) : (
+      <div className="min-h-screen bg-bg text-text">
+        {topbar}
+        {children}
+      </div>
+    );
 
   // プロフィールが読めるまで本体は描かない。以前は取得失敗も非公開/未存在も
   // 実データと同じ骨組み（バッジ0件の空プロフィール）で描いていて、
   // 「失敗した」のか「本当に何も無い」のか訪問者に見分けが付かなかった。
   if (profileLoading || notFound || unavailable) {
-    return (
-      <div className="min-h-screen bg-bg text-text">
-        {topbar}
-        <div className="mx-auto max-w-[1080px] px-7 pb-16">
-          {profileLoading ? (
-            <TermLoading className="pt-10" lines={[`query hero @${heroId}`]} />
-          ) : notFound ? (
-            // 404 = 非公開または存在しない（仕様どおりの応答）。エラーに見せない
-            <ConsoleEmptyState
-              action={{ label: "自分の冒険を始める", href: "/" }}
-              className="mt-10"
-              glyph="∅"
-              message="このヒーローは存在しないか非公開です。"
-            />
-          ) : (
-            // 通信/サーバ失敗。失敗と言い切って、やり直せるようにする
-            <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border border-pink/30 bg-pink/10 px-4 py-4 text-[12px] text-pink">
-              <span>プロフィールの読み込みに失敗しました。</span>
-              <button
-                className="text-text underline underline-offset-4 hover:text-accent"
-                onClick={() => void retryProfile()}
-                type="button"
-              >
-                再試行
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+    return renderFrame(
+      <div className="mx-auto max-w-[1080px] px-7 pb-16">
+        {profileLoading ? (
+          <TermLoading className="pt-10" lines={[`query hero @${heroId}`]} />
+        ) : notFound ? (
+          // 404 = 非公開または存在しない（仕様どおりの応答）。エラーに見せない
+          <ConsoleEmptyState
+            action={{ label: "自分の冒険を始める", href: "/" }}
+            className="mt-10"
+            glyph="∅"
+            message="このヒーローは存在しないか非公開です。"
+          />
+        ) : (
+          // 通信/サーバ失敗。失敗と言い切って、やり直せるようにする
+          <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border border-pink/30 bg-pink/10 px-4 py-4 text-[12px] text-pink">
+            <span>プロフィールの読み込みに失敗しました。</span>
+            <button
+              className="text-text underline underline-offset-4 hover:text-accent"
+              onClick={() => void retryProfile()}
+              type="button"
+            >
+              再試行
+            </button>
+          </div>
+        )}
+      </div>,
     );
   }
 
-  return (
-    <div className="min-h-screen bg-bg text-text">
-      {topbar}
-
-      <div className="mx-auto max-w-[1080px] px-7 pb-16">
-        {/* identity */}
-        <div className="flex flex-wrap items-end gap-5 border-b border-line py-8">
-          <div
-            className="flex size-[76px] shrink-0 items-center justify-center rounded-[10px] text-[30px] font-extrabold text-bg"
-            style={{
-              background: "linear-gradient(135deg, var(--accent), var(--blue))",
-              boxShadow: "0 10px 26px rgba(126,231,135,0.22), inset 0 1px 0 rgba(255,255,255,0.35)",
-            }}
-          >
-            {handle.charAt(0).toUpperCase()}
-          </div>
-          <div className="min-w-[240px] flex-1">
-            <div className="flex flex-wrap items-baseline gap-3">
-              <div className="text-[26px] font-extrabold tracking-[-0.01em]">
-                <span className="font-normal text-text-faint">@</span>
-                {handle}
-              </div>
-              {profile && (
-                <span className="text-[16px] font-bold text-accent">Lv.{profile.level}</span>
-              )}
+  return renderFrame(
+    <div className="mx-auto max-w-[1080px] px-7 pb-16">
+      {/* identity */}
+      <div className="flex flex-wrap items-end gap-5 border-b border-line py-8">
+        <div
+          className="flex size-[76px] shrink-0 items-center justify-center rounded-[10px] text-[30px] font-extrabold text-bg"
+          style={{
+            background: "linear-gradient(135deg, var(--accent), var(--blue))",
+            boxShadow: "0 10px 26px rgba(126,231,135,0.22), inset 0 1px 0 rgba(255,255,255,0.35)",
+          }}
+        >
+          {handle.charAt(0).toUpperCase()}
+        </div>
+        <div className="min-w-[240px] flex-1">
+          <div className="flex flex-wrap items-baseline gap-3">
+            <div className="text-[26px] font-extrabold tracking-[-0.01em]">
+              <span className="font-normal text-text-faint">@</span>
+              {handle}
             </div>
-            <div className="mt-1.5 flex flex-wrap items-center gap-2">
-              {honors.map((b) => (
-                <span
-                  key={b.code}
-                  className="inline-flex items-center gap-1.5 rounded-[2px] border border-accent/40 bg-accent/[0.08] px-2.5 py-1 text-[10px] font-bold tracking-[0.14em] text-accent"
-                >
-                  ⚔ {b.displayName.toUpperCase()}
-                </span>
-              ))}
-              <span className="text-[10px] text-text-faint">
-                称号は実績由来 — 購入では手に入りません
+            {profile && (
+              <span className="text-[16px] font-bold text-accent">Lv.{profile.level}</span>
+            )}
+          </div>
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+            {honors.map((b) => (
+              <span
+                key={b.code}
+                className="inline-flex items-center gap-1.5 rounded-[2px] border border-accent/40 bg-accent/[0.08] px-2.5 py-1 text-[10px] font-bold tracking-[0.14em] text-accent"
+              >
+                ⚔ {b.displayName.toUpperCase()}
               </span>
-            </div>
+            ))}
+            <span className="text-[10px] text-text-faint">
+              称号は実績由来 — 購入では手に入りません
+            </span>
           </div>
         </div>
-
-        {/* stat row (public, real) */}
-        <div className="mt-5 flex flex-wrap gap-2">
-          {(profile
-            ? [
-                { k: "PRS MERGED", v: profile.totalPrsMerged.toLocaleString("ja-JP"), s: "lifetime" },
-                { k: "STREAK", v: `${profile.streakDays}d`, s: "current" },
-                { k: "BADGES", v: String(badges.length), s: `top T${topTier}` },
-                { k: "CASTS", v: String(mints.length), s: "記念鋳造" },
-              ]
-            : [
-                { k: "BADGES", v: String(badges.length), s: "earned" },
-                { k: "TOP TIER", v: topTier > 0 ? `T${topTier}` : "—", s: "highest" },
-                { k: "CASTS", v: String(mints.length), s: "記念鋳造" },
-              ]
-          ).map((stat) => (
-            <div
-              key={stat.k}
-              className="min-w-[150px] flex-1 rounded-[4px] border border-line bg-bg-elev px-4 py-3"
-            >
-              <div className="text-[9px] tracking-[0.16em] text-text-faint">{stat.k}</div>
-              <div className="mt-1 text-[20px] font-bold tabular-nums text-accent">{stat.v}</div>
-              <div className="mt-0.5 text-[10px] text-text-dim">{stat.s}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* apex hall of fame */}
-        {profile && profile.apex.length > 0 && (
-          <>
-            <SectionHeading note="St10 到達スキンのみ殿堂入り" title="APEX HALL OF FAME" />
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {profile.apex.map((skin) => (
-                <ApexCard key={skin.skinId} skin={skin} />
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* showcase party */}
-        {profile && profile.showcase.length > 0 && (
-          <>
-            <SectionHeading note="連れ歩き · 名声→コスメの順" title="SHOWCASE PARTY" />
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {profile.showcase.map((monster) => (
-                <ShowcaseCard key={monster.slug} monster={monster} />
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* badges */}
-        <SectionHeading
-          note={isSelf ? undefined : "ティアは活動でのみ上昇"}
-          title="BADGES"
-        />
         {isSelf && (
-          <p className="-mt-1 mb-3 text-right text-[11px]">
-            <Link className="text-text-dim underline underline-offset-4 hover:text-accent" href="/badges">
-              バッジを管理（公開設定・工房） →
-            </Link>
-          </p>
+          // シェアCTA: 自慢を眺めた直後が最も配りたくなる瞬間なのでヘッダ右肩に。
+          // 訪問者に出しても他人のURLをコピーするだけなので本人限定
+          <ShareProfileButton path={`/heroes/${heroId}`} />
         )}
-        {badgesLoading && <p className="text-[12px] text-text-faint">loading badges…</p>}
-        {badgesError && <p className="text-[12px] text-pink">バッジを読み込めませんでした。</p>}
-        {!badgesLoading &&
-          !badgesError &&
-          (badges.length ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {badges.map((badge) => (
-                <BadgeWallItem badge={badge} key={badge.code} />
-              ))}
-            </div>
-          ) : (
-            <p className="border border-line bg-bg-elev p-5 text-[12px] text-text-faint">
-              公開中のバッジはまだありません。
-            </p>
-          ))}
+      </div>
 
-        {/* commemorative casts */}
-        <SectionHeading
-          note={isSelf ? undefined : "記念鋳造 · 刻印は自動（偽造不可）"}
-          title="COMMEMORATIVE CASTS"
-        />
-        {isSelf && (
-          <p className="-mt-1 mb-3 text-right text-[11px]">
-            <Link className="text-text-dim underline underline-offset-4 hover:text-accent" href="/mints">
-              記念プレートを鋳造する →
-            </Link>
-          </p>
-        )}
-        {mintsLoading && <p className="text-[12px] text-text-faint">loading collection…</p>}
-        {mintsError && <p className="text-[12px] text-pink">公開コレクションを読み込めませんでした。</p>}
-        {!mintsLoading &&
-          !mintsError &&
-          (mints.length ? (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {mints.map((mint) => (
-                <CommemorativePlate key={mint.mintNumber} plate={mint} />
-              ))}
-            </div>
-          ) : (
-            <p className="border border-line bg-bg-elev p-5 text-[12px] text-text-faint">
-              公開中の記念プレートはありません。
-            </p>
-          ))}
+      {/* stat row (public, real) */}
+      <div className="mt-5 flex flex-wrap gap-2">
+        {(profile
+          ? [
+              { k: "PRS MERGED", v: profile.totalPrsMerged.toLocaleString("ja-JP"), s: "lifetime" },
+              { k: "STREAK", v: `${profile.streakDays}d`, s: "current" },
+              { k: "BADGES", v: String(badges.length), s: `top T${topTier}` },
+              { k: "CASTS", v: String(mints.length), s: "記念鋳造" },
+            ]
+          : [
+              { k: "BADGES", v: String(badges.length), s: "earned" },
+              { k: "TOP TIER", v: topTier > 0 ? `T${topTier}` : "—", s: "highest" },
+              { k: "CASTS", v: String(mints.length), s: "記念鋳造" },
+            ]
+        ).map((stat) => (
+          <div
+            key={stat.k}
+            className="min-w-[150px] flex-1 rounded-[4px] border border-line bg-bg-elev px-4 py-3"
+          >
+            <div className="text-[9px] tracking-[0.16em] text-text-faint">{stat.k}</div>
+            <div className="mt-1 text-[20px] font-bold tabular-nums text-accent">{stat.v}</div>
+            <div className="mt-0.5 text-[10px] text-text-dim">{stat.s}</div>
+          </div>
+        ))}
+      </div>
 
-        {/* footer */}
-        <div className="mt-11 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
-          <p className="text-[10.5px] text-text-faint">
-            BugBash — GitHubの活動がそのまま冒険になる。このページの名声表示（ティア・実績）は購入で変化しません。
+      {/* apex hall of fame */}
+      {profile && profile.apex.length > 0 && (
+        <>
+          <SectionHeading note="St10 到達スキンのみ殿堂入り" title="APEX HALL OF FAME" />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {profile.apex.map((skin) => (
+              <ApexCard key={skin.skinId} skin={skin} />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* showcase party */}
+      {profile && profile.showcase.length > 0 && (
+        <>
+          <SectionHeading note="連れ歩き · 名声→コスメの順" title="SHOWCASE PARTY" />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {profile.showcase.map((monster) => (
+              <ShowcaseCard key={monster.slug} monster={monster} />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* badges */}
+      <SectionHeading
+        note={isSelf ? undefined : "ティアは活動でのみ上昇"}
+        title="BADGES"
+      />
+      {isSelf && (
+        <p className="-mt-1 mb-3 text-right text-[11px]">
+          <Link className="text-text-dim underline underline-offset-4 hover:text-accent" href="/badges">
+            バッジを管理（公開設定・工房） →
+          </Link>
+        </p>
+      )}
+      {badgesLoading && <p className="text-[12px] text-text-faint">loading badges…</p>}
+      {badgesError && <p className="text-[12px] text-pink">バッジを読み込めませんでした。</p>}
+      {!badgesLoading &&
+        !badgesError &&
+        (badges.length ? (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {badges.map((badge) => (
+              <BadgeWallItem badge={badge} key={badge.code} />
+            ))}
+          </div>
+        ) : (
+          <p className="border border-line bg-bg-elev p-5 text-[12px] text-text-faint">
+            公開中のバッジはまだありません。
           </p>
+        ))}
+
+      {/* commemorative casts */}
+      <SectionHeading
+        note={isSelf ? undefined : "記念鋳造 · 刻印は自動（偽造不可）"}
+        title="COMMEMORATIVE CASTS"
+      />
+      {isSelf && (
+        <p className="-mt-1 mb-3 text-right text-[11px]">
+          <Link className="text-text-dim underline underline-offset-4 hover:text-accent" href="/mints">
+            記念プレートを鋳造する →
+          </Link>
+        </p>
+      )}
+      {mintsLoading && <p className="text-[12px] text-text-faint">loading collection…</p>}
+      {mintsError && <p className="text-[12px] text-pink">公開コレクションを読み込めませんでした。</p>}
+      {!mintsLoading &&
+        !mintsError &&
+        (mints.length ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {mints.map((mint) => (
+              <CommemorativePlate key={mint.mintNumber} plate={mint} />
+            ))}
+          </div>
+        ) : (
+          <p className="border border-line bg-bg-elev p-5 text-[12px] text-text-faint">
+            公開中の記念プレートはありません。
+          </p>
+        ))}
+
+      {/* footer */}
+      <div className="mt-11 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
+        <p className="text-[10.5px] text-text-faint">
+          BugBash — GitHubの活動がそのまま冒険になる。このページの名声表示（ティア・実績）は購入で変化しません。
+        </p>
+        {/* 来訪者向けCTA。既にプレイ中の本人に「始める」を出すのは無意味で、
+            シェル内では home へサイドバーから戻れるため訪問者に限定する */}
+        {!isSelf && (
           <Link
             className="rounded-[4px] border border-accent/40 bg-accent/[0.08] px-4 py-2 text-[12px] font-semibold text-accent transition-[filter] hover:brightness-110"
             href="/"
           >
             自分の冒険を始める →
           </Link>
-        </div>
+        )}
       </div>
-    </div>
+    </div>,
   );
 }

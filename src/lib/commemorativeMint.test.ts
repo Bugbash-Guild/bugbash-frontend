@@ -3,7 +3,9 @@ import test from "node:test";
 
 import {
   createMintIdempotencyKeyManager,
+  formatMintNumber,
   formatPlateEngraving,
+  getAchievementRequirement,
   getMintDisplayState,
   getMintPricePresentation,
   isAllowedRecolor,
@@ -108,6 +110,36 @@ test("labels legacy fallback dates as estimated instead of exact achievements", 
       mintNumber: "#000012",
       repository: "REPOSITORY / —",
     },
+  );
+});
+
+test("formats mint numbers with the same zero padding as plate engravings", () => {
+  assert.equal(formatMintNumber(7), "#000007");
+  assert.equal(formatMintNumber(123456), "#123456");
+  assert.equal(
+    formatPlateEngraving({
+      achievement: "PR_MERGED_100",
+      achievedAt: "2026-07-23T01:02:03Z",
+      achievedAtEstimated: false,
+      repositoryFullName: null,
+      mintNumber: 7,
+    }).mintNumber,
+    formatMintNumber(7),
+  );
+});
+
+test("states the factual unlock requirement for every achievement", () => {
+  assert.equal(
+    getAchievementRequirement("PR_MERGED_100"),
+    "マージされたPRが累計100件に到達すると解放されます。",
+  );
+  assert.equal(
+    getAchievementRequirement("MONSTER_LEVEL_100"),
+    "モンスター1体をLv.100まで育てると解放されます。",
+  );
+  assert.equal(
+    getAchievementRequirement("CODEX_COMPLETE"),
+    "PRで入手できる全モンスターを図鑑に登録すると解放されます。",
   );
 });
 

@@ -12,6 +12,18 @@ const ACHIEVEMENT_LABELS: Record<CommemorativeAchievement, string> = {
   CODEX_COMPLETE: "図鑑コンプリート",
 };
 
+/**
+ * 鋳造権の解放条件。BE の判定実装
+ * （ReconcileCommemorativeMintRightsUseCase: PR_MERGED_THRESHOLD=100 /
+ * MONSTER_LEVEL_THRESHOLD=100 / prAcquirable 全種の PR 入手）と 1:1 の
+ * 事実開示なので、BE の閾値を変えるときはここも同時に更新する。
+ */
+const ACHIEVEMENT_REQUIREMENTS: Record<CommemorativeAchievement, string> = {
+  PR_MERGED_100: "マージされたPRが累計100件に到達すると解放されます。",
+  MONSTER_LEVEL_100: "モンスター1体をLv.100まで育てると解放されます。",
+  CODEX_COMPLETE: "PRで入手できる全モンスターを図鑑に登録すると解放されます。",
+};
+
 type StorageLike = Pick<Storage, "getItem" | "removeItem" | "setItem">;
 
 export function getMintDisplayState(
@@ -124,6 +136,11 @@ export function createMintIdempotencyKeyManager(
   };
 }
 
+/** プレートの通し番号表記（刻印・完了表示で共通の形にする）。 */
+export function formatMintNumber(mintNumber: number): string {
+  return `#${String(mintNumber).padStart(6, "0")}`;
+}
+
 export function formatPlateEngraving(
   plate: Pick<
     CommemorativeMintPlate,
@@ -142,7 +159,7 @@ export function formatPlateEngraving(
     achievement: ACHIEVEMENT_LABELS[plate.achievement],
     achievedDate,
     achievedLabel: plate.achievedAtEstimated ? "達成時期（推定）" : "達成日",
-    mintNumber: `#${String(plate.mintNumber).padStart(6, "0")}`,
+    mintNumber: formatMintNumber(plate.mintNumber),
     repository: `REPOSITORY / ${plate.repositoryFullName ?? "—"}`,
   };
 }
@@ -159,6 +176,13 @@ export function matchMintToOwnedMonster<T extends Pick<CommemorativeMintPlate, "
 
 export function getAchievementLabel(achievement: CommemorativeAchievement): string {
   return ACHIEVEMENT_LABELS[achievement];
+}
+
+/** 未達成の実績に対して「何をすれば鋳造できるか」の事実を返す。 */
+export function getAchievementRequirement(
+  achievement: CommemorativeAchievement,
+): string {
+  return ACHIEVEMENT_REQUIREMENTS[achievement];
 }
 
 export function getFirstAllowedRecolor(

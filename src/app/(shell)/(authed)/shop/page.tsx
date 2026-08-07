@@ -22,6 +22,7 @@ import {
   formatShopCurrencyAmount,
   isShopPurchaseBlocked,
   mapShopPurchaseErrorMessage,
+  shopBalanceForCurrency,
 } from "@/lib/shopPresentation";
 import { findShopTab } from "@/lib/shopNav";
 import { buildShopSections } from "@/lib/shopSections";
@@ -46,6 +47,11 @@ export default function ShopPage() {
   const [successFlash, setSuccessFlash] = useState<string | null>(null);
   const selectedPresentation = selected
     ? buildShopPurchasePresentation(selected, { guildCoinBalance, runeBalance })
+    : null;
+  // 確認モーダルの「現在の残高 → 購入後の残高」。残高が未取得（null）の間は
+  // 計算せず「—」で示す（分かっていない値を断定しない）。
+  const selectedBalance = selected
+    ? shopBalanceForCurrency(selected.currency, { guildCoinBalance, runeBalance })
     : null;
   // 用途で区切り、組み合わせ商品（属性×サイズ）は1つに畳む
   const sections = useMemo(() => buildShopSections(items), [items]);
@@ -165,7 +171,27 @@ export default function ShopPage() {
                 </div>
               </div>
             </div>
-            <div className="text-[12px] text-text-dim mb-4">{selected.description}</div>
+            <div className="text-[12px] text-text-dim mb-3">{selected.description}</div>
+
+            {/* 押す前に「引いた後いくら残るか」まで開示する */}
+            <div className="mb-3 border-y border-line py-2.5 text-[12px] text-text-dim">
+              <div className="flex justify-between gap-3">
+                <span>現在の残高</span>
+                <span className="text-text">
+                  {selectedBalance != null
+                    ? formatShopCurrencyAmount(selected.currency, selectedBalance)
+                    : "—"}
+                </span>
+              </div>
+              <div className="mt-1 flex justify-between gap-3">
+                <span>購入後の残高</span>
+                <span className="text-text">
+                  {selectedBalance != null && selectedBalance >= selected.price
+                    ? formatShopCurrencyAmount(selected.currency, selectedBalance - selected.price)
+                    : "—"}
+                </span>
+              </div>
+            </div>
 
             {selectedPresentation.cosmeticNotice && (
               <div className="mb-3 border border-accent/30 bg-accent/10 px-3 py-2 text-[12px] leading-5 text-accent">

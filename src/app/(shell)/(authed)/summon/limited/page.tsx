@@ -34,7 +34,10 @@ import {
   buildPassPityUpsell,
   selectEffectivePityDisclosure,
 } from "@/lib/summonPity";
-import { getSummonItemDisplay } from "@/lib/summonDisplay";
+import {
+  buildTenPullHonestyCopy,
+  getSummonItemDisplay,
+} from "@/lib/summonDisplay";
 
 export default function LimitedSummonPage() {
   const { isAuthenticated } = useAuth();
@@ -72,7 +75,13 @@ export default function LimitedSummonPage() {
     reset,
   } = useLimitedSummon();
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  /*
+    実行前確認の対象（1 または 10）。単発は以前ボタンから即実行しており、
+    誤タップ1回で30ルーンが確認なしに消えていた。10連と同じ確認モーダルを
+    単発（pullCount: 1）にも通す。
+  */
+  const [pendingPullCount, setPendingPullCount] =
+    useState<LimitedPullCount | null>(null);
   const [disclosureOpen, setDisclosureOpen] = useState(false);
   const [reconciling, setReconciling] = useState(false);
   const [reconciliationMessage, setReconciliationMessage] = useState<
@@ -101,6 +110,14 @@ export default function LimitedSummonPage() {
     disclosure && wallet
       ? buildLimitedPullConfirmation(disclosure, wallet.runeBalance, 10)
       : null;
+  const pendingConfirmation =
+    pendingPullCount === 1
+      ? singleConfirmation
+      : pendingPullCount === 10
+        ? tenConfirmation
+        : null;
+  // 「割引なし」は開示APIの実額（10連 = 単価×10）を確認できたときだけ出す
+  const tenPullHonestyCopy = buildTenPullHonestyCopy(disclosure);
 
 
   const prerequisiteError =
@@ -179,11 +196,13 @@ export default function LimitedSummonPage() {
     }
   }
 
-  async function handleConfirmTen() {
+  async function handleConfirmPull() {
+    const pullCount = pendingPullCount;
+    if (pullCount == null) return;
     try {
-      await handlePull(10);
+      await handlePull(pullCount);
     } finally {
-      setConfirmOpen(false);
+      setPendingPullCount(null);
     }
   }
 
@@ -284,7 +303,7 @@ export default function LimitedSummonPage() {
               <button
                 className="min-h-16 border border-accent px-4 py-3 text-left text-[13px] text-accent hover:bg-accent hover:text-bg disabled:cursor-not-allowed disabled:opacity-40"
                 disabled={!dataReady || !singleConfirmation?.canAfford || busy}
-                onClick={() => handlePull(1)}
+                onClick={() => setPendingPullCount(1)}
                 type="button"
               >
                 <span className="block font-semibold">[ 召喚 × 1 ]</span>
@@ -295,7 +314,7 @@ export default function LimitedSummonPage() {
               <button
                 className="min-h-16 border border-gold px-4 py-3 text-left text-[13px] text-gold hover:bg-gold hover:text-bg disabled:cursor-not-allowed disabled:opacity-40"
                 disabled={!dataReady || !tenConfirmation?.canAfford || busy}
-                onClick={() => setConfirmOpen(true)}
+                onClick={() => setPendingPullCount(10)}
                 type="button"
               >
                 <span className="block font-semibold">[ 10連召喚 ]</span>
@@ -304,6 +323,12 @@ export default function LimitedSummonPage() {
                 </span>
               </button>
             </div>
+
+            {tenPullHonestyCopy && (
+              <p className="text-[11px] text-text-faint">
+                {tenPullHonestyCopy}
+              </p>
+            )}
 
             {wallet &&
               ((singleConfirmation && !singleConfirmation.canAfford) ||
@@ -382,14 +407,16 @@ export default function LimitedSummonPage() {
         open={disclosureOpen}
       />
 
-      {confirmOpen && tenConfirmation && (
+      {pendingConfirmation && (
         <LimitedPullConfirmModal
-          confirmation={tenConfirmation}
-          loading={summoning}
+          confirmation={pendingConfirmation}
+          // 召喚APIが返らないまま履歴照合（reconciling）に入っている間も
+          // 確認ボタンを押せないままにする（照合中の再実行を防ぐ）
+          loading={summoning || reconciling}
           onCancel={() => {
-            if (!summoning) setConfirmOpen(false);
+            if (!summoning && !reconciling) setPendingPullCount(null);
           }}
-          onConfirm={handleConfirmTen}
+          onConfirm={() => void handleConfirmPull()}
         />
       )}
 
