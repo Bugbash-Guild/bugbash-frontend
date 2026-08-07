@@ -6,11 +6,17 @@ import { useWallet } from "@/hooks/useWallet";
 import { buildNextActions, type NextActionRow } from "@/lib/nextAction";
 
 /**
- * 「いま、できること」を通貨ごとに1行だけ提示する。
+ * 「いま、できること / 次の目標」を通貨ごとに1行だけ提示する。
  *
  * 報酬（コイン）は活動で自動的に貯まるが、貯まったことに気づく場所がないため
- * 未使用のまま積み上がりやすい。何回ぶんあるかという事実だけを述べ、
- * 期限・カウントダウン・煽り文句は付けない（D-1: 事実の進捗のみ）。
+ * 未使用のまま積み上がりやすい。何回ぶんあるか・あといくら足りないかという
+ * 事実だけを述べ、期限・カウントダウン・煽り文句は付けない（D-1: 事実の進捗のみ）。
+ *
+ * 距離行（残高がコストに届かないとき）はコインだけに出す。ルーンの不足を
+ * home で数え上げると購入圧になるためルーン行は従来どおり非表示
+ * （BalanceShortfall と同じコイン/ルーン非対称）。PR換算の併記はしない —
+ * 1PRあたりのコインはストリーク・PR規模・同日減衰で変動し、固定値が
+ * 存在しないため（捏造になる）。
  *
  * ルーン行は収益導線。限定召喚はルーンの最大の吸収先なのに、入口が
  * 召喚ページ内の1リンクだけ（単線）だったため、サイドバーを増やさずに
@@ -69,6 +75,33 @@ export function NextActionStrip({
   return (
     <div className="mb-3.5 space-y-2">
       {rows.map((row) => {
+        if (row.kind === "distance") {
+          // 距離行: まだ引けないので CTA ボタンは置かない（押しても引けない
+          // ボタンは虚偽アフォーダンス）。集め方の事実だけ添える。
+          return (
+            <div
+              className="rounded-[6px] border border-line bg-bg-elev px-4 py-3"
+              key={row.currency}
+            >
+              <p className="text-[12px] text-text-dim">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-text-faint">
+                  NEXT
+                </span>
+                <span className="mx-2 text-text-faint">·</span>
+                {row.subject}まであと{" "}
+                <b className="tabular-nums text-accent">
+                  {row.shortfall.toLocaleString("ja-JP")}
+                </b>{" "}
+                {row.currencyLabel}
+                <span className="text-text-faint">
+                  {" "}
+                  — PR をマージして集めましょう
+                </span>
+              </p>
+            </div>
+          );
+        }
+
         const tone = TONE[row.currency];
         return (
           <div

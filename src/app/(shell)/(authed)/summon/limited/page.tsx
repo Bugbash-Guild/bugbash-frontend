@@ -396,6 +396,7 @@ export default function LimitedSummonPage() {
       {result && (
         <LimitedSummonResultModal
           onClose={() => setResult(null)}
+          pityDisclosure={effectiveDisclosure}
           result={result}
         />
       )}

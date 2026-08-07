@@ -14,17 +14,16 @@ import type { InventoryItem, UseItemResponse } from "@/types/inventory";
 
 const COLS = 9;
 const MIN_STORAGE_SLOTS = 27;
-const HOTBAR_SLOTS = 9;
 
 const CATEGORY_LABEL: Record<InventoryItem["category"], string> = {
   EVOLUTION: "evolution",
   SOUL_PACK: "soul pack",
 };
 
-/** ルーン建てアイテム（琥珀・💎）。SOUL_PACK が該当。 */
-function isRuneItem(item: InventoryItem): boolean {
-  return item.category === "SOUL_PACK";
-}
+// 通貨マーク（💎）は付けない: InventoryItem に購入通貨の情報がなく、
+// SOUL_PACK はコインでも買えるため category からは判定できない
+// （コイン由来のアイテムに課金通貨マークが付く誤表示になっていた）。
+// BE に購入通貨フラグが来るまで区別表示自体を行わない。
 
 export default function ItemsPage() {
   const { isAuthenticated } = useAuth();
@@ -66,8 +65,9 @@ export default function ItemsPage() {
   const occupied = items.length;
   const selectedItem = items[selectedIdx] ?? null;
 
-  // 表記どおりのホットキーを実装（issue #128）: 1–9 でホットバースロット選択、
-  // E で選択アイテムを使用（使用可能な SOUL_PACK のみ）。
+  // ホットキー（issue #128）: 1–9 で先頭9スロットを選択、E で選択アイテムを使用
+  // （使用可能な SOUL_PACK のみ）。ホットバー枠は STORAGE 1行目の複製で
+  // 実機能が無かったため撤去済み。キー操作だけを残している。
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       const target = event.target as HTMLElement | null;
@@ -116,11 +116,6 @@ export default function ItemsPage() {
             <span>
               <b className="text-accent">{occupied}</b> occupied
             </span>
-            <span className="text-text-faint">·</span>
-            <span className="inline-flex items-center gap-1 rounded-[3px] border border-rune-border bg-rune-bg px-1.5 py-px text-[9px] text-rune">
-              💎
-            </span>
-            <span>はルーン建てアイテム</span>
           </p>
         </div>
 
@@ -137,48 +132,24 @@ export default function ItemsPage() {
           />
         )}
 
-        {/* layout: grids + selected panel */}
+        {/* layout: grid + selected panel */}
         <div className="grid grid-cols-1 items-start gap-[18px] xl:grid-cols-[minmax(0,1fr)_260px]">
-          {/* LEFT: storage + hotbar */}
-          <div className="min-w-0 space-y-3">
-            <div className="rounded-[6px] border border-line bg-bg-elev">
-              <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
-                <span className="text-[10px] uppercase tracking-[0.12em] text-text-faint">STORAGE</span>
-                <span className="text-[10px] text-text-faint">{occupied}/{storageCount}</span>
-              </div>
-              <div className="p-3.5">
-                <div className="grid gap-[5px]" style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}>
-                  {Array.from({ length: storageCount }).map((_, idx) => (
-                    <Slot
-                      key={idx}
-                      item={items[idx] ?? null}
-                      selected={selectedIdx === idx}
-                      onSelect={() => selectSlot(idx)}
-                    />
-                  ))}
-                </div>
-              </div>
+          {/* LEFT: storage（ホットバーは1行目の複製で実機能なしのため置かない） */}
+          <div className="min-w-0 rounded-[6px] border border-line bg-bg-elev">
+            <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+              <span className="text-[10px] uppercase tracking-[0.12em] text-text-faint">STORAGE</span>
+              <span className="text-[10px] text-text-faint">{occupied}/{storageCount}</span>
             </div>
-
-            <div className="rounded-[6px] border border-line bg-bg-elev">
-              <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
-                <span className="text-[10px] uppercase tracking-[0.12em] text-text-faint">
-                  HOTBAR · 1–{HOTBAR_SLOTS}
-                </span>
-                <span className="text-[10px] text-text-faint">[E] use</span>
-              </div>
-              <div className="p-3.5">
-                <div className="grid gap-[5px]" style={{ gridTemplateColumns: `repeat(${HOTBAR_SLOTS}, 1fr)` }}>
-                  {Array.from({ length: HOTBAR_SLOTS }).map((_, idx) => (
-                    <Slot
-                      key={idx}
-                      item={items[idx] ?? null}
-                      selected={selectedIdx === idx}
-                      hotIdx={idx + 1}
-                      onSelect={() => selectSlot(idx)}
-                    />
-                  ))}
-                </div>
+            <div className="p-3.5">
+              <div className="grid gap-[5px]" style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}>
+                {Array.from({ length: storageCount }).map((_, idx) => (
+                  <Slot
+                    key={idx}
+                    item={items[idx] ?? null}
+                    selected={selectedIdx === idx}
+                    onSelect={() => selectSlot(idx)}
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -207,15 +178,8 @@ export default function ItemsPage() {
                     />
                   </div>
 
-                  <div className="mt-3 flex items-start gap-2">
-                    <span className="flex-1 text-[14px] font-semibold leading-tight">
-                      {selectedItem.name}
-                    </span>
-                    {isRuneItem(selectedItem) && (
-                      <span className="shrink-0 rounded-[3px] border border-rune-border bg-rune-bg px-1.5 py-0.5 text-[9px] font-bold tracking-[0.1em] text-rune">
-                        💎 RUNE
-                      </span>
-                    )}
+                  <div className="mt-3 text-[14px] font-semibold leading-tight">
+                    {selectedItem.name}
                   </div>
 
                   <p className="mt-1.5 text-[11px] leading-relaxed text-text-dim">
@@ -256,6 +220,13 @@ export default function ItemsPage() {
                           <div className="text-text-faint">
                             合計: <span className="text-text">{useResult.soulsAfter}</span> ソウル
                           </div>
+                          {/* 魂を使った直後を行き止まりにしない。次の一歩へ。 */}
+                          <Link
+                            className="inline-block pt-0.5 text-text underline underline-offset-4 hover:text-accent"
+                            href="/monsters"
+                          >
+                            相棒のレベルアップへ →
+                          </Link>
                         </div>
                       )}
 
@@ -297,12 +268,10 @@ export default function ItemsPage() {
 function Slot({
   item,
   selected,
-  hotIdx,
   onSelect,
 }: {
   item: InventoryItem | null;
   selected: boolean;
-  hotIdx?: number;
   onSelect: () => void;
 }) {
   if (!item) {
@@ -313,7 +282,6 @@ function Slot({
       />
     );
   }
-  const rune = isRuneItem(item);
   return (
     <button
       type="button"
@@ -323,26 +291,12 @@ function Slot({
       className="relative flex aspect-square items-center justify-center rounded-[4px] border transition-shadow"
       style={{
         background: selected ? "var(--bg-elev)" : "var(--bg-elev-2)",
-        borderColor: selected
-          ? "rgba(126,231,135,0.55)"
-          : rune
-            ? "var(--rune-border)"
-            : "var(--line)",
+        borderColor: selected ? "rgba(126,231,135,0.55)" : "var(--line)",
         boxShadow: selected
           ? "0 0 0 2px rgba(126,231,135,0.15), inset 0 0 12px rgba(126,231,135,0.14)"
           : "none",
       }}
     >
-      {hotIdx != null && (
-        <span className="pointer-events-none absolute left-1 top-0.5 text-[9px] leading-none text-text-faint">
-          {hotIdx}
-        </span>
-      )}
-      {rune && (
-        <span className="pointer-events-none absolute right-0.5 top-0.5 text-[8px] leading-none">
-          💎
-        </span>
-      )}
       <ItemVisual
         alt={item.name}
         assetUrl={item.assetUrl}

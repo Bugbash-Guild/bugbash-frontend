@@ -119,7 +119,14 @@ export function DisclosureModal({
                   <tbody>
                     {rows.map((row) => (
                       <tr key={row.itemId} className="border-b border-line last:border-b-0">
-                        <td className="px-3 py-2 text-text">{row.itemId}</td>
+                        <td className="px-3 py-2">
+                          <div className="text-text">{row.name}</div>
+                          {/* 履歴・問い合わせとの突き合わせ用に生IDも残す。
+                              表示名が生IDへのフォールバックのときは二重になるので省く */}
+                          {row.name !== row.itemId && (
+                            <div className="text-[10px] text-text-faint">{row.itemId}</div>
+                          )}
+                        </td>
                         <td className="px-3 py-2 text-text-dim">{row.rarity}</td>
                         <td className="px-3 py-2 text-text-dim">{row.weight}</td>
                         <td className="px-3 py-2 font-semibold text-accent">

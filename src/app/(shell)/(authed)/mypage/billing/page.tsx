@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { FiEdit3, FiRefreshCw, FiTrash2, FiX } from "react-icons/fi";
 
 import { AgeVerificationModal } from "@/components/billing/AgeVerificationModal";
+import { CancelPassModal } from "@/components/billing/CancelPassModal";
 import { SubscriptionStatusSummary } from "@/components/billing/SubscriptionStatusSummary";
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
@@ -248,7 +249,10 @@ export default function BillingManagementPage() {
               {subscriptionPresentation.cancelButtonVisible && (
                 <button
                   className="border border-pink/50 px-3 py-2 text-[12px] font-semibold text-pink hover:bg-pink hover:text-bg"
-                  onClick={() => setCancelConfirmOpen(true)}
+                  onClick={() => {
+                    setCancelError(null);
+                    setCancelConfirmOpen(true);
+                  }}
                   type="button"
                 >
                   解約する
@@ -410,53 +414,14 @@ export default function BillingManagementPage() {
         <LegalFooter />
       </div>
 
-      {cancelConfirmOpen && (
-        <div
-          aria-labelledby="billing-cancel-title"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
-          role="dialog"
-        >
-          <section className="w-full max-w-lg border border-line bg-bg-elev p-5 shadow-[0_24px_80px_rgba(0,0,0,0.65)]">
-            <div className="flex items-start justify-between gap-3">
-              <h2 id="billing-cancel-title" className="text-[17px] font-semibold text-text">
-                冒険者パスを解約しますか?
-              </h2>
-              <button
-                aria-label="閉じる"
-                className="p-1 text-text-dim hover:text-text"
-                disabled={cancelInFlight}
-                onClick={() => setCancelConfirmOpen(false)}
-                type="button"
-              >
-                <FiX />
-              </button>
-            </div>
-            <p className="mt-3 text-[12px] leading-6 text-text-dim">
-              解約後も現在の期間末までは特典を利用できます。日割返金はありません。
-            </p>
-            {cancelError && <p className="mt-3 text-[12px] text-pink">{cancelError}</p>}
-            <div className="mt-5 flex justify-end gap-2">
-              <button
-                className="border border-line px-3 py-2 text-[12px] text-text-dim"
-                disabled={cancelInFlight}
-                onClick={() => setCancelConfirmOpen(false)}
-                type="button"
-              >
-                戻る
-              </button>
-              <button
-                className="border border-pink/50 px-3 py-2 text-[12px] font-semibold text-pink hover:bg-pink hover:text-bg disabled:opacity-40"
-                disabled={cancelInFlight}
-                onClick={() => void cancelSubscription()}
-                type="button"
-              >
-                {cancelInFlight ? "保存中…" : "解約を確定"}
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
+      <CancelPassModal
+        currentPeriodEnd={effectiveSubscription.currentPeriodEnd}
+        error={cancelError}
+        inFlight={cancelInFlight}
+        onClose={() => setCancelConfirmOpen(false)}
+        onConfirm={() => void cancelSubscription()}
+        open={cancelConfirmOpen}
+      />
 
       {retireConfirmOpen && (
         <div

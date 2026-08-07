@@ -9,6 +9,8 @@ export type PityMeterPresentation = {
   hardPityPull: number;
   label: string;
   progressPercent: number;
+  remaining: number;
+  softPityNote: string | null;
   softPityText: string | null;
   tone: PityMeterTone;
 };
@@ -25,6 +27,22 @@ const CURRENCY_LABEL: Record<string, string> = {
 
 export function formatSummonCurrencyLabel(currency: string): string {
   return CURRENCY_LABEL[currency] ?? currency;
+}
+
+/**
+ * 天井到達時に何が確定するかは、開示APIの guaranteeType だけが正。
+ * かつては一律「SSR確定」と表示していたが、通常召喚の実際の保証は
+ * SR以上（SR_OR_ABOVE）であり、画面が実装より強い約束をしていた。
+ * FEに届いている値だけを翻訳し、未知の値は生値のまま見せる
+ * （盛らない・隠さない）。
+ */
+const GUARANTEE_LABEL: Record<string, string> = {
+  FEATURED_SSR: "目玉SSR確定",
+  SR_OR_ABOVE: "SR以上確定",
+};
+
+export function formatSummonGuaranteeLabel(guaranteeType: string): string {
+  return GUARANTEE_LABEL[guaranteeType] ?? guaranteeType;
 }
 
 export function formatSummonCurrencyCost(
@@ -99,29 +117,74 @@ export function buildPassPityUpsell(
 }
 
 export function buildPityMeterPresentation(
-  pity: PityCounterResponse,
-  disclosure: Pick<SummonDisclosureResponse, "hardPityPull" | "softPityPull">,
+  pity: Pick<PityCounterResponse, "isHardPity" | "isSoftPity" | "pullCount">,
+  disclosure: Pick<
+    SummonDisclosureResponse,
+    "guaranteeType" | "hardPityPull" | "softPityPull"
+  >,
 ): PityMeterPresentation {
   const hardPityPull = disclosure.hardPityPull;
   const remaining = Math.max(hardPityPull - pity.pullCount, 0);
   const progressPercent = Number(
     Math.min(100, (pity.pullCount / hardPityPull) * 100).toFixed(1),
   );
+  const guaranteeLabel = formatSummonGuaranteeLabel(disclosure.guaranteeType);
 
   return {
     hardPityPull,
     label:
       pity.isHardPity || remaining === 0
-        ? `次回SSR確定（天井 ${hardPityPull.toLocaleString("ja-JP")}）`
-        : `あと${remaining.toLocaleString("ja-JP")}回でSSR確定（天井 ${hardPityPull.toLocaleString(
+        ? `次回${guaranteeLabel}（天井 ${hardPityPull.toLocaleString("ja-JP")}）`
+        : `あと${remaining.toLocaleString("ja-JP")}回で${guaranteeLabel}（天井 ${hardPityPull.toLocaleString(
             "ja-JP",
           )}）`,
     progressPercent,
+    remaining,
+    /*
+      ソフト天井は「その回数目からSR以上の重みが上がる」仕組みだが、
+      チップの「ソフト天井 60」だけでは 60 が何なのか伝わらない。
+      閾値は開示APIの値をそのまま使う（FEへの定数転記はしない）。
+      値が来ないプール（限定など）は仕組み自体が無いので、何も説明しない。
+    */
+    softPityNote: disclosure.softPityPull
+      ? `${disclosure.softPityPull.toLocaleString(
+          "ja-JP",
+        )}回目からSR以上が出やすくなります`
+      : null,
     softPityText: disclosure.softPityPull
       ? `ソフト天井 ${disclosure.softPityPull.toLocaleString("ja-JP")}`
       : null,
     tone: pity.isHardPity ? "hard" : pity.isSoftPity ? "soft" : "normal",
   };
+}
+
+/**
+ * 召喚結果モーダルに添える天井カウンタの一行。
+ * 従来の「pity: 45 pulls」は生カウンタで、天井まで何回かは
+ * ユーザーが引き算するしかなかった。残数で言い切る。
+ * 残数と保証文言は buildPityMeterPresentation を再利用して、
+ * メーター表示と食い違わないようにする。
+ */
+export function buildSummonResultPityText(
+  newPullCount: number,
+  disclosure: Pick<
+    SummonDisclosureResponse,
+    "guaranteeType" | "hardPityPull" | "softPityPull"
+  > | null,
+): string {
+  if (disclosure == null) {
+    // 天井値が届いていなければ残数は計算できない。事実（回数）だけを出す
+    return `天井カウンタ ${newPullCount.toLocaleString("ja-JP")} 回`;
+  }
+  const presentation = buildPityMeterPresentation(
+    // 召喚結果レスポンスは isHardPity を持たないため false 固定で渡し、
+    // 残数 0 のときだけ「次回◯◯確定」へ倒す（サーバ判定の isHardPity は
+    // メーター側が pity API から受け取って扱う）
+    { isHardPity: false, pullCount: newPullCount },
+    disclosure,
+  );
+  if (presentation.remaining === 0) return presentation.label;
+  return `天井まであと${presentation.remaining.toLocaleString("ja-JP")}回`;
 }
 
 export function mapSummonPullErrorMessage(

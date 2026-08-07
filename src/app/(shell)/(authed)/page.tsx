@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { useActivities, isMonsterDetail, isPrMergedMetadata, isXpDetail } from "@/hooks/useActivities";
@@ -11,13 +12,30 @@ import { useSummonDisclosure } from "@/hooks/useSummonDisclosure";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { FirstQuestChecklist } from "@/components/FirstQuestChecklist";
 import { NextActionStrip } from "@/components/NextActionStrip";
+import { NextMilestoneStrip } from "@/components/NextMilestoneStrip";
 import { TermLoading } from "@/components/TermLoading";
+import { TrackingReadyPanel } from "@/components/TrackingReadyPanel";
 import { GameAssetFallback } from "@/components/GameAssetFallback";
 import { MonsterVisual } from "@/components/MonsterVisual";
 import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
 
 import { RARITY_COLOR } from "@/constants/rarity";
 import { getMonsterArtwork } from "@/lib/monsterArtwork";
+
+/** 活動ログの折りたたみ時に見せる件数。 */
+const ACTIVITY_PREVIEW_COUNT = 6;
+
+/**
+ * GitHub の PR ページへのリンク。repositoryFullName は webhook の
+ * repository.full_name 由来で owner/repo 形式だが、payload に欠けると
+ * "" のまま届くことがあるため、形式を確認できた場合だけ URL を組む
+ * （確認できない項目はリンク化せず従来のテキスト表示に落とす）。
+ */
+function buildPrUrl(repositoryFullName: string, prNumber: number): string | null {
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repositoryFullName)) return null;
+  if (!Number.isFinite(prNumber)) return null;
+  return `https://github.com/${repositoryFullName}/pull/${prNumber}`;
+}
 
 /** BE: HandlePrMergedUseCase.STREAK_BONUS_DAYS_THRESHOLD / COIN_STREAK_BONUS と対応。 */
 const STREAK_BONUS_DAYS = 7;
@@ -126,8 +144,11 @@ function DevPanel({ onSuccess }: { onSuccess: () => void }) {
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
   const { hero, loading: heroLoading, refetch: refetchHero } = useHero(isAuthenticated);
-  const { monsters, ownedDegraded } = useMonsters();
+  const { monsters, ownedDegraded, loading: monstersLoading } = useMonsters();
   const { activities, loading: activitiesLoading } = useActivities();
+  // 活動ログは既定で直近6件。全件はユーザーの操作でだけ展開する
+  // （黙って打ち切らない・勝手に長くしない）。
+  const [showAllActivities, setShowAllActivities] = useState(false);
   // githubId (auth/status の応答) を待たず、最初のリクエスト波に乗せる
   const { mints: commemorativeMints } = useMyCommemorativeMints(isAuthenticated);
   // NextActionStrip は hero が来てから描画されるが、コスト取得はそれを待つ理由が
@@ -164,9 +185,12 @@ export default function Home() {
 
         {/* GitHub App manage link — shown when already installed.
             slug 未設定だと https://github.com/apps//installations/new という
-            壊れた URL になるため、その場合はリンク自体を出さない */}
+            壊れた URL になるため、その場合はリンク自体を出さない。
+            マージ実績 0 の間は TrackingReadyPanel が同じリンクを持つので、
+            こちらは出さない（同じ導線を2箇所に並べない） */}
         {!heroLoading &&
           hero?.hasGithubAppInstalled &&
+          hero.totalPrsMerged > 0 &&
           process.env.NEXT_PUBLIC_GITHUB_APP_SLUG && (
             <div className="text-[11px] text-text-faint text-right mb-3">
               <a
@@ -184,6 +208,12 @@ export default function Home() {
           <TermLoading lines={["query hero.stats", "render holo-card"]} />
         ) : (
           <>
+            {/* 導入済みだが最初のマージがまだ＝画面上なにも変化が起きない期間。
+                「動いているのか」「何をすれば何が起きるか」をここで開示する */}
+            {hero.hasGithubAppInstalled && hero.totalPrsMerged === 0 && (
+              <TrackingReadyPanel />
+            )}
+
             <FirstQuestChecklist
               hero={hero}
               ownedDegraded={ownedDegraded}
@@ -195,6 +225,15 @@ export default function Home() {
               guildCoinBalance={hero.guildCoinBalance}
               limitedPullCost={limitedSummon?.singlePullCost}
               normalPullCost={normalSummon?.singlePullCost}
+            />
+
+            {/* マージも未読報酬も無い日でも「次の節目」が1行残るようにする */}
+            <NextMilestoneStrip
+              heroLevel={hero.level}
+              loading={monstersLoading}
+              monsters={monsters}
+              ownedDegraded={ownedDegraded}
+              xpToNextLevel={hero.experienceToNextLevel}
             />
 
             {/* HERO PANEL */}
@@ -242,7 +281,8 @@ export default function Home() {
               <div className="flex flex-col justify-between min-w-0 relative z-10">
                 <div>
                   <div className="text-[11px] text-text-faint tracking-[0.16em] font-semibold">HERO STATUS</div>
-                  <div className="flex items-baseline gap-3.5 mt-1.5">
+                  {/* Lv 数字が大きいので、狭幅で TRACKING ピルがはみ出さないよう折り返す */}
+                  <div className="flex flex-wrap items-baseline gap-3.5 mt-1.5">
                     <div className="text-[80px] font-bold leading-none tracking-[-0.04em] text-text">
                       Lv<span className="text-accent">.{hero.level}</span>
                     </div>
@@ -276,7 +316,10 @@ export default function Home() {
                 <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
                 {[
                     { label: "PRs merged",      value: String(hero.totalPrsMerged),  delta: "lifetime",                                     color: "var(--accent)" },
-                    { label: "monsters caught",  value: ownedDegraded ? "—" : String(ownedMonsters), delta: ownedDegraded ? "取得エラー" : "instances", color: "var(--purple)" },
+                    // この値は「所持している種類の数」（同種の重複は数えない）。
+                    // 旧ラベル "monsters caught / instances" は個体数を示唆して
+                    // いたが、home のデータに個体数は無い（種類単位で畳まれる）
+                    { label: "species owned",    value: ownedDegraded ? "—" : String(ownedMonsters), delta: ownedDegraded ? "取得エラー" : "unique", color: "var(--purple)" },
                     { label: "dex progress",     value: ownedDegraded || !totalSpecies ? "—" : `${discoveredSpecies}/${totalSpecies}`, delta: "discovered", color: "var(--gold)" },
                     { label: "streak",           value: `${hero.streakDays}d`,         delta: hero.streakDays >= STREAK_BONUS_DAYS ? `+${STREAK_BONUS_COINS}コインが有効` : `${STREAK_BONUS_DAYS}日で+${STREAK_BONUS_COINS}コイン`, color: "var(--accent-2)" },
                   ].map((s) => (
@@ -345,7 +388,14 @@ export default function Home() {
               <div className="bg-bg-elev border border-line rounded-[6px] overflow-hidden">
                 <div className="px-3.5 py-2.5 border-b border-line flex items-center justify-between">
                   <span className="text-[10px] text-text-faint tracking-[0.12em]">git log --activity</span>
-                  <span className="text-[10px] text-text-faint">{activities.length} events</span>
+                  {/* 打ち切っていることを黙らない: 折りたたみ中は「直近6件 / 全N件」 */}
+                  <span className="text-[10px] text-text-faint">
+                    {activities.length > ACTIVITY_PREVIEW_COUNT
+                      ? showAllActivities
+                        ? `全${activities.length}件`
+                        : `直近${ACTIVITY_PREVIEW_COUNT}件 / 全${activities.length}件`
+                      : `${activities.length} events`}
+                  </span>
                 </div>
                 {activitiesLoading && (
                   <div className="px-3.5 py-4 text-[12px] text-text-faint">loading…</div>
@@ -357,7 +407,10 @@ export default function Home() {
                       : "追跡が始まっていません — GitHub App を導入すると、PRマージがここに流れます"}
                   </div>
                 )}
-                {activities.slice(0, 6).map((a, i) => {
+                {(showAllActivities
+                  ? activities
+                  : activities.slice(0, ACTIVITY_PREVIEW_COUNT)
+                ).map((a, i, visible) => {
                   const xpReward = a.rewards.find((r) => r.rewardType === "xp");
                   const monsterReward = a.rewards.find((r) => r.rewardType === "monster");
                   const xpGained = xpReward?.quantity ?? 0;
@@ -366,8 +419,9 @@ export default function Home() {
                   const monster = monsterReward && isMonsterDetail(monsterReward.detail) ? monsterReward.detail : null;
                   const meta = isPrMergedMetadata(a.metadata) ? a.metadata : null;
                   const repoName = meta?.repositoryFullName.split("/")[1] ?? "—";
+                  const prUrl = meta ? buildPrUrl(meta.repositoryFullName, meta.prNumber) : null;
                   return (
-                    <div key={a.id} className={`px-3.5 py-3 flex gap-3 ${i < Math.min(activities.length, 6) - 1 ? "border-b border-line" : ""}`}>
+                    <div key={a.id} className={`px-3.5 py-3 flex gap-3 ${i < visible.length - 1 ? "border-b border-line" : ""}`}>
                       <div className="w-8 h-8 rounded-[4px] shrink-0 bg-bg-elev-2 border border-line flex items-center justify-center text-base">
                         {monster ? (
                           getMonsterArtwork({ name: monster.name }) ? (
@@ -393,16 +447,33 @@ export default function Home() {
                           {monster && (
                             <>
                               <span className="text-text-faint">·</span>
-                              <span className="font-medium">{monster.name}</span>
+                              {/* 迎えたモンスターはその居場所（図鑑）へ繋ぐ */}
+                              <Link
+                                className="font-medium underline-offset-2 hover:underline"
+                                href="/monsters"
+                              >
+                                {monster.name}
+                              </Link>
                               <span className="text-[9px] font-bold" style={{ color: RARITY_COLOR[monster.rarity] ?? "var(--text-faint)" }}>{monster.rarity}</span>
                             </>
                           )}
                           {isLevelUp && <span className="text-[9px] font-bold text-gold">LV.UP ↑{xpDetail!.levelAfter}</span>}
                         </div>
                         <div className="text-[11px] text-text-dim truncate mt-0.5">
-                          {meta && (
-                            <span className="text-accent-2 mr-1">{repoName}#{meta.prNumber}</span>
-                          )}
+                          {meta &&
+                            (prUrl ? (
+                              // 元の PR へ。ログの行が GitHub 上の実体への往復口になる
+                              <a
+                                className="text-accent-2 mr-1 underline-offset-2 hover:underline"
+                                href={prUrl}
+                                rel="noreferrer noopener"
+                                target="_blank"
+                              >
+                                {repoName}#{meta.prNumber}
+                              </a>
+                            ) : (
+                              <span className="text-accent-2 mr-1">{repoName}#{meta.prNumber}</span>
+                            ))}
                           <span className="text-text-faint">{meta?.title}</span>
                         </div>
                         <div className="text-[10px] text-text-faint mt-0.5">{formatTimeAgo(a.occurredAt)}</div>
@@ -410,6 +481,19 @@ export default function Home() {
                     </div>
                   );
                 })}
+                {/* 7件目以降があるときだけトグルを出す（無いのに出すのは虚偽） */}
+                {!activitiesLoading && activities.length > ACTIVITY_PREVIEW_COUNT && (
+                  <button
+                    aria-expanded={showAllActivities}
+                    className="w-full border-t border-line px-3.5 py-2 text-left text-[11px] text-text-dim transition-colors hover:bg-bg-elev-2 hover:text-text"
+                    onClick={() => setShowAllActivities((open) => !open)}
+                    type="button"
+                  >
+                    {showAllActivities
+                      ? `[ 直近${ACTIVITY_PREVIEW_COUNT}件に戻す ▴ ]`
+                      : `[ すべて表示 — 全${activities.length}件 ▾ ]`}
+                  </button>
+                )}
               </div>
             </div>
           </>

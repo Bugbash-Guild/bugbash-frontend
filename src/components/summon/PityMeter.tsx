@@ -88,6 +88,13 @@ export function PityMeter({
           </span>
         )}
       </div>
+      {presentation.softPityNote && (
+        // 「ソフト天井 60」のチップだけでは 60 が何なのか伝わらない。
+        // 開示APIの閾値に基づく一文で仕組みを説明する（閾値が来ないプールでは出さない）
+        <p className="mt-2 text-[11px] leading-4 text-text-faint">
+          {presentation.softPityNote}
+        </p>
+      )}
       {passUpsell && (
         <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-line pt-3 text-[11px]">
           <span className="text-text-dim">{passUpsell.text}</span>

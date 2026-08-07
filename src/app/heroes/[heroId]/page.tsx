@@ -5,7 +5,9 @@ import { useParams } from "next/navigation";
 import { FiAward } from "react-icons/fi";
 
 import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
+import { ConsoleEmptyState } from "@/components/ConsoleEmptyState";
 import { MonsterVisual } from "@/components/MonsterVisual";
+import { TermLoading } from "@/components/TermLoading";
 import { useAuth } from "@/hooks/useAuth";
 import { usePublicCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { usePublicHeroBadges } from "@/hooks/useBadges";
@@ -158,7 +160,13 @@ export default function PublicHeroPage() {
     loading: mintsLoading,
     mints,
   } = usePublicCommemorativeMints(heroId);
-  const { profile } = usePublicHeroProfile(heroId);
+  const {
+    loading: profileLoading,
+    notFound,
+    profile,
+    retry: retryProfile,
+    unavailable,
+  } = usePublicHeroProfile(heroId);
   const { user } = useAuth();
   // バッジ管理・記念鋳造はサイドバーから外し、その実体であるこの2セクションから入る
   const isSelf = user?.githubId != null && user.githubId === heroId;
@@ -170,24 +178,64 @@ export default function PublicHeroPage() {
     .sort((a, b) => b.currentTier - a.currentTier || b.grade - a.grade)
     .slice(0, 2);
 
+  // public topbar — 取得状態に関係なく同じものを出す（handle は取得前は heroId のまま）
+  const topbar = (
+    <div className="sticky top-0 z-20 flex h-[54px] items-center justify-between gap-4 border-b border-line bg-bg/[0.86] px-6 backdrop-blur">
+      <div className="truncate text-[13px] text-text-dim">
+        <span className="text-accent">visitor@github</span>
+        <span className="text-text-faint">:</span>
+        <span className="text-blue">~</span>
+        <span className="text-text-faint">$ </span>
+        <span>curl bugbash.dev/@{handle}</span>
+      </div>
+      <Link
+        className="shrink-0 rounded-[4px] border border-line px-3 py-1.5 text-[11px] text-text-dim transition-colors hover:text-accent"
+        href="/leaderboard"
+      >
+        ランキングへ戻る
+      </Link>
+    </div>
+  );
+
+  // プロフィールが読めるまで本体は描かない。以前は取得失敗も非公開/未存在も
+  // 実データと同じ骨組み（バッジ0件の空プロフィール）で描いていて、
+  // 「失敗した」のか「本当に何も無い」のか訪問者に見分けが付かなかった。
+  if (profileLoading || notFound || unavailable) {
+    return (
+      <div className="min-h-screen bg-bg text-text">
+        {topbar}
+        <div className="mx-auto max-w-[1080px] px-7 pb-16">
+          {profileLoading ? (
+            <TermLoading className="pt-10" lines={[`query hero @${heroId}`]} />
+          ) : notFound ? (
+            // 404 = 非公開または存在しない（仕様どおりの応答）。エラーに見せない
+            <ConsoleEmptyState
+              action={{ label: "自分の冒険を始める", href: "/" }}
+              className="mt-10"
+              glyph="∅"
+              message="このヒーローは存在しないか非公開です。"
+            />
+          ) : (
+            // 通信/サーバ失敗。失敗と言い切って、やり直せるようにする
+            <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border border-pink/30 bg-pink/10 px-4 py-4 text-[12px] text-pink">
+              <span>プロフィールの読み込みに失敗しました。</span>
+              <button
+                className="text-text underline underline-offset-4 hover:text-accent"
+                onClick={() => void retryProfile()}
+                type="button"
+              >
+                再試行
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-bg text-text">
-      {/* public topbar */}
-      <div className="sticky top-0 z-20 flex h-[54px] items-center justify-between gap-4 border-b border-line bg-bg/[0.86] px-6 backdrop-blur">
-        <div className="truncate text-[13px] text-text-dim">
-          <span className="text-accent">visitor@github</span>
-          <span className="text-text-faint">:</span>
-          <span className="text-blue">~</span>
-          <span className="text-text-faint">$ </span>
-          <span>curl bugbash.dev/@{handle}</span>
-        </div>
-        <Link
-          className="shrink-0 rounded-[4px] border border-line px-3 py-1.5 text-[11px] text-text-dim transition-colors hover:text-accent"
-          href="/leaderboard"
-        >
-          ランキングへ戻る
-        </Link>
-      </div>
+      {topbar}
 
       <div className="mx-auto max-w-[1080px] px-7 pb-16">
         {/* identity */}

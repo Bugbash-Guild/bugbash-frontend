@@ -4,7 +4,9 @@ import { describe, it } from "node:test";
 import {
   buildPassPityUpsell,
   buildPityMeterPresentation,
+  buildSummonResultPityText,
   formatSummonCurrencyCost,
+  formatSummonGuaranteeLabel,
   mapSummonPullErrorMessage,
   selectEffectivePityDisclosure,
 } from "./summonPity";
@@ -40,11 +42,78 @@ describe("summon pity presentation", () => {
 
     assert.deepEqual(buildPityMeterPresentation(pity, disclosure), {
       hardPityPull: 70,
-      label: "あと25回でSSR確定（天井 70）",
+      label: "あと25回でSR以上確定（天井 70）",
       progressPercent: 64.3,
+      remaining: 25,
+      softPityNote: "55回目からSR以上が出やすくなります",
       softPityText: "ソフト天井 55",
       tone: "normal",
     });
+  });
+
+  it("labels the ceiling with the disclosed guarantee instead of a blanket SSR promise", () => {
+    // 通常召喚の保証は SR_OR_ABOVE（SR以上）。「SSR確定」は実装より
+    // 強い約束＝約束違反だったので、SSR という語自体が出ないことを固定する
+    const presentation = buildPityMeterPresentation(
+      { isHardPity: false, isSoftPity: false, pullCount: 45 },
+      disclosure,
+    );
+
+    assert.equal(presentation.label.includes("SSR"), false);
+    assert.equal(presentation.label.includes("SR以上確定"), true);
+  });
+
+  it("promises the featured SSR only when the disclosure guarantees it", () => {
+    const limited = {
+      ...disclosure,
+      guaranteeType: "FEATURED_SSR",
+      softPityPull: null,
+    };
+    const presentation = buildPityMeterPresentation(
+      { isHardPity: true, isSoftPity: false, pullCount: 59 },
+      limited,
+    );
+
+    assert.equal(presentation.label, "次回目玉SSR確定（天井 70）");
+  });
+
+  it("falls back to the raw guarantee value instead of inventing a promise", () => {
+    const unknown = { ...disclosure, guaranteeType: "MYSTERY_GUARANTEE" };
+    const presentation = buildPityMeterPresentation(
+      { isHardPity: false, isSoftPity: false, pullCount: 45 },
+      unknown,
+    );
+
+    assert.equal(presentation.label, "あと25回でMYSTERY_GUARANTEE（天井 70）");
+  });
+
+  it("translates known guarantee types and passes unknown ones through", () => {
+    assert.equal(formatSummonGuaranteeLabel("SR_OR_ABOVE"), "SR以上確定");
+    assert.equal(formatSummonGuaranteeLabel("FEATURED_SSR"), "目玉SSR確定");
+    assert.equal(formatSummonGuaranteeLabel("NEW_TYPE"), "NEW_TYPE");
+  });
+
+  it("explains the soft ceiling with the API threshold, and stays silent without one", () => {
+    const pity: PityCounterResponse = {
+      isHardPity: false,
+      isSoftPity: false,
+      poolKey: "NORMAL",
+      pullCount: 10,
+    };
+
+    assert.equal(
+      buildPityMeterPresentation(pity, disclosure).softPityNote,
+      "55回目からSR以上が出やすくなります",
+    );
+
+    // ソフト天井の値が来ないプール（限定など）は仕組み自体が無いので、
+    // 「出やすくなる」という説明を一切出さない（事実でない期待を作らない）
+    const withoutSoft = buildPityMeterPresentation(pity, {
+      ...disclosure,
+      softPityPull: null,
+    });
+    assert.equal(withoutSoft.softPityNote, null);
+    assert.equal(withoutSoft.softPityText, null);
   });
 
   it("selects the API-provided pass pity for entitled subscribers", () => {
@@ -82,13 +151,12 @@ describe("summon pity presentation", () => {
       {
         isHardPity: true,
         isSoftPity: true,
-        poolKey: "NORMAL",
         pullCount: 70,
       },
       disclosure,
     );
 
-    assert.equal(presentation.label, "次回SSR確定（天井 70）");
+    assert.equal(presentation.label, "次回SR以上確定（天井 70）");
     assert.equal(presentation.tone, "hard");
     assert.equal(presentation.label.includes("今すぐ"), false);
   });
@@ -159,5 +227,25 @@ describe("buildPassPityUpsell", () => {
       ),
       null,
     );
+  });
+});
+
+describe("buildSummonResultPityText", () => {
+  it("shows the remaining pulls to the ceiling instead of the raw counter", () => {
+    // 「pity: 45 pulls」は天井まで何回かをユーザーに引き算させる表示だった
+    assert.equal(buildSummonResultPityText(45, disclosure), "天井まであと25回");
+    assert.equal(buildSummonResultPityText(69, disclosure), "天井まであと1回");
+  });
+
+  it("reuses the guarantee label when the counter is at the ceiling", () => {
+    assert.equal(
+      buildSummonResultPityText(70, disclosure),
+      "次回SR以上確定（天井 70）",
+    );
+  });
+
+  it("shows only the raw count when the disclosure has not arrived", () => {
+    // 天井値が無いのに残数をでっち上げない。事実（回数）だけを出す
+    assert.equal(buildSummonResultPityText(45, null), "天井カウンタ 45 回");
   });
 });

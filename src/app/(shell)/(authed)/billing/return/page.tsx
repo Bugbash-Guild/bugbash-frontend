@@ -152,6 +152,17 @@ export default function BillingReturnPage() {
               >
                 課金状況を確認
               </Link>
+              {/*
+                決済自体が成立していない可能性がある（PSP 画面で離脱など）。
+                その場合はいくら待っても付与されないため、購入し直す道を
+                ここに置く。強調はしない（買わせ直しの誘導ではなく回復手段）。
+              */}
+              <Link
+                className="border border-line px-3 py-1.5 text-[12px] text-text-dim hover:bg-bg-elev-2"
+                href={pendingOrder?.type === "subscription" ? "/pass" : "/shop/runes"}
+              >
+                もう一度購入する
+              </Link>
             </div>
           )}
 

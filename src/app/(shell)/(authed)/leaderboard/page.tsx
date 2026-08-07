@@ -22,11 +22,9 @@ const RANK_GLYPHS: Record<number, string> = {
 
 export default function LeaderboardPage() {
   const { isAuthenticated, user } = useAuth();
-  const { entries, loading } = useLeaderboard(isAuthenticated);
+  const { entries, loading, error, refetch } = useLeaderboard(isAuthenticated);
   // heroId == githubId は確立済みの契約（home が /api/heroes/{githubId}/... を使用）
   const selfHeroId = user?.githubId ?? null;
-
-
 
   return (
     <>
@@ -35,6 +33,20 @@ export default function LeaderboardPage() {
 
         {loading ? (
           <TermLoading lines={["query leaderboard --sort xp"]} />
+        ) : error && entries.length === 0 ? (
+          // 取得失敗を「まだ誰もいない」空状態として見せない（嘘の状態の一掃）。
+          // 定期再検証の失敗で手元に前回データが残っている間は、エラーで
+          // 塗り潰さずそのまま表示を続ける（次の再検証で自然に回復する）。
+          <div className="flex flex-wrap items-center justify-between gap-3 border border-pink/30 bg-pink/10 px-4 py-4 text-[12px] text-pink">
+            <span>ランキングの読み込みに失敗しました。</span>
+            <button
+              className="text-text underline underline-offset-4 hover:text-accent"
+              onClick={() => void refetch()}
+              type="button"
+            >
+              再試行
+            </button>
+          </div>
         ) : (
           <div className="bg-bg-elev border border-line rounded-lg overflow-hidden">
             {/* table header */}
