@@ -121,7 +121,8 @@ export function AgeVerificationModal({
 
         {result && (
           <div className="mt-4 border border-accent/40 bg-accent/10 px-3 py-2 text-[12px] text-accent">
-            30日間の購入上限: {formatMonthlyLimitJpy(result.monthlyLimitJpy)}
+            {/* 上限の期間は暦月（毎月1日 JST リセット）。ローリング30日ではない。 */}
+            今月の購入上限: {formatMonthlyLimitJpy(result.monthlyLimitJpy)}
           </div>
         )}
 

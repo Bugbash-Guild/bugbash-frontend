@@ -47,12 +47,30 @@ describe("shop presentation helpers", () => {
       buildShopPurchasePresentation(runeItem, { guildCoinBalance: 300, runeBalance: 40 }),
       {
         affordability: "insufficient",
-        cosmeticNotice: "この購入は見た目や時短のためのものです。ステータス・報酬・順位には影響しません。",
+        cosmeticNotice:
+          "この購入は育成を早めるためのものです。ランキングと実績バッジには影響しません（どちらもPRの活動でのみ進みます）。",
         insufficientMessage: "ルーンが足りません（必要 80 / 保有 40）",
         priceLabel: "80 ルーン",
         showRuneTopUpLink: true,
       },
     );
+  });
+
+  /*
+    魂パックは相棒のレベルに直接使え、レベルアップは +100 ギルドコインを生む。
+    「ステータス・報酬には影響しません」と述べていた頃の文言に戻さないための番人。
+  */
+  it("never claims a growth item leaves stats or rewards untouched", () => {
+    for (const category of ["SOUL_PACK", "EVOLUTION"] as const) {
+      const notice = buildShopPurchasePresentation(
+        { ...runeItem, category },
+        { guildCoinBalance: 300, runeBalance: 999 },
+      ).cosmeticNotice;
+      assert.ok(notice != null);
+      assert.ok(!notice.includes("ステータス"), `${category}: ステータスへの言及は事実と違う`);
+      assert.ok(!notice.includes("報酬"), `${category}: 報酬への言及は事実と違う`);
+      assert.ok(!notice.includes("見た目"), `${category}: 見た目だけの購入ではない`);
+    }
   });
 
   it("says the balance is unknown instead of claiming it is zero", () => {

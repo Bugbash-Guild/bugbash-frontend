@@ -15,12 +15,13 @@ export const AGE_GROUP_OPTIONS: AgeGroupOption[] = [
     value: "ADULT",
   },
   {
-    description: "30日間の購入上限が適用されます。",
+    // 上限の期間は暦月（毎月1日 JST リセット）。ローリング30日ではない。
+    description: "月あたりの購入上限が適用されます。",
     label: "16〜17歳",
     value: "AGE_16_17",
   },
   {
-    description: "30日間の購入上限が適用されます。",
+    description: "月あたりの購入上限が適用されます。",
     label: "16歳未満",
     value: "UNDER_16",
   },

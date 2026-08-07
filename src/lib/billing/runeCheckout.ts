@@ -108,7 +108,13 @@ export function mapBillingCheckoutError(
   ) {
     return {
       action: "none",
-      message: "30日間の購入上限を超えるため購入できません。上限は毎日少しずつ回復します。",
+      /*
+        以前は「30日間の購入上限」「毎日少しずつ回復します」と述べていたが、
+        サーバの実装は暦月（CreateCheckoutUseCase.monthlySpendingWindowStart:
+        Asia/Tokyo の月初 00:00 起点）で、日々の回復も存在しない。
+        待てば買えると読める案内で待たせるのは、事実と違ううえ実害が出る。
+      */
+      message: "今月の購入上限を超えるため購入できません。上限は毎月1日（日本時間）にリセットされます。",
     };
   }
 
