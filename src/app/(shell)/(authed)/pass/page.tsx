@@ -5,6 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { AgeVerificationModal } from "@/components/billing/AgeVerificationModal";
+import {
+  CancelPassModal,
+  formatPeriodEndDate,
+} from "@/components/billing/CancelPassModal";
 import { SubscriptionStatusSummary } from "@/components/billing/SubscriptionStatusSummary";
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
@@ -60,7 +64,11 @@ export default function PassPage() {
     subscription,
     updateSubscription,
   } = useSubscription(isAuthenticated);
-  const { plan } = useSubscriptionPlan();
+  const {
+    error: planError,
+    plan,
+    refetch: refetchPlan,
+  } = useSubscriptionPlan();
 
   useTrackScreenView("PASS_VIEWED");
 
@@ -95,6 +103,14 @@ export default function PassPage() {
     [verifiedAgeGroup],
   );
   const subscribed = effectiveSubscription.entitled;
+  // 解約予定の受け皿文。日付は subscription API の currentPeriodEnd のみを使い、
+  // 届いていなければ日付なしの文言に落とす（日付を推測して埋めない）。
+  const cancelScheduledPeriodEndDate = formatPeriodEndDate(
+    effectiveSubscription.currentPeriodEnd,
+  );
+  const cancelScheduledNote = cancelScheduledPeriodEndDate
+    ? `現在の期間末（${cancelScheduledPeriodEndDate}）まで特典は有効です。期間終了後に再加入できます。`
+    : "現在の期間末まで特典は有効です。期間終了後に再加入できます。";
 
 
   function requestAgeCheck() {
@@ -225,6 +241,21 @@ export default function PassPage() {
           </div>
         )}
 
+        {/* 価格・特典が読めないと「加入確認へ」は押せないまま（既定値で埋めない
+            方針のため）。黙って disabled にせず、失敗の事実と再試行の道を出す。 */}
+        {planError && (
+          <div className="mb-4 border border-pink/30 bg-pink/10 px-3 py-3 text-[12px] text-pink">
+            パスの価格・特典を読み込めませんでした。
+            <button
+              className="ml-3 underline underline-offset-4"
+              onClick={() => void refetchPlan()}
+              type="button"
+            >
+              再読み込み
+            </button>
+          </div>
+        )}
+
         <div className="grid max-w-5xl grid-cols-1 gap-4 xl:grid-cols-[1.2fr_0.8fr]">
           <section className="border border-line bg-bg-elev p-5">
             <div className="mb-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
@@ -282,11 +313,22 @@ export default function PassPage() {
                       <button
                         className="w-full border border-pink/50 px-3 py-2 text-[12px] font-semibold text-pink hover:bg-pink hover:text-bg disabled:cursor-not-allowed disabled:opacity-40"
                         disabled={cancelInFlight}
-                        onClick={() => setCancelConfirmOpen(true)}
+                        onClick={() => {
+                          setCancelError(null);
+                          setCancelConfirmOpen(true);
+                        }}
                         type="button"
                       >
                         解約する
                       </button>
+                    )}
+                    {/* 解約予定のあいだ操作は無い。状態の意味（いつまで有効か・
+                        その後どうなるか）だけをここで言う。
+                        更新再開のAPIは無いので「再開する」ボタンは置かない。 */}
+                    {effectiveSubscription.cancelScheduled && (
+                      <p className="border border-line bg-bg px-3 py-3 text-[12px] leading-6 text-text-dim">
+                        {cancelScheduledNote}
+                      </p>
                     )}
                   </div>
                 ) : (
@@ -423,60 +465,14 @@ export default function PassPage() {
         </div>
       )}
 
-      {cancelConfirmOpen && (
-        <div
-          aria-labelledby="subscription-cancel-title"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
-          onClick={() => {
-            if (!cancelInFlight) setCancelConfirmOpen(false);
-          }}
-          role="dialog"
-        >
-          <section
-            className="w-full max-w-md border border-line bg-bg-elev p-5 shadow-[0_24px_80px_rgba(0,0,0,0.65)]"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="mb-4">
-              <div className="mb-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
-                CANCEL PASS
-              </div>
-              <h2 id="subscription-cancel-title" className="text-[17px] font-semibold text-text">
-                冒険者パスを解約しますか?
-              </h2>
-              <p className="mt-2 text-[12px] leading-6 text-text-dim">
-                解約予定にすると、現在の期間末までは特典を利用できます。それ以降は更新されません。
-                日割返金はありません。
-              </p>
-            </div>
-
-            {cancelError && (
-              <div className="mb-4 border border-pink/30 bg-pink/10 px-3 py-2 text-[12px] text-pink">
-                {cancelError}
-              </div>
-            )}
-
-            <div className="flex justify-end gap-2">
-              <button
-                className="border border-line px-3 py-1.5 text-[12px] text-text-dim hover:bg-bg-elev-2 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={cancelInFlight}
-                onClick={() => setCancelConfirmOpen(false)}
-                type="button"
-              >
-                戻る
-              </button>
-              <button
-                className="border border-pink/50 px-3 py-1.5 text-[12px] font-semibold text-pink hover:bg-pink hover:text-bg disabled:cursor-not-allowed disabled:opacity-40"
-                disabled={cancelInFlight}
-                onClick={() => void submitCancel()}
-                type="button"
-              >
-                {cancelInFlight ? "保存中…" : "解約予定にする"}
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
+      <CancelPassModal
+        currentPeriodEnd={effectiveSubscription.currentPeriodEnd}
+        error={cancelError}
+        inFlight={cancelInFlight}
+        onClose={() => setCancelConfirmOpen(false)}
+        onConfirm={() => void submitCancel()}
+        open={cancelConfirmOpen}
+      />
 
       <AgeVerificationModal
         onClose={() => {

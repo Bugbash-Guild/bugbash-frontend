@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 
 import { safeReturnTo } from "@/components/AuthGate";
 import { useAuth } from "@/hooks/useAuth";
+import { legalFooterLinks } from "@/lib/legalPages";
 
 const RETURN_TO_STORAGE_KEY = "bb.returnTo";
 
@@ -88,11 +90,30 @@ function LoginContent() {
               Authorize with GitHub
             </button>
 
-            {/* footnote */}
-            <div className="mt-[18px] text-[11px] text-text-faint text-center">
-              hero_id := github_id · permissions: read:user, repo
+            {/* footnote — ここは事実だけを書く。ログインの OAuth は
+                ユーザー識別のみで、リポジトリ権限は要求しない（scope は
+                バックエンド設定 read:user,user:email と一致させること）。
+                コードへのアクセスは別手順の GitHub App 導入で、対象
+                リポジトリはインストール画面でユーザー自身が選ぶ。 */}
+            <div className="mt-[18px] text-[11px] text-text-faint text-center leading-[1.8]">
+              hero_id := github_id · oauth scope: read:user, user:email
+              <br />
+              アクセスするリポジトリは、GitHub App のインストール時にあなたが選択します
             </div>
           </div>
+        </div>
+
+        {/* legal links（課金を含むサービスの規約・法的表示への入口） */}
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px]">
+          {legalFooterLinks.map((link) => (
+            <Link
+              key={link.href}
+              className="text-text-faint transition-colors hover:text-accent"
+              href={link.href}
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
       </div>
     </div>

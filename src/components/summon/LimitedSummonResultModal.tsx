@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { ItemVisual } from "@/components/ItemVisual";
+import { buildSummonResultPityText } from "@/lib/summonPity";
 import { getSummonItemDisplay } from "@/lib/summonDisplay";
-import type { ItemRarity } from "@/types/summon";
+import type { ItemRarity, SummonDisclosureResponse } from "@/types/summon";
 
 export type LimitedResultItem = {
   assetUrl?: string | null;
@@ -30,11 +31,20 @@ const RARITY_CLASS: Record<ItemRarity, string> = {
 
 type LimitedSummonResultModalProps = {
   onClose: () => void;
+  /**
+   * 天井残数の算出用（パス加入者は短縮後の値を渡す）。
+   * 未着なら null で、残数の代わりに生カウンタの事実だけを出す。
+   */
+  pityDisclosure: Pick<
+    SummonDisclosureResponse,
+    "guaranteeType" | "hardPityPull" | "softPityPull"
+  > | null;
   result: LimitedResultDisplay;
 };
 
 export function LimitedSummonResultModal({
   onClose,
+  pityDisclosure,
   result,
 }: LimitedSummonResultModalProps) {
   const [revealed, setRevealed] = useState(false);
@@ -134,8 +144,15 @@ export function LimitedSummonResultModal({
             </div>
 
             <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-text-faint">
+              {/* 生カウンタ「pity: N pulls」は引き算を利用者に強いる。
+                  メーターと同じ計算で「天井まであとN回」と言い切る。 */}
               {result.newPullCount != null && (
-                <span>pity: {result.newPullCount} pulls</span>
+                <span>
+                  {buildSummonResultPityText(
+                    result.newPullCount,
+                    pityDisclosure,
+                  )}
+                </span>
               )}
               {result.runesRemaining != null && (
                 <span>

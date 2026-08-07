@@ -43,6 +43,13 @@ export function FirstQuestChecklist({
       key: "first-pr",
       label: "最初の PR をマージして XP とコインを得る",
       done: hero.totalPrsMerged > 0,
+      // App 導入済みなら、home 上部の TrackingReadyPanel（#tracking-ready）へ
+      // 飛ばして「何をすると何が起きるか」を読める場所を示す。
+      // パネルは導入済み && マージ0 のときだけ描画される＝この action が
+      // 表示される条件（未達 && 導入済み）と一致する。
+      action: hero.hasGithubAppInstalled
+        ? { label: "仕組みを見る", href: "#tracking-ready" }
+        : undefined,
     },
     {
       key: "first-monster",
@@ -100,6 +107,15 @@ export function FirstQuestChecklist({
                   href={quest.action.href}
                   rel="noopener noreferrer"
                   target="_blank"
+                >
+                  {quest.action.label} →
+                </a>
+              ) : quest.action.href.startsWith("#") ? (
+                // ページ内アンカーはルーティング不要なので素の <a>（Link だと
+                // 同一ページ遷移として扱われる）
+                <a
+                  className="ml-auto shrink-0 text-[11px] text-accent underline underline-offset-4 hover:brightness-110"
+                  href={quest.action.href}
                 >
                   {quest.action.label} →
                 </a>

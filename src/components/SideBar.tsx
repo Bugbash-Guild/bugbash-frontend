@@ -66,6 +66,12 @@ export function SideBarContent({ onNavigate }: { onNavigate?: () => void }) {
     section.items.map((item) => item.href),
   );
   const inAccountZone = ACCOUNT_PATHS.some((path) => pathname.startsWith(path));
+  // progressRatio が NaN・負・1超だと width が "NaN%" や 100% 超になり
+  // バーが壊れる。読めないときは塗らない（home の pct と同方針）。
+  const heroProgressRatio =
+    hero && Number.isFinite(hero.progressRatio)
+      ? Math.min(1, Math.max(0, hero.progressRatio))
+      : 0;
 
   return (
     <div className="flex h-full w-60 shrink-0 flex-col overflow-y-auto border-r border-line bg-bg-elev">
@@ -210,7 +216,7 @@ export function SideBarContent({ onNavigate }: { onNavigate?: () => void }) {
               <div
                 className="h-full rounded-full"
                 style={{
-                  width: `${Math.min(hero.progressRatio * 100, 100)}%`,
+                  width: `${heroProgressRatio * 100}%`,
                   background: "linear-gradient(135deg, var(--accent), var(--accent-2))",
                 }}
               />

@@ -15,11 +15,17 @@ describe("buildNextActions", () => {
     const rows = buildNextActions(full);
 
     assert.equal(rows.length, 2);
-    assert.equal(rows[0]?.currency, "coin");
-    assert.equal(rows[0]?.count, 54);
-    assert.equal(rows[0]?.href, "/summon");
+    assert.deepEqual(rows[0], {
+      count: 54,
+      currency: "coin",
+      currencyLabel: "ギルドコイン",
+      href: "/summon",
+      kind: "ready",
+      subject: "召喚",
+    });
+    assert.equal(rows[1]?.kind, "ready");
     assert.equal(rows[1]?.currency, "rune");
-    assert.equal(rows[1]?.count, 11);
+    assert.equal(rows[1]?.kind === "ready" ? rows[1].count : null, 11);
     assert.equal(rows[1]?.href, "/summon/limited");
   });
 
@@ -31,18 +37,37 @@ describe("buildNextActions", () => {
     );
   });
 
-  it("omits a currency that cannot afford a single pull", () => {
+  it("turns a short coin balance into a distance row instead of hiding the goal", () => {
+    const rows = buildNextActions({ ...full, guildCoinBalance: 80 });
+
+    assert.deepEqual(rows[0], {
+      currency: "coin",
+      currencyLabel: "ギルドコイン",
+      href: "/summon",
+      kind: "distance",
+      shortfall: 220,
+      subject: "召喚",
+    });
+    // コインが距離行になっても、ルーンの READY 行は変わらず後ろに並ぶ
+    assert.equal(rows[1]?.kind, "ready");
+    assert.equal(rows[1]?.currency, "rune");
+  });
+
+  it("reports the full cost as the distance when the coin balance is zero", () => {
+    const rows = buildNextActions({ ...full, guildCoinBalance: 0, runeBalance: 0 });
+    assert.equal(rows.length, 1);
+    const first = rows[0];
+    assert.equal(first?.kind, "distance");
+    assert.equal(first?.kind === "distance" ? first.shortfall : null, 300);
+  });
+
+  it("never shows a rune distance row — a shortfall for the paid currency would be purchase pressure", () => {
     assert.deepEqual(
-      buildNextActions({ ...full, runeBalance: 29 }).map((r) => r.currency),
-      ["coin"],
-    );
-    assert.deepEqual(
-      buildNextActions({ ...full, guildCoinBalance: 0 }).map((r) => r.currency),
-      ["rune"],
-    );
-    assert.deepEqual(
-      buildNextActions({ ...full, guildCoinBalance: 0, runeBalance: 0 }),
-      [],
+      buildNextActions({ ...full, runeBalance: 29 }).map((row) => [
+        row.currency,
+        row.kind,
+      ]),
+      [["coin", "ready"]],
     );
   });
 
@@ -51,6 +76,7 @@ describe("buildNextActions", () => {
       buildNextActions({ ...full, limitedPullCost: null }).map((r) => r.currency),
       ["coin"],
     );
+    // コストが未取得だと距離も計算できないので、コイン行ごと出さない
     assert.deepEqual(
       buildNextActions({ ...full, normalPullCost: undefined }).map(
         (r) => r.currency,
@@ -65,6 +91,12 @@ describe("buildNextActions", () => {
         (r) => r.currency,
       ),
       ["coin"],
+    );
+    assert.deepEqual(
+      buildNextActions({ ...full, guildCoinBalance: null }).map(
+        (r) => r.currency,
+      ),
+      ["rune"],
     );
   });
 

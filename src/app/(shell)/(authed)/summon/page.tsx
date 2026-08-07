@@ -22,6 +22,7 @@ import { PityMeter } from "@/components/summon/PityMeter";
 import type { LimitedPullConfirmation } from "@/lib/limitedSummon";
 import {
   buildPassPityUpsell,
+  buildSummonResultPityText,
   formatSummonCurrencyCost,
   selectEffectivePityDisclosure,
 } from "@/lib/summonPity";
@@ -354,11 +355,13 @@ export default function SummonPage() {
               )}
 
               <div className="mt-4 text-[11px] text-text-dim space-y-0.5">
-                <div>
-                  pity:{" "}
-                  <span className="text-text">
-                    {result.data.newPullCount} pulls
-                  </span>
+                {/* 生カウンタ（pity: N pulls）は天井まで何回かをユーザーに
+                    引き算させていた。メーターと同じ計算で残数を言い切る */}
+                <div className="text-text">
+                  {buildSummonResultPityText(
+                    result.data.newPullCount,
+                    effectiveDisclosure,
+                  )}
                 </div>
                 <div>
                   残高:{" "}

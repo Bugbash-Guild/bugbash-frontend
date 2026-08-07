@@ -6,6 +6,13 @@ import { mutate } from "swr";
 
 import { CommemorativePlate } from "@/components/commemorative/CommemorativePlate";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
+import { InlineActionResult } from "@/components/InlineActionResult";
+import {
+  awakeningPathLabel,
+  EvolutionConfirmModal,
+  resolveConsumedItem,
+  type EvolutionActionRequest,
+} from "@/components/monsters/EvolutionConfirmModal";
 import { TermLoading } from "@/components/TermLoading";
 import { MonsterVisual } from "@/components/MonsterVisual";
 import { RARITY_COLOR } from "@/constants/rarity";
@@ -27,17 +34,26 @@ import {
   MONSTER_MAX_LEVEL,
 } from "@/lib/monsterProgression";
 import type { CommemorativeMintPlate } from "@/types/commemorativeMint";
-import type { AwakeningState, Monster } from "@/types/monster";
+import type { Monster } from "@/types/monster";
 
 type RarityKey = "SSR" | "SR" | "R" | "N";
 type FilterKey = "all" | RarityKey;
 
-const RARITY_GROUPS: RarityKey[] = ["SSR", "SR", "R", "N"];
-const FILTERS: FilterKey[] = ["all", "SSR", "SR", "R", "N"];
+/*
+ * グループは N→SSR の昇順。以前は SSR が先頭で、開いた瞬間の最上段が
+ * 未所持 SSR の「???」列になりがちだった（自分の収集より欠けが先に見える）。
+ * 所持数の多い N 帯から並べ、「自分の資産 → 次の目標」の順で読めるようにする。
+ * 絞り込みボタンもグループの並びと同じ順に揃える。
+ */
+const RARITY_GROUPS: RarityKey[] = ["N", "R", "SR", "SSR"];
+const FILTERS: FilterKey[] = ["all", "N", "R", "SR", "SSR"];
 
-const AWAKENING_LABEL: Partial<Record<AwakeningState, string>> = {
-  AWAKENED: "覚醒",
-  BERSERK: "暴走",
+/** カード内に出す操作結果（対象モンスターの隣に表示する）。 */
+type CardActionResult = {
+  detail?: string;
+  monsterId: string;
+  title: string;
+  tone: "success" | "error";
 };
 
 /** 進化段階（活動由来）。formStage から派生。 */
@@ -73,7 +89,12 @@ export default function MonstersPage() {
   const { monsters, ownedDegraded, loading, error, refetch } = useMonsters();
   const { partnerId, setPartner } = usePartner();
   const { ownedSkins, skins: skinCatalog } = useSkinCatalog(isAuthenticated);
-  const { items: inventoryItems } = useInventory(isAuthenticated);
+  const {
+    items: inventoryItems,
+    loading: inventoryLoading,
+    error: inventoryError,
+    refetch: refetchInventory,
+  } = useInventory(isAuthenticated);
   // スキンが1つも無いモンスターに「スキンを見る」を出すと空棚に送ることになる。
   const slugsWithSkins = useMemo(
     () => new Set(skinCatalog.map((skin) => skin.monsterSlug)),
@@ -83,69 +104,174 @@ export default function MonstersPage() {
   // githubId (auth/status の応答) を待たず、最初のリクエスト波に乗せる
   const { mints } = useMyCommemorativeMints(isAuthenticated);
   const [filter, setFilter] = useState<FilterKey>("all");
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  /*
+   * 操作結果はページ上部ではなく、操作したカードの中に出す（Wave 1）。
+   * グリッド下方のカードを操作したとき、画面外の最上部に真実が出ても
+   * 誰にも読まれない。結果は最後の1件だけ保持し、次の操作で置き換える。
+   */
+  const [cardResult, setCardResult] = useState<CardActionResult | null>(null);
   const [levelingUp, setLevelingUp] = useState<string | null>(null);
   const [evolving, setEvolving] = useState<string | null>(null);
   const [changingPath, setChangingPath] = useState<string | null>(null);
+  /*
+   * 進化・路線変更はアイテムを消費し、進化は結果もランダムに分岐する。
+   * 以前はボタン即実行だったため、消費と分岐を事前開示する確認モーダルを挟む。
+   */
+  const [pendingAction, setPendingAction] = useState<EvolutionActionRequest | null>(null);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
 
-  async function runAction(
+  // インベントリが読めている間だけ、モーダルで残数を実数として扱う。
+  const inventoryKnown = !inventoryLoading && inventoryError == null;
+  const confirmInFlight =
+    pendingAction != null &&
+    (evolving === pendingAction.monster.id || changingPath === pendingAction.monster.id);
+
+  async function postMonsterAction(
     monsterId: string,
     action: "level-up" | "evolve" | "change-path",
-    setBusy: (id: string | null) => void,
-    describe: (body: Record<string, unknown>) => string,
-  ) {
-    setBusy(monsterId);
-    setActionError(null);
-    setSuccessMsg(null);
+  ): Promise<
+    { ok: true; body: Record<string, unknown> } | { ok: false; message: string }
+  > {
     try {
       const res = await fetch(`/api/monsters/${monsterId}/${action}`, {
         method: "POST",
       });
       const body = (await res.json()) as Record<string, unknown>;
       if (!res.ok) {
-        setActionError((body.error as string) ?? `Error ${res.status}`);
-      } else {
-        setSuccessMsg(describe(body));
-        await Promise.all([refetch(), refetchHero(), mutate("/api/billing/wallet")]);
+        return {
+          ok: false,
+          message: typeof body.error === "string" ? body.error : `Error ${res.status}`,
+        };
       }
+      return { ok: true, body };
     } catch {
-      setActionError("Network error");
-    } finally {
-      setBusy(null);
+      return { ok: false, message: "Network error" };
     }
   }
 
-  const handleLevelUp = (id: string) =>
-    runAction(id, "level-up", setLevelingUp, (b) => `Lv.${b.newLevel ?? "?"} に上昇！`);
-  const handleEvolve = (id: string) =>
-    runAction(id, "evolve", setEvolving, (b) => `覚醒：${b.awakeningState ?? "?"}`);
-  const handleChangePath = (id: string) =>
-    runAction(id, "change-path", setChangingPath, (b) => {
-      const label = b.awakeningState
-        ? (AWAKENING_LABEL[b.awakeningState as AwakeningState] ?? String(b.awakeningState))
-        : "?";
-      return `路線変更：${label}（証残数: ${b.itemRemaining ?? "?"}）`;
-    });
+  async function refreshAfterAction(options: { inventoryChanged: boolean }) {
+    await Promise.all([
+      refetch(),
+      refetchHero(),
+      mutate("/api/billing/wallet"),
+      // 輝石・証を消費したあとは MATERIALS 帯と次回モーダルの残数も追従させる。
+      options.inventoryChanged ? refetchInventory() : Promise.resolve(),
+    ]);
+  }
 
-  async function handleSetPartner(monsterId: string) {
-    setActionError(null);
-    setSuccessMsg(null);
+  async function handleLevelUp(monster: Monster) {
+    setLevelingUp(monster.id);
+    setCardResult(null);
+    const result = await postMonsterAction(monster.id, "level-up");
+    if (result.ok) {
+      await refreshAfterAction({ inventoryChanged: false });
+      setCardResult({
+        monsterId: monster.id,
+        tone: "success",
+        title: `Lv.${result.body.newLevel ?? "?"} に上昇`,
+        detail: `${monster.attributeName ?? "soul"} 残り ${result.body.soulsRemaining ?? "?"}`,
+      });
+    } else {
+      setCardResult({
+        monsterId: monster.id,
+        tone: "error",
+        title: "レベルアップできませんでした",
+        detail: result.message,
+      });
+    }
+    setLevelingUp(null);
+  }
+
+  function openConfirm(request: EvolutionActionRequest) {
+    setConfirmError(null);
+    setPendingAction(request);
+  }
+
+  function cancelConfirm() {
+    if (confirmInFlight) return;
+    setPendingAction(null);
+    setConfirmError(null);
+  }
+
+  async function confirmPendingAction() {
+    if (pendingAction == null || confirmInFlight) return;
+    const { kind, monster } = pendingAction;
+    // 成功後の表示に使う消費アイテム名は、実行前の状態から確定させておく
+    // （路線変更は実行後に awakeningState が反転し、逆の証を指してしまうため）。
+    const consumed = resolveConsumedItem(pendingAction, inventoryItems, inventoryKnown);
+    const setBusy = kind === "evolve" ? setEvolving : setChangingPath;
+    setBusy(monster.id);
+    setConfirmError(null);
+    setCardResult(null);
+    const result = await postMonsterAction(monster.id, kind);
+    if (result.ok) {
+      await refreshAfterAction({ inventoryChanged: true });
+      setPendingAction(null);
+      if (kind === "evolve") {
+        setCardResult({
+          monsterId: monster.id,
+          tone: "success",
+          title: `進化結果：${awakeningPathLabel(result.body.awakeningState)}`,
+          detail: `${consumed?.name ?? "進化の輝石"} ×1 消費 — 残り ${result.body.evolutionStonesRemaining ?? "?"}`,
+        });
+      } else {
+        setCardResult({
+          monsterId: monster.id,
+          tone: "success",
+          title: `路線変更：${awakeningPathLabel(result.body.awakeningState)}`,
+          detail: `${consumed?.name ?? "証"} ×1 消費 — 残り ${result.body.itemRemaining ?? "?"}`,
+        });
+      }
+    } else {
+      // 失敗はモーダル内に出し、ユーザーが文脈を保ったまま再試行/中止できるようにする。
+      setConfirmError(result.message);
+    }
+    setBusy(null);
+  }
+
+  async function handleSetPartner(monster: Monster) {
+    setCardResult(null);
     try {
-      await setPartner(monsterId);
+      await setPartner(monster.id);
     } catch (error) {
-      setActionError(
-        error instanceof Error
-          ? error.message
-          : "パートナーを設定できませんでした。もう一度お試しください。",
-      );
+      setCardResult({
+        monsterId: monster.id,
+        tone: "error",
+        title: "パートナーを設定できませんでした",
+        detail:
+          error instanceof Error ? error.message : "もう一度お試しください。",
+      });
     }
   }
 
-  const dex = useMemo(
-    () => [...monsters].sort((a, b) => a.id.localeCompare(b.id)),
-    [monsters],
-  );
+  // 「今の収穫」が分かるように、直近24時間に迎えたモンスターへ NEW を出す
+  const recentlyAcquiredIds = useMemo(() => {
+    const threshold = Date.now() - 24 * 60 * 60 * 1000;
+    return new Set(
+      monsters
+        .filter((m) => {
+          if (!m.acquiredAt) return false;
+          const at = new Date(m.acquiredAt).getTime();
+          return Number.isFinite(at) && at >= threshold;
+        })
+        .map((m) => m.id),
+    );
+  }, [monsters]);
+
+  /*
+   * 各グループ内の並びは 所持済み → NEW（24h以内に獲得）→ 未所持。
+   * 以前は id 順で所持と未所持が混在し、自分の収集が飛び飛びに見えていた。
+   * 長く連れている個体は先頭側で位置が安定し、新入りは所持と未所持の
+   * 境目＝図鑑が伸びている場所に現れ、その先に次の目標（未所持）が続く。
+   */
+  const dex = useMemo(() => {
+    const rank = (m: Monster) =>
+      m.isOwned ? (recentlyAcquiredIds.has(m.id) ? 1 : 0) : 2;
+    return [...monsters].sort(
+      (a, b) => rank(a) - rank(b) || a.id.localeCompare(b.id),
+    );
+  }, [monsters, recentlyAcquiredIds]);
+
   // 装備中スキンのマスタリー（コスメ・琥珀）を monsterSlug で引けるようにする
   const cosmeticBySlug = useMemo(() => {
     const map = new Map<string, { masteryLevel: number; lineName: string; skinId: string }>();
@@ -161,23 +287,27 @@ export default function MonstersPage() {
     return map;
   }, [ownedSkins]);
 
-  // 「今の収穫」が分かるように、直近24時間に迎えたモンスターへ NEW を出す
-  const recentlyAcquiredIds = useMemo(() => {
-    const threshold = Date.now() - 24 * 60 * 60 * 1000;
-    return new Set(
-      dex
-        .filter((m) => {
-          if (!m.acquiredAt) return false;
-          const at = new Date(m.acquiredAt).getTime();
-          return Number.isFinite(at) && at >= threshold;
-        })
-        .map((m) => m.id),
-    );
-  }, [dex]);
-
   const partnerMonster = dex.find((m) => m.id === partnerId) ?? null;
   const progress = buildDexProgress(dex);
   const ownedInstances = dex.reduce((sum, m) => sum + (m.isOwned ? 1 : 0), 0);
+
+  /*
+   * 「次に埋まりやすい枠」: 未発見のうち PR マージで出会える枠は、日々の
+   * 活動だけで埋まる（召喚や課金を要しない）ので埋まりやすさが違う。
+   * prAcquirable は BE マスタ応答の必須フィールドのため、
+   * 残数 − 召喚専用残数 がそのまま PR で出会える残数になる。
+   * 表示するのは buildDexProgress 由来の実数のみ（推測値は出さない）。
+   */
+  const dexRemaining = progress.total - progress.discovered;
+  const summonOnlyRemaining =
+    progress.summonOnlyTotal - progress.summonOnlyDiscovered;
+  const prAcquirableRemaining = dexRemaining - summonOnlyRemaining;
+  const nextFillHint =
+    dexRemaining === 0
+      ? "COMPLETE — 全モンスター発見済み"
+      : prAcquirableRemaining > 0
+        ? `次に埋まりやすい枠: PR マージで出会える残り ${prAcquirableRemaining} 体`
+        : `残り ${summonOnlyRemaining} 体はすべて召喚専用です`;
 
   const visibleGroups = RARITY_GROUPS.filter(
     (g) => filter === "all" || filter === g,
@@ -209,6 +339,25 @@ export default function MonstersPage() {
                 {" / "}
                 {progress.summonOnlyTotal}
               </p>
+            )}
+            {/* 図鑑進捗バー: 数の羅列より「あとどれくらいか」を一目で読めるように */}
+            {progress.total > 0 && (
+              <div className="mt-2.5 max-w-[340px]">
+                <div className="h-1.5 overflow-hidden rounded-[2px] bg-bg-elev-2">
+                  <div
+                    aria-label={`図鑑進捗 ${progress.discovered} / ${progress.total}`}
+                    aria-valuemax={progress.total}
+                    aria-valuemin={0}
+                    aria-valuenow={progress.discovered}
+                    className="h-full bg-accent"
+                    role="progressbar"
+                    style={{
+                      width: `${(progress.discovered / progress.total) * 100}%`,
+                    }}
+                  />
+                </div>
+                <p className="mt-1 text-[10px] text-text-faint">{nextFillHint}</p>
+              </div>
             )}
           </div>
           <div className="flex flex-wrap gap-2" role="group" aria-label="レアリティで絞り込み">
@@ -309,16 +458,10 @@ export default function MonstersPage() {
             </button>
           </div>
         )}
-        {successMsg && (
-          <p className="mt-4 rounded border border-accent/30 bg-accent/10 px-3 py-2 text-[13px] text-accent">
-            {successMsg}
-          </p>
-        )}
-        {actionError && (
-          <p className="mt-4 rounded border border-pink/30 bg-pink/10 px-3 py-2 text-[13px] text-pink">
-            {actionError}
-          </p>
-        )}
+        {/*
+          操作の成否はここ（ページ上部）ではなく、操作したカードの中に出す。
+          MonsterCard 内の InlineActionResult を参照。
+        */}
 
         {/* grouped dex */}
         <div className="mt-4 space-y-2">
@@ -348,10 +491,17 @@ export default function MonstersPage() {
                         evolving: evolving === m.id,
                         changingPath: changingPath === m.id,
                       }}
-                      onSetPartner={() => void handleSetPartner(m.id)}
-                      onLevelUp={() => void handleLevelUp(m.id)}
-                      onEvolve={() => void handleEvolve(m.id)}
-                      onChangePath={() => void handleChangePath(m.id)}
+                      result={
+                        cardResult != null && cardResult.monsterId === m.id
+                          ? cardResult
+                          : null
+                      }
+                      onSetPartner={() => void handleSetPartner(m)}
+                      onLevelUp={() => void handleLevelUp(m)}
+                      onEvolve={() => openConfirm({ kind: "evolve", monster: m })}
+                      onChangePath={() =>
+                        openConfirm({ kind: "change-path", monster: m })
+                      }
                     />
                   ))}
                 </div>
@@ -365,6 +515,19 @@ export default function MonstersPage() {
           )}
         </div>
       </div>
+
+      {/* 進化・路線変更の確認（消費・残数・分岐を実行前に開示） */}
+      {pendingAction && (
+        <EvolutionConfirmModal
+          error={confirmError}
+          inFlight={confirmInFlight}
+          inventoryKnown={inventoryKnown}
+          items={inventoryItems}
+          onCancel={cancelConfirm}
+          onConfirm={() => void confirmPendingAction()}
+          request={pendingAction}
+        />
+      )}
     </>
   );
 }
@@ -377,6 +540,7 @@ function MonsterCard({
   isRecent,
   mint,
   busy,
+  result,
   onSetPartner,
   onLevelUp,
   onEvolve,
@@ -389,6 +553,8 @@ function MonsterCard({
   isRecent: boolean;
   mint: CommemorativeMintPlate | undefined;
   busy: { levelingUp: boolean; evolving: boolean; changingPath: boolean };
+  /** このカードへの直近操作の結果。操作したボタンの隣に表示する。 */
+  result: CardActionResult | null;
   onSetPartner: () => void;
   onLevelUp: () => void;
   onEvolve: () => void;
@@ -598,6 +764,12 @@ function MonsterCard({
             <div className="rounded border border-line py-1 text-center text-[10px] font-bold tracking-widest text-text-faint">
               Lv.{MONSTER_MAX_LEVEL}
             </div>
+          )}
+          {/* 操作結果は操作したボタンの真下に出す（ページ上部で叫ばない） */}
+          {result && (
+            <InlineActionResult title={result.title} tone={result.tone}>
+              {result.detail}
+            </InlineActionResult>
           )}
         </div>
       )}

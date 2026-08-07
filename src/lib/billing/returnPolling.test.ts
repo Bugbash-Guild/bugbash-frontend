@@ -36,7 +36,18 @@ describe("billing return polling helpers", () => {
     assert.equal(buildBillingReturnMessage("confirmed", 30), "+30ルーンが残高に反映されました。");
     assert.equal(
       buildBillingReturnMessage("timeout"),
-      "反映に時間がかかっています。付与され次第、残高に反映されます。",
+      "この画面ではまだ反映を確認できていません。決済が完了していれば数分以内に付与されます。" +
+        "完了していない場合は付与されません。購入履歴で確認するか、もう一度購入してください。",
     );
+  });
+
+  it("timeout copy admits the payment may not have completed", () => {
+    // タイムアウトは「決済が成立したか不明」な状態。成立していない可能性に
+    // 触れず付与だけを約束する文言（旧: 付与され次第〜）への回帰を防ぐ。
+    const message = buildBillingReturnMessage("timeout");
+
+    assert.equal(message.includes("完了していない場合は付与されません"), true);
+    assert.equal(message.includes("もう一度購入"), true);
+    assert.equal(message.includes("付与され次第"), false);
   });
 });
