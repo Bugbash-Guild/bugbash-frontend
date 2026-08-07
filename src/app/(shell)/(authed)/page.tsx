@@ -22,21 +22,11 @@ import { CommemorativePlate } from "@/components/commemorative/CommemorativePlat
 
 import { RARITY_COLOR } from "@/constants/rarity";
 import { getMonsterArtwork } from "@/lib/monsterArtwork";
+// 検証ロジック（owner/repo 形式のときだけリンク化）は図鑑の出自PR表示と共通
+import { buildPrUrl } from "@/lib/prUrl";
 
 /** 活動ログの折りたたみ時に見せる件数。 */
 const ACTIVITY_PREVIEW_COUNT = 6;
-
-/**
- * GitHub の PR ページへのリンク。repositoryFullName は webhook の
- * repository.full_name 由来で owner/repo 形式だが、payload に欠けると
- * "" のまま届くことがあるため、形式を確認できた場合だけ URL を組む
- * （確認できない項目はリンク化せず従来のテキスト表示に落とす）。
- */
-function buildPrUrl(repositoryFullName: string, prNumber: number): string | null {
-  if (!/^[\w.-]+\/[\w.-]+$/.test(repositoryFullName)) return null;
-  if (!Number.isFinite(prNumber)) return null;
-  return `https://github.com/${repositoryFullName}/pull/${prNumber}`;
-}
 
 /** BE: HandlePrMergedUseCase.STREAK_BONUS_DAYS_THRESHOLD / COIN_STREAK_BONUS と対応。 */
 const STREAK_BONUS_DAYS = 7;

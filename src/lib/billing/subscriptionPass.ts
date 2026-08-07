@@ -161,6 +161,14 @@ export function toPassStatusPresentation(
   };
 }
 
+/*
+ * 「更新を再開する」（resume）用のエラーマッパーは意図的に存在しない。
+ * 解約時に BE が KOMOJU 側サブスクリプションを削除するため（
+ * CancelSubscriptionUseCase → KomojuPaymentGateway）、フラグを戻すだけの
+ * resume API は「更新されます」と表示しながら課金・更新が走らない嘘になる。
+ * 再開は期間終了後の再加入（チェックアウト）に一本化している。
+ */
+
 export function mapSubscriptionCheckoutError(
   status: number,
   errorMessage: string,

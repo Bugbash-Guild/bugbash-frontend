@@ -25,6 +25,7 @@ import { useSkinCatalog } from "@/hooks/useSkinCatalog";
 import { useMyCommemorativeMints } from "@/hooks/useCommemorativeMints";
 import { matchMintToOwnedMonster } from "@/lib/commemorativeMint";
 import { buildAcquisitionHint, buildDexProgress } from "@/lib/dexProgress";
+import { buildPrRef } from "@/lib/prUrl";
 import {
   canEvolveMonster,
   canLevelUpMonster,
@@ -568,6 +569,14 @@ function MonsterCard({
   const canLevelUp = canLevelUpMonster(m);
   const levelUpCost = getMonsterLevelUpCost(m.level);
   const acquisitionHint = buildAcquisitionHint(m);
+  /*
+   * 出自PR（どの仕事から仲間になったか）。repositoryFullName と prNumber が
+   * 揃った個体だけ組める。BE 未対応・召喚出身・欠損データでは null になり、
+   * 行ごと出さない（推測して埋めない）。
+   */
+  const originPr = m.isOwned
+    ? buildPrRef(m.acquisition?.repositoryFullName, m.acquisition?.prNumber)
+    : null;
 
   // art tint by activity state (green evolution / gold awaken / pink berserk)
   const artBorder = berserk
@@ -771,6 +780,33 @@ function MonsterCard({
               {result.detail}
             </InlineActionResult>
           )}
+        </div>
+      )}
+
+      {/*
+        出自PR: フッター位置に1行だけ・faint（カードの情報密度を守る）。
+        owner/repo 形式を検証できたときだけ GitHub へのリンクにする
+        （home の活動ログと同じ検証 = lib/prUrl）。prTitle は tooltip で補足。
+      */}
+      {originPr && (
+        <div
+          className="mt-2 truncate text-[10px] leading-4 text-text-faint"
+          title={m.acquisition?.prTitle ?? undefined}
+        >
+          {originPr.url ? (
+            <a
+              className="underline-offset-2 hover:text-accent hover:underline"
+              href={originPr.url}
+              onClick={(event) => event.stopPropagation()}
+              rel="noreferrer noopener"
+              target="_blank"
+            >
+              {originPr.label}
+            </a>
+          ) : (
+            <span>{originPr.label}</span>
+          )}
+          {" より仲間になった"}
         </div>
       )}
 

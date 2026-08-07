@@ -15,6 +15,10 @@ import { useWallet } from "@/hooks/useWallet";
 import { clearAgeVerification, readAgeVerified } from "@/lib/billing/ageVerification";
 import { writePendingOrder } from "@/lib/billing/pendingGrant";
 import {
+  buildLimitedSummonEquivalentText,
+  findCheapestRuneProductIds,
+} from "@/lib/billing/runeConversion";
+import {
   buildCheckoutRequest,
   buildRuneProductCards,
   clearCheckoutIdempotencyKey,
@@ -34,6 +38,7 @@ export default function RuneShopPage() {
   const { isAuthenticated } = useAuth();
   const {
     error: productsError,
+    limitedSingleCostRune,
     loading: productsLoading,
     products,
     refetch: refetchProducts,
@@ -53,8 +58,31 @@ export default function RuneShopPage() {
     () => new Map(products.map((product) => [product.id, product])),
     [products],
   );
+  /*
+   * ルーンの価値を「限定召喚 約N回ぶん」に言い換える（floor・約付き）。
+   * BE が limitedSingleCostRune を返さない間は Map が空になり、行ごと出ない。
+   */
+  const summonEquivalentById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const runeProduct of products) {
+      const text = buildLimitedSummonEquivalentText(
+        runeProduct.totalRune,
+        limitedSingleCostRune,
+      );
+      if (text != null) map.set(runeProduct.id, text);
+    }
+    return map;
+  }, [products, limitedSingleCostRune]);
+  // 円/ルーン最小の商品（実価格から計算した事実のみ。「お得」等の評価語は使わない）
+  const cheapestProductIds = useMemo(
+    () => findCheapestRuneProductIds(products),
+    [products],
+  );
   const selectedCard = selectedProduct
     ? buildRuneProductCards([selectedProduct])[0]
+    : null;
+  const selectedEquivalentText = selectedProduct
+    ? (summonEquivalentById.get(selectedProduct.id) ?? null)
     : null;
   const checkoutInFlight = checkoutProductId !== null;
 
@@ -183,14 +211,28 @@ export default function RuneShopPage() {
                     <span className="text-[10px] uppercase tracking-[0.12em] text-text-faint">
                       RUNE PACK
                     </span>
-                    {card.firstPurchaseOnly && (
-                      <span className="border border-gold/40 px-2 py-0.5 text-[10px] text-gold">
-                        初回限定・おひとり様1回
-                      </span>
-                    )}
+                    <span className="flex flex-wrap items-center justify-end gap-1.5">
+                      {/* 円/ルーン最小という計算事実のバッジ。煽り語は使わない */}
+                      {cheapestProductIds.has(card.id) && (
+                        <span className="border border-line-strong px-2 py-0.5 text-[10px] text-text-dim">
+                          最安単価
+                        </span>
+                      )}
+                      {card.firstPurchaseOnly && (
+                        <span className="border border-gold/40 px-2 py-0.5 text-[10px] text-gold">
+                          初回限定・おひとり様1回
+                        </span>
+                      )}
+                    </span>
                   </div>
                   <div className="text-[24px] font-semibold text-text">{card.runeText}</div>
                   <div className="mt-2 text-[12px] text-text-dim">{card.bonusText}</div>
+                  {/* 換算はコストが取得できた時だけ（floor なので「約」を外さない） */}
+                  {summonEquivalentById.has(card.id) && (
+                    <div className="mt-1 text-[11px] text-text-faint">
+                      {summonEquivalentById.get(card.id)}
+                    </div>
+                  )}
                   <div className="mt-4 flex items-end justify-between gap-3">
                     <span className="text-[15px] font-semibold text-accent">{card.price}</span>
                     <span className="text-[11px] text-text-faint">{card.unitPrice}</span>
@@ -239,6 +281,13 @@ export default function RuneShopPage() {
                 <span className="text-text-faint">単価</span>
                 <span className="text-text">{selectedCard.unitPrice}</span>
               </div>
+              {/* カードと同じ換算をここでも（決済直前に事実を再掲する） */}
+              {selectedEquivalentText != null && (
+                <div className="flex justify-between gap-3">
+                  <span className="text-text-faint">換算</span>
+                  <span className="text-text">{selectedEquivalentText}</span>
+                </div>
+              )}
               <div className="flex justify-between gap-3">
                 <span className="text-text-faint">現在の残高</span>
                 <span className="text-text">

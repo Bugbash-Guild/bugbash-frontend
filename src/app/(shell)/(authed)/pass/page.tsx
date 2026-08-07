@@ -322,9 +322,15 @@ export default function PassPage() {
                         解約する
                       </button>
                     )}
-                    {/* 解約予定のあいだ操作は無い。状態の意味（いつまで有効か・
-                        その後どうなるか）だけをここで言う。
-                        更新再開のAPIは無いので「再開する」ボタンは置かない。 */}
+                    {/* 解約予定の受け皿。状態の意味（いつまで有効か・その後
+                        どうなるか）だけを言う。
+                        「更新を再開する」ボタンは置かない: 解約時点で
+                        BE が KOMOJU 側のサブスクリプションを削除しており
+                        （CancelSubscriptionUseCase → KomojuPaymentGateway の
+                        DELETE /subscriptions/{id}）、BE内フラグだけ戻しても
+                        実際の更新・課金は走らない。「更新されます」と表示
+                        しながら更新されない課金上の嘘になるため、再開は
+                        期間終了後の再加入（チェックアウト）に一本化する。 */}
                     {effectiveSubscription.cancelScheduled && (
                       <p className="border border-line bg-bg px-3 py-3 text-[12px] leading-6 text-text-dim">
                         {cancelScheduledNote}

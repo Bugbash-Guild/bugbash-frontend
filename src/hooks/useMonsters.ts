@@ -6,7 +6,7 @@ import useSWR from 'swr';
 
 import { asArray, fetchJson, isUnauthorizedApiError } from '@/lib/apiError';
 import { fetchMasterJson } from '@/lib/masterData';
-import type { AwakeningState, Monster, MonsterFormStage } from '@/types/monster';
+import type { AwakeningState, Monster, MonsterAcquisition, MonsterFormStage } from '@/types/monster';
 import { useRedirectOnUnauthorized } from './useRedirectOnUnauthorized';
 
 type AllMonstersDto = {
@@ -25,6 +25,8 @@ type OwnedMonstersDto = {
         id: string;
         ownedMonsterId?: string | number;
         acquiredAt?: string;
+        /** 出自PR。BE 未対応の環境では届かない（欠損許容）。 */
+        acquisition?: MonsterAcquisition | null;
         slug?: string;
         soulCount: number;
         level: number;
@@ -101,6 +103,7 @@ export function useMonsters() {
                 id: m.id,
                 ownedMonsterId: ownedMonster?.ownedMonsterId,
                 acquiredAt: ownedMonster?.acquiredAt,
+                acquisition: ownedMonster?.acquisition,
                 slug: ownedMonster?.slug ?? m.slug,
                 name: m.name,
                 emoji: m.emoji,
