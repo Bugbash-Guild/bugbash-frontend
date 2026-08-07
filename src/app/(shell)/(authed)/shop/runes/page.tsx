@@ -180,7 +180,9 @@ export default function RuneShopPage() {
 
         {monthlyLimitJpy !== null && (
           <div className="mb-4 border border-accent/30 bg-accent/10 px-3 py-2 text-[12px] text-accent">
-            30日間の購入上限: ¥{monthlyLimitJpy.toLocaleString("ja-JP")}
+            {/* 上限の期間は暦月（毎月1日 JST リセット）。ローリング30日ではない。 */}
+            今月の購入上限: ¥{monthlyLimitJpy.toLocaleString("ja-JP")}
+            <span className="ml-2 text-accent/70">毎月1日（日本時間）にリセット</span>
           </div>
         )}
 

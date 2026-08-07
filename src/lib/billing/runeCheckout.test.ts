@@ -127,11 +127,11 @@ describe("rune checkout helpers", () => {
     });
     assert.deepEqual(mapBillingCheckoutError(422, "monthly spending cap exceeded"), {
       action: "none",
-      message: "30日間の購入上限を超えるため購入できません。上限は毎日少しずつ回復します。",
+      message: "今月の購入上限を超えるため購入できません。上限は毎月1日（日本時間）にリセットされます。",
     });
     assert.deepEqual(mapBillingCheckoutError(422, "課金上限を超えます（当月上限 ¥5000 / 当月購入 ¥4800）"), {
       action: "none",
-      message: "30日間の購入上限を超えるため購入できません。上限は毎日少しずつ回復します。",
+      message: "今月の購入上限を超えるため購入できません。上限は毎月1日（日本時間）にリセットされます。",
     });
   });
 });
