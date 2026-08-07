@@ -14,23 +14,25 @@ const allHrefs = NAV_SECTIONS.flatMap((section) =>
 );
 
 describe("NAV_SECTIONS", () => {
-  it("keeps the nav to 5 items — 「自分」はフッターの HERO_STATUS ゾーンへ", () => {
-    // 旧: 静的5 + ~/@username 注入で6。オーナー判断（2026-08-07）で
-    // プロフィールをナビから外し HERO_STATUS ゾーンに集約した。
+  it("keeps the nav at the 6-item cap — プロフィールはフッターの HERO_STATUS ゾーンへ", () => {
+    // 6項目上限（§7）ちょうど。プロフィールを HERO_STATUS ゾーンへ移した
+    // 枠に badges が昇格した（オーナー判断 2026-08-07）。
     // ここが増えたら情報設計の再議論が要る。
-    assert.equal(allHrefs.length, 5);
+    assert.equal(allHrefs.length, 6);
     assert.equal(new Set(allHrefs).size, allHrefs.length);
     // プロフィールをナビへ再注入しない（HERO_STATUS ゾーンが扉）
     assert.ok(!allHrefs.some((href) => href.startsWith("/heroes")));
   });
 
-  it("keeps the badges entrance pinned in the HERO_STATUS menu", () => {
-    // バッジの常設入口。「導線がわかりづらい」フィードバックへの回答なので、
-    // メニューから消すときは代替の常設入口を用意すること。
-    assert.ok(ACCOUNT_MENU_ITEMS.some((item) => item.href === "/badges"));
-    // /badges・/mints 滞在中はフッター（自分ゾーン）が現在地表示になる
-    assert.ok(ACCOUNT_PATHS.includes("/badges"));
+  it("keeps the badges entrance as a first-class nav item", () => {
+    // 「導線がわかりづらい」フィードバックへの回答。ナビから外すときは
+    // 代替の常設入口を用意すること。
+    assert.ok(allHrefs.includes("/badges"));
+    // ナビ昇格に伴い HERO_STATUS メニューの重複入口は持たない
+    assert.ok(!ACCOUNT_MENU_ITEMS.some((item) => item.href === "/badges"));
+    // /mints 滞在中はフッター（自分ゾーン）が現在地表示になる
     assert.ok(ACCOUNT_PATHS.includes("/mints"));
+    assert.ok(!ACCOUNT_PATHS.includes("/badges"));
   });
 
   it("pairs every english command with a japanese sublabel", () => {
