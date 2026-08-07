@@ -217,7 +217,9 @@ home を状態機械として定義し、**どの状態でも必ず1つは押せ
 
 ## 6. 実装ウェーブ
 
-### Wave 1 — FEのみ・即効（これだけで体感が変わる10項目）
+> **進捗（2026-08-07）**: Wave 1 = 全項目 ✅（FE #163）。Wave 2 = FE完結分 ✅（FE #164）＋BE小依存分 ✅（BE #323 / FE #165）。未了は「今月の目標」自己設定行・/pass→/shop/pass 移設・バッジスロットピッカーのみ。Wave 3 は /me API・出自PR・runes換算が前倒しで ✅、パス un-cancel は**取り下げ**（解約時に KOMOJU 側サブスクリプションを削除済みで、フラグだけ戻す resume は「更新される」と表示しながら課金・更新が走らない嘘になるため。再開は期間終了後の再加入に一本化）。残りは下記の注記どおり。
+
+### Wave 1 — FEのみ・即効（これだけで体感が変わる10項目） ✅ 完了（#163）
 1. callback の setup_action 分岐＋完了パネル化（初動の無言放流を止める）
 2. TrackingReadyPanel（空白時間に答えを置く）
 3. home 活動ログのリンク化＋全件展開＋表示の正直化
@@ -229,19 +231,19 @@ home を状態機械として定義し、**どの状態でも必ず1つは押せ
 9. /pass: plan エラー再試行＋解約予定の説明文＋解約文言統一
 10. 嘘の状態の一掃: leaderboard エラー分岐・profile unavailable 分岐・billing/return 中断文言・/login 権限表記＋規約リンク
 
-### Wave 2 — FE大きめ or BE小依存
+### Wave 2 — FE大きめ or BE小依存 ✅ ほぼ完了（#164 / #165、残: 自己設定行・/pass移設・スロットピッカー）
 - モバイル二段バー統合／jaLabel／ドロワー改善／ルーン残高チップのリンク化
 - プロフィール: isSelf の shell 維持・シェアCTA・OG layout・訪問者ヘッダ
 - 召喚: SummonResultGrid 共通化＋レア別リビール・限定単発確認・限定バナー目玉表示・育成接続
-- 図鑑: 出自PR表示（BE: 既存 AcquisitionInfo の API 露出のみ）
-- コマース: runes 召喚回数換算（BE小）・確認モーダル残高2行・mints 確認＋完了導線・skins 空状態
+- 図鑑: ✅ 出自PR表示（BE #323: activities との一括結合で露出 / FE #165）
+- コマース: ✅ runes 召喚回数換算（#323/#165）・確認モーダル残高2行・mints 確認＋完了導線・skins 空状態（#164）
 - home 実績進捗行（/badges 第二入口）・「今月の目標を自分で決める」・RewardModal の既読トリガー限定＋着信チップ降格
 - /pass→/shop/pass 移設・forge パンくず・バッジスロットピッカー
 
-### Wave 3 — BE/事業判断依存
+### Wave 3 — BE/事業判断依存（△ = 一部前倒しで完了）
 - 購入上限・当月消化額の公開API＋mypage/runes 常設表示
-- パス un-cancel API（「更新を再開する」）／orders の displayName・パス請求統合
-- leaderboard: /me API＋自分行、期間窓（今月の発見数軸）
+- ~~パス un-cancel API~~ **取り下げ**（PSP側解約済みのため課金上の嘘になる。BE #323 参照）／orders の displayName・パス請求統合
+- leaderboard: ✅ /me API＋自分行（#323/#165）。期間窓（今月の発見数軸）は未了
 - installation リポジトリ一覧 API（TrackingReadyPanel の「追跡中: Nリポジトリ」）・承認待ち状態のバナー変種
 - `/heroes/[login]` への正規化（シェアURL・OG・自己同一性を同時解決）
 - **スキン在庫投入**（/forge・図鑑スキン棚・観客→顧客導線すべての前提。FE側の受け皿は Wave 1-2 で先に完成させる）
