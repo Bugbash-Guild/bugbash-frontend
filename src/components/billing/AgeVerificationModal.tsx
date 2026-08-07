@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { useModalDismiss } from "@/hooks/useModalDismiss";
 import {
   AGE_GROUP_OPTIONS,
   buildAgeVerificationRequest,
@@ -25,6 +26,15 @@ export function AgeVerificationModal({
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AgeVerificationResponse | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // open prop で内部分岐する実装なので、フックにも open を渡す
+  // （早期 return より前で呼ぶ必要があるため）。
+  // onClose 省略時（閉じる導線を出さない呼び出し）は Esc でも閉じない。
+  // 保存中は閉じられない ＝ 閉じるボタンの disabled と同じ扱い。
+  const panelRef = useModalDismiss({
+    onDismiss: () => onClose?.(),
+    dismissible: !submitting,
+    open,
+  });
 
   if (!open) return null;
 
@@ -63,6 +73,7 @@ export function AgeVerificationModal({
         aria-labelledby="age-verification-title"
         aria-modal="true"
         className="w-full max-w-lg border border-line bg-bg-elev p-5 shadow-[0_24px_80px_rgba(0,0,0,0.65)]"
+        ref={panelRef}
         role="dialog"
         onClick={(event) => event.stopPropagation()}
       >
@@ -121,9 +132,12 @@ export function AgeVerificationModal({
         )}
 
         <div className="mt-5 flex justify-end gap-2">
+          {/* 初期フォーカスは「閉じる」側。年齢区分は購入上限に直結するので、
+              開いた直後の Enter で既定値（成人）が保存されないようにする */}
           {onClose && (
             <button
               className="border border-line px-3 py-1.5 text-[12px] text-text-dim hover:bg-bg-elev-2"
+              data-autofocus
               disabled={submitting}
               onClick={onClose}
               type="button"

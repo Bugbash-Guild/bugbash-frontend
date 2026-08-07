@@ -2,6 +2,8 @@
 
 import { FiX } from "react-icons/fi";
 
+import { useModalDismiss } from "@/hooks/useModalDismiss";
+
 /**
  * 期間末の短い日付表示（YYYY/MM/DD）。値は GET /api/billing/subscription の
  * currentPeriodEnd のみ。届いていない・解釈できないときは null を返し、
@@ -48,6 +50,15 @@ export function CancelPassModal({
   onConfirm,
   open,
 }: CancelPassModalProps) {
+  // open prop で内部分岐するため、早期 return より前でフックに open を渡す。
+  // 保存中（inFlight）は Esc も背景クリックも効かせない（既存の背景クリック
+  // ガードと揃える）。
+  const panelRef = useModalDismiss({
+    onDismiss: onClose,
+    dismissible: !inFlight,
+    open,
+  });
+
   if (!open) return null;
 
   const periodEndDate = formatPeriodEndDate(currentPeriodEnd);
@@ -65,6 +76,7 @@ export function CancelPassModal({
         aria-modal="true"
         className="w-full max-w-md border border-line bg-bg-elev p-5 shadow-[0_24px_80px_rgba(0,0,0,0.65)]"
         onClick={(event) => event.stopPropagation()}
+        ref={panelRef}
         role="dialog"
       >
         <div className="mb-4">
@@ -100,8 +112,11 @@ export function CancelPassModal({
         )}
 
         <div className="flex justify-end gap-2">
+          {/* 初期フォーカスは「戻る」側。開いた直後の Enter 連打で
+              解約予定が入らないようにする */}
           <button
             className="border border-line px-3 py-1.5 text-[12px] text-text-dim hover:bg-bg-elev-2 disabled:cursor-not-allowed disabled:opacity-50"
+            data-autofocus
             disabled={inFlight}
             onClick={onClose}
             type="button"

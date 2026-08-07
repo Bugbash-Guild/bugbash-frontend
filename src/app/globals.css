@@ -99,3 +99,202 @@ body {
   font-family: var(--font-jetbrains-mono), 'JetBrains Mono', monospace;
   font-variant-numeric: tabular-nums;
 }
+
+/* ==========================================================================
+   アクセシビリティ基盤
+   ========================================================================== */
+
+/*
+ * フォーカスリング。
+ *
+ * Tailwind の preflight がブラウザ既定の outline を消すため、ここに定義が
+ * 無いとキーボード操作中「いま自分がどこに居るか」が一切見えない。
+ *
+ * :focus ではなく :focus-visible を使う理由:
+ * マウスで押しただけの要素にリングが残ると「押しっぱなし」に見えるノイズに
+ * なる。キーボード由来かどうかの判定はブラウザに任せる。
+ *
+ * @layer に入れずレイヤー無しで書いている理由:
+ * Tailwind のユーティリティは utilities レイヤーに載るので、base や
+ * components に入れると個別の `outline-none`（例: badges ページの検索入力）に
+ * 負けてリングが黙って消える。レイヤー無しの宣言は全レイヤーより強いため、
+ * 「一箇所だけフォーカスが見えない」という事故が起きない。
+ * 個別に色を変えたいときは Tailwind の important 修飾子
+ * （例: `focus-visible:outline-blue!`）で上書きすること。
+ */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/*
+ * 例外: tabindex="-1" の要素にはリングを出さない。
+ * これはスキップリンクの着地点（<main>）のように、操作対象ではなく
+ * 「フォーカスを受け取るだけ」の入れ物に付く属性。本文領域全体が緑枠で
+ * 囲まれても居場所の情報にはならず驚かせるだけなので、ここだけ抑制する。
+ * ドロワーの背面ボタン（tabIndex={-1}）もこの規則の対象で、意図通り。
+ */
+[tabindex='-1']:focus-visible {
+  outline: none;
+}
+
+/*
+ * prefers-reduced-motion: reduce への対応。方針は 2 段構え。
+ *
+ * (1) transition と単発アニメーションは 0.01ms に潰す。
+ *     transition は「2 つの状態の間を補間するだけ」なので、補間を消しても
+ *     開始状態も終了状態も残る = 情報は 1 つも失われない。
+ *     0 ではなく 0.01ms なのは定番の作法で、完全な 0 だと transitionend /
+ *     animationend が発火しないブラウザがあり、それを待つ JS が止まるため。
+ *     現状この repo に完了イベント待ちのコードは無いが、後から足されたときに
+ *     静かに壊れないよう最初から 0.01ms にしておく。
+ *
+ * (2) 無限ループするアニメーションは 1 回で止める。
+ *     Tailwind の pulse は `50% { opacity: .5 }` だけなので、止めれば
+ *     opacity: 1 に戻る。つまりターミナル風カーソル（ConsoleTopbar /
+ *     TermLoading / AuthGate ほか）もスケルトン（BadgePrestigeGrid /
+ *     mints）も「点滅しないまま、はっきり見えた状態」で残る。情報欠落なし。
+ *
+ * animate-spin だけは例外にする → 直下の規則を参照。
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /*
+   * 例外: ローディングスピナーは回し続ける。
+   *
+   * spin の keyframes は `to { rotate(360deg) }` だけなので、止めると
+   * 「上辺が透明な欠けたリング」が 0 度で固まる。これは "処理中" ではなく
+   * "壊れた / 固まった" にしか見えず、待てば終わるという情報が失われる。
+   * transition と違い、ここでは回転そのものが唯一の状態表示なので消せない。
+   *
+   * reduced-motion が本来守りたいのは前庭障害で、その引き金は「広い面積が
+   * 動く」こと（視差・ズーム・大きなスライド）。この repo の spin は
+   * 送信ボタン内の 14px のリングだけで、その対象ではない。
+   * 完全停止ではなく 1s → 1.6s に落として刺激だけ下げる、を選ぶ。
+   *
+   * `*` より詳細度が高い !important 宣言なのでこちらが勝つ。
+   * keyframes 名には触れず longhand だけ上書きしているので、Tailwind 側の
+   * 定義が変わっても壊れない。
+   */
+  .animate-spin {
+    animation-duration: 1.6s !important;
+    animation-iteration-count: infinite !important;
+  }
+}
+
+@layer components {
+  /*
+   * 本文スキップリンク。
+   *
+   * サイドバーには十数個のリンクがあり、キーボードだけだと本文へ届くまで
+   * Tab を延々と押すことになる。通常は視覚的に隠し、フォーカスが来たときだけ
+   * 左上に出す定番パターン。
+   *
+   * position: fixed + transform で隠す理由:
+   * sr-only → not-sr-only のように通常フローへ戻すと、出現した瞬間に本文が
+   * 下へずれてレイアウトが跳ねる。フローの外に置けばズレようがない。
+   *
+   * :focus-visible ではなく :focus を使う理由:
+   * このリンクはそもそもキーボードでしか到達しない。判定を誤って出なかった
+   * 場合、本文へ飛ぶ手段そのものが失われるので、確実に出る方を取る。
+   *
+   * 角から 10px 離しているのは、上の :focus-visible リング（2px + offset
+   * 2px）が画面外にはみ出して欠けて見えるのを避けるため。
+   */
+  .skip-link {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 60; /* ドロワー等の z-50 より上に出す */
+    padding: 8px 14px;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    background: var(--bg-elev);
+    color: var(--accent);
+    font-size: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+    /* 自身の高さ + 上余白 + リング分を確実に越えて画面外へ退避させる */
+    transform: translateY(calc(-100% - 20px));
+  }
+
+  .skip-link:focus {
+    transform: translateY(0);
+  }
+}
+
+@layer base {
+  /*
+   * 押せるものはポインタ、押せないものは not-allowed。
+   * Tailwind v4 の preflight はボタンに cursor を付けないため、既定では
+   * 全ボタンが矢印カーソルのままで「押せる」ことが伝わらない。
+   * この repo は cursor-not-allowed を 25 箇所で手書きしている一方
+   * cursor-pointer は 4 箇所しか無く、押せる側だけ抜け落ちていた。
+   * base レイヤーなので、個別の cursor-* ユーティリティが常に優先される。
+   */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role='button']:disabled {
+    cursor: not-allowed;
+  }
+}
+
+/*
+ * ブラウザ側が描く UI をダーク前提にする。
+ * これが無いとスクロールバー・ネイティブのフォーム部品・オートフィル背景
+ * だけが白系で描かれ、暗いコンソール画面の中で 1 箇所だけ光る。
+ * accent-color はチェックボックス / ラジオ（計 5 箇所）の選択色を
+ * 既定の青からブランド緑へ寄せる。
+ */
+:root {
+  color-scheme: dark;
+  accent-color: var(--accent);
+}
+
+/*
+ * テキスト選択色。既定の青はこの配色から浮く。
+ * 半透明ではなく不透明な組み合わせにしているのは、下地が明るい要素
+ * （bg-accent のボタン等）の上でもコントラストが確定するため。
+ * accent-dim(#3da55a) 上の bg(#0b0f0d) で約 6:1。
+ */
+::selection {
+  background: var(--accent-dim);
+  color: var(--bg);
+}
+
+/* 入力キャレットをアクセント色に。ターミナルの見た目に揃える。 */
+input,
+textarea {
+  caret-color: var(--accent);
+}
+
+/*
+ * モバイルのタップハイライト。
+ * Tailwind v4 の preflight が html に transparent を当てているため、現状
+ * モバイルでは「押した」手応えが一切無い。この repo は active: の押下表現も
+ * 持たないので、消えたままだと反応が皆無になる。アクセント色の薄い面を
+ * 敷き直して手応えだけ戻す。
+ *
+ * color-mix を使わず rgba を直書きしている理由:
+ * ビルド時に生成される color-mix の非対応フォールバックが「不透明な
+ * var(--accent)」になり、未対応環境で緑一色にフラッシュしてしまう。
+ * 値は --accent (#7ee787) の 22%。--accent を変えたらここも合わせる。
+ * （--rune-glow / --rune-bg など、既存トークンも同じ手書き rgba 方式）
+ */
+html {
+  -webkit-tap-highlight-color: rgba(126, 231, 135, 0.22);
+}

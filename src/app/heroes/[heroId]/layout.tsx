@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { SITE_NAME } from "@/lib/siteMetadata";
 import { fetchPublicHeroLogin, resolveMetadataBase } from "./profileMetadata";
 
 /**
@@ -21,24 +22,29 @@ export async function generateMetadata({
 
   // 失敗時（非公開・未存在・BE不達）は名義を出さない汎用タイトルに落とす。
   // heroId（内部の数値ID）をタイトルに焼き込んでも読者には無意味なので使わない
-  const title = login ? `@${login} | BugBash` : "公開プロフィール | BugBash";
+  const name = login ? `@${login}` : "公開プロフィール";
   const description = login
     ? `@${login} の公開プロフィール — GitHubの活動で獲得したレベル・バッジ・コレクション。名声表示は購入で変化しません。`
     : "BugBashの公開プロフィール — GitHubの活動で獲得したレベル・バッジ・コレクション。";
 
   return {
     metadataBase: resolveMetadataBase(),
-    title,
+    // タブ名の「| BugBash」は root layout の template が付ける。ここで自分でも
+    // 足すと「@octocat | BugBash | BugBash」と二重になる（template は文字列
+    // title に対して常に適用されるため）
+    title: name,
     description,
     openGraph: {
-      title,
+      // OG/Twitter には template が適用されない。SNSカードは単独で読まれるので
+      // ここだけはサイト名まで含んだ完全な形を明示する
+      title: `${name} | ${SITE_NAME}`,
       description,
       type: "profile",
       username: login ?? undefined,
     },
     twitter: {
       card: "summary_large_image",
-      title,
+      title: `${name} | ${SITE_NAME}`,
       description,
     },
   };

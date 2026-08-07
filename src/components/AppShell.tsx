@@ -45,6 +45,16 @@ function FallbackNavStrip() {
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <DrawerProvider>
+      {/*
+        本文スキップリンク。サイドバーのリンクを全部 Tab で抜けないと本文に
+        届かない、を回避する。DOM 上の最初のフォーカス可能要素である必要が
+        あるのでフレームより前に置く（fixed なのでレイアウトには影響しない）。
+        見た目と隠し方は globals.css の .skip-link を参照。
+      */}
+      <a className="skip-link" href="#main-content">
+        本文へスキップ
+      </a>
+
       <div className="flex h-screen bg-bg-outer p-0 sm:p-4 lg:p-6">
         <div
           className="group/shell flex min-w-0 flex-1 flex-col overflow-hidden rounded-none sm:rounded-[10px]"
@@ -60,9 +70,17 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="hidden md:flex">
               <SideBar />
             </div>
+            {/*
+              tabIndex={-1} はスキップリンクの着地点として必須。これが無いと
+              Safari / Firefox はスクロール位置だけ動かしてフォーカスは動かさず、
+              次の Tab がページ先頭に戻ってしまい「飛べていない」ことになる。
+              フォーカスリングは globals.css の [tabindex='-1'] 例外で出さない。
+            */}
             <main
               className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-bg [&::-webkit-scrollbar]:hidden"
+              id="main-content"
               style={{ scrollbarWidth: "none" }}
+              tabIndex={-1}
             >
               <PendingGrantBanner />
               <TrackingStatusBanner />

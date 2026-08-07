@@ -10,6 +10,7 @@ import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { ShopTabs } from "@/components/ShopTabs";
 import { trackFunnelEvent, useTrackScreenView } from "@/hooks/useFunnelTracking";
 import { useAuth } from "@/hooks/useAuth";
+import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { useRuneProducts } from "@/hooks/useRuneProducts";
 import { useWallet } from "@/hooks/useWallet";
 import { clearAgeVerification, readAgeVerified } from "@/lib/billing/ageVerification";
@@ -85,6 +86,15 @@ export default function RuneShopPage() {
     ? (summonEquivalentById.get(selectedProduct.id) ?? null)
     : null;
   const checkoutInFlight = checkoutProductId !== null;
+
+  // Esc・Tab循環・背後のスクロールロックは共通フックへ。open は描画条件と同じ式に
+  // すること（ずれると、出ていないモーダルのために背後が固まる）。
+  const checkoutPanelRef = useModalDismiss({
+    // PSP へ送り出す準備中は閉じない（遷移直前に消えて操作不能に見えるのを防ぐ）
+    dismissible: !checkoutInFlight,
+    onDismiss: () => setSelectedProduct(null),
+    open: selectedProduct != null && selectedCard != null,
+  });
 
 
   function beginPurchase(product: RuneProduct) {
@@ -248,17 +258,20 @@ export default function RuneShopPage() {
 
       {selectedProduct && selectedCard && (
         <div
-          aria-labelledby="rune-checkout-title"
-          aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
           onClick={() => {
             if (!checkoutInFlight) setSelectedProduct(null);
           }}
-          role="dialog"
+          role="presentation"
         >
+          {/* dialog はオーバーレイではなくパネル（中身の箱）が名乗る */}
           <section
+            aria-labelledby="rune-checkout-title"
+            aria-modal="true"
             className="w-full max-w-md border border-line bg-bg-elev p-5 shadow-[0_24px_80px_rgba(0,0,0,0.65)]"
             onClick={(event) => event.stopPropagation()}
+            ref={checkoutPanelRef}
+            role="dialog"
           >
             <div className="mb-4">
               <div className="mb-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
@@ -316,8 +329,11 @@ export default function RuneShopPage() {
             )}
 
             <div className="mt-5 flex justify-end gap-2">
+              {/* 初期フォーカスはキャンセル側に。実際に課金が始まる決済遷移を
+                  Enter 連打で走らせない */}
               <button
                 className="border border-line px-3 py-1.5 text-[12px] text-text-dim hover:bg-bg-elev-2 disabled:cursor-not-allowed disabled:opacity-50"
+                data-autofocus
                 disabled={checkoutInFlight}
                 onClick={() => setSelectedProduct(null)}
                 type="button"

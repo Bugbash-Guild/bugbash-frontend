@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
 import { FiX } from "react-icons/fi";
 
 import { ItemVisual } from "@/components/ItemVisual";
+import { useModalDismiss } from "@/hooks/useModalDismiss";
 import type { InventoryItem } from "@/types/inventory";
 import type { Monster } from "@/types/monster";
 
@@ -128,16 +128,17 @@ export function EvolutionConfirmModal({
   onConfirm,
   request,
 }: EvolutionConfirmModalProps) {
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !inFlight) onCancel();
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [inFlight, onCancel]);
-
   const { kind, monster } = request;
   const consumed = resolveConsumedItem(request, items, inventoryKnown);
+  // 実行中（inFlight）は Esc で閉じない（✕ / キャンセルの disabled と同じ）。
+  // 対象外の状態（下の early return で何も描かないケース）ではパネルが存在
+  // しないので、フォーカストラップとスクロールロックも掛けない。
+  const panelRef = useModalDismiss({
+    onDismiss: onCancel,
+    dismissible: !inFlight,
+    open: consumed != null,
+  });
+
   // 対象外の状態（NORMAL への路線変更など）で開かれたら何も出さない。
   if (consumed == null) return null;
 
@@ -160,17 +161,20 @@ export function EvolutionConfirmModal({
 
   return (
     <div
-      aria-labelledby="evolution-confirm-title"
-      aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
       onClick={() => {
         if (!inFlight) onCancel();
       }}
-      role="dialog"
+      role="presentation"
     >
+      {/* role="dialog" はオーバーレイではなくパネル（中身の箱）側に置く */}
       <div
+        aria-labelledby="evolution-confirm-title"
+        aria-modal="true"
         className="w-full max-w-md border border-purple/50 bg-bg-elev shadow-2xl"
         onClick={(event) => event.stopPropagation()}
+        ref={panelRef}
+        role="dialog"
       >
         <div className="flex items-center justify-between border-b border-line px-4 py-3">
           <div>
@@ -310,8 +314,11 @@ export function EvolutionConfirmModal({
           )}
 
           <div className="flex justify-end gap-2">
+            {/* 初期フォーカスはキャンセル側。開いた直後の Enter 連打で
+                アイテムを消費する不可逆寄りの操作が走らないようにする */}
             <button
               className="border border-line px-3 py-2 text-[12px] text-text-dim hover:bg-bg-elev-2 disabled:opacity-50"
+              data-autofocus
               disabled={inFlight}
               onClick={onCancel}
               type="button"

@@ -11,6 +11,7 @@ import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { InlineActionResult } from "@/components/InlineActionResult";
 import { useAuth } from "@/hooks/useAuth";
 import { useCommemorativeMints } from "@/hooks/useCommemorativeMints";
+import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { useWallet } from "@/hooks/useWallet";
 import {
   createMintIdempotencyKeyManager,
@@ -83,14 +84,15 @@ export default function MintsPage() {
     }
   }, [selectedOffer, selectedRecolor]);
 
-  useEffect(() => {
-    if (!confirming) return;
-    function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape" && !inFlight) setConfirming(false);
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [confirming, inFlight]);
+  // Esc・フォーカストラップ・背後のスクロールロックは共通フックに寄せる。
+  // open は「モーダルが実際に描画されている条件」と一致させること。ずれると、
+  // 出ていないモーダルのために背後がロックされたままになる。
+  const confirmPanelRef = useModalDismiss({
+    // 鋳造中は閉じられない（POST の結果が分からないまま消さない）既存挙動を維持
+    dismissible: !inFlight,
+    onDismiss: () => setConfirming(false),
+    open: confirming && selectedOffer != null && selectedRecolor != null,
+  });
 
   // 鋳造したプレートが並ぶ自分のプロフィール棚。githubId が取れない間は
   // リンクを組めないので出さない（存在しない宛先へ誘導しない）。
@@ -298,17 +300,20 @@ export default function MintsPage() {
       {/* 鋳造確認モーダル: 実費用と、引かれる前後の残高を事実として見せてから実行する */}
       {confirming && selectedOffer && selectedRecolor && (
         <div
-          aria-labelledby="mint-confirm-title"
-          aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
           onClick={() => {
             if (!inFlight) setConfirming(false);
           }}
-          role="dialog"
+          role="presentation"
         >
+          {/* dialog はオーバーレイではなくパネル（中身の箱）が名乗る */}
           <div
+            aria-labelledby="mint-confirm-title"
+            aria-modal="true"
             className="w-full max-w-md border border-line bg-bg-elev p-5"
             onClick={(event) => event.stopPropagation()}
+            ref={confirmPanelRef}
+            role="dialog"
           >
             <p className="text-[10px] tracking-[0.12em] text-gold">MINT CONFIRM</p>
             <h2 className="mt-1 text-[15px] font-semibold text-text" id="mint-confirm-title">
@@ -342,8 +347,11 @@ export default function MintsPage() {
             </p>
             {purchaseError && <p className="mt-3 text-[11px] text-pink">{purchaseError}</p>}
             <div className="mt-4 flex justify-end gap-2">
+              {/* 初期フォーカスはキャンセル側に。ルーンが減る取り消せない操作を
+                  Enter 連打で走らせない */}
               <button
                 className="border border-line px-3 py-2 text-[12px] text-text-dim hover:text-text"
+                data-autofocus
                 disabled={inFlight}
                 onClick={() => setConfirming(false)}
                 type="button"

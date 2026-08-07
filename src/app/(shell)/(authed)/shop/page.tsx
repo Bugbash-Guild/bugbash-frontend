@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { mutate } from "swr";
 
 import { useTrackScreenView } from "@/hooks/useFunnelTracking";
 import { useAuth } from "@/hooks/useAuth";
+import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { useShop } from "@/hooks/useShop";
 import { useInventory } from "@/hooks/useInventory";
 import { usePurchase } from "@/hooks/usePurchase";
@@ -63,15 +64,14 @@ export default function ShopPage() {
     resetPurchase();
   }
 
-  useEffect(() => {
-    if (!selected) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") closeModal();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, purchasing]);
+  // Esc の自前ハンドラは共通フックへ集約（Tab 循環と背後のスクロールロックも同時に入る）。
+  // open は描画条件と同じ式にする。ずれると、出ていないモーダルのために背後が固まる。
+  const purchasePanelRef = useModalDismiss({
+    // 購入処理中は閉じない（closeModal の既存ガードと同じ条件）
+    dismissible: !purchasing,
+    onDismiss: closeModal,
+    open: selected != null && selectedPresentation != null,
+  });
 
 
   async function handleConfirm() {
@@ -145,13 +145,16 @@ export default function ShopPage() {
       {/* purchase confirm modal */}
       {selected && selectedPresentation && (
         <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="shop-purchase-title"
+          role="presentation"
           className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4"
           onClick={closeModal}
         >
+          {/* dialog はオーバーレイではなくパネル（中身の箱）が名乗る */}
           <div
+            ref={purchasePanelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="shop-purchase-title"
             className="bg-bg-elev border border-line rounded-lg w-full max-w-md p-5"
             onClick={(e) => e.stopPropagation()}
           >
@@ -221,7 +224,9 @@ export default function ShopPage() {
             )}
 
             <div className="flex gap-2 justify-end">
+              {/* 初期フォーカスはキャンセル側に。残高が減る操作を Enter 連打で走らせない */}
               <button
+                data-autofocus
                 onClick={closeModal}
                 disabled={purchasing}
                 className="px-3 py-1.5 text-[12px] text-text-dim border border-line rounded hover:bg-bg-elev-2"

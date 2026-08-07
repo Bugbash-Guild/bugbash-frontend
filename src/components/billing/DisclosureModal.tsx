@@ -1,5 +1,6 @@
 "use client";
 
+import { useModalDismiss } from "@/hooks/useModalDismiss";
 import {
   buildDisclosureFacts,
   buildDisclosureRows,
@@ -21,6 +22,10 @@ export function DisclosureModal({
   onClose,
   open,
 }: DisclosureModalProps) {
+  // open prop で内部分岐するため、早期 return より前でフックに open を渡す。
+  // 読み込み中でも閉じられる（読むだけの開示で、閉じて困る実行中の処理が無い）。
+  const panelRef = useModalDismiss({ onDismiss: onClose, open });
+
   if (!open) return null;
 
   const facts = disclosure ? buildDisclosureFacts(disclosure) : [];
@@ -37,6 +42,7 @@ export function DisclosureModal({
         aria-modal="true"
         className="max-h-[88vh] w-full max-w-3xl overflow-hidden border border-line bg-bg-elev shadow-[0_24px_80px_rgba(0,0,0,0.65)]"
         onClick={(event) => event.stopPropagation()}
+        ref={panelRef}
         role="dialog"
       >
         <div className="border-b border-line px-5 py-4">
