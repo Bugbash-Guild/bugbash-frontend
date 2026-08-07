@@ -45,6 +45,13 @@ function HomeLink() {
     );
 }
 
+/**
+ * 導入をやり直す入口。slug 未設定だと
+ * https://github.com/apps//installations/new という壊れた URL になるので、
+ * その構成では出さない（ホームの GithubAppBanner と同じ判定）。
+ */
+const APP_SLUG = process.env.NEXT_PUBLIC_GITHUB_APP_SLUG ?? "";
+
 function GithubAppCallbackInner() {
     const params = useSearchParams();
     const [view, setView] = useState<CallbackView>({ kind: "saving" });
@@ -104,7 +111,8 @@ function GithubAppCallbackInner() {
                 <div className="bg-bg-elev border border-line rounded-[6px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
                     {/* title bar（/login と同じ端末窓様式） */}
                     <div className="px-[14px] py-[10px] border-b border-line flex items-center gap-[10px] bg-bg-elev-2">
-                        <div className="flex gap-[6px]">
+                        {/* 端末窓の装飾（操作できない飾り）。読み上げからは外す */}
+                        <div aria-hidden className="flex gap-[6px]">
                             <span className="w-[10px] h-[10px] rounded-full" style={{ background: "#ff5f56" }} />
                             <span className="w-[10px] h-[10px] rounded-full" style={{ background: "#ffbd2e" }} />
                             <span className="w-[10px] h-[10px] rounded-full" style={{ background: "#27c93f" }} />
@@ -164,11 +172,33 @@ function GithubAppCallbackInner() {
                                     連携情報を確認できませんでした
                                 </h1>
                                 <p className="mt-2 text-[12px] leading-6 text-text-dim">
-                                    GitHub からの連携パラメータが見つかりません。ホームの案内から GitHub App
-                                    の導入をやり直してください。
+                                    GitHub からの連携パラメータが見つかりません。導入をやり直すか、ホームに戻って
+                                    状態を確認してください。
                                 </p>
-                                <div className="mt-4">
-                                    <HomeLink />
+                                {/* 「ホームの案内から探してください」で放り出すと1手余分になる。
+                                    同じ導入リンクをこの場に置いて、ここからやり直せるようにする
+                                    （並びとボタン様式は下の SETUP FAILED と揃える） */}
+                                <div className="mt-4 flex flex-wrap items-center gap-2">
+                                    {APP_SLUG ? (
+                                        <>
+                                            <a
+                                                className="border border-accent px-3 py-1.5 text-[12px] text-accent hover:bg-accent hover:text-bg"
+                                                href={`https://github.com/apps/${APP_SLUG}/installations/new`}
+                                                rel="noopener noreferrer"
+                                                target="_blank"
+                                            >
+                                                GitHub App を導入する →
+                                            </a>
+                                            <Link
+                                                className="border border-line px-3 py-1.5 text-[12px] text-text-dim hover:bg-bg-elev-2"
+                                                href="/"
+                                            >
+                                                ホームへ
+                                            </Link>
+                                        </>
+                                    ) : (
+                                        <HomeLink />
+                                    )}
                                 </div>
                             </>
                         )}

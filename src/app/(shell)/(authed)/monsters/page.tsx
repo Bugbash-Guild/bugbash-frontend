@@ -49,6 +49,9 @@ type FilterKey = "all" | RarityKey;
 const RARITY_GROUPS: RarityKey[] = ["N", "R", "SR", "SSR"];
 const FILTERS: FilterKey[] = ["all", "N", "R", "SR", "SSR"];
 
+/** MATERIALS 帯に並べる素材の数。超えた分は件数だけ添えて黙って落とさない。 */
+const MATERIALS_PREVIEW_COUNT = 6;
+
 /** カード内に出す操作結果（対象モンスターの隣に表示する）。 */
 type CardActionResult = {
   detail?: string;
@@ -290,7 +293,6 @@ export default function MonstersPage() {
 
   const partnerMonster = dex.find((m) => m.id === partnerId) ?? null;
   const progress = buildDexProgress(dex);
-  const ownedInstances = dex.reduce((sum, m) => sum + (m.isOwned ? 1 : 0), 0);
 
   /*
    * 「次に埋まりやすい枠」: 未発見のうち PR マージで出会える枠は、日々の
@@ -325,24 +327,37 @@ export default function MonstersPage() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-[28px] font-semibold tracking-[-0.015em]">Monster Dex</h1>
+            {/*
+              "owned N instances" は撤去した。この一覧はマスタ1件＝1種で
+              畳まれており（useMonsters が isOwned の真偽を載せるだけ）、
+              個体数はどこにも無い。同じ discovered を2回、片方は誤った
+              ラベルで出していた。
+              所持の取得に失敗している間（ownedDegraded）は discovered が
+              全部 0 に落ちるので、0 を事実として出さず "—" にする
+              （home の species owned と同じ扱い）。
+            */}
             <p className="mt-1.5 text-[12.5px] leading-7 text-text-dim">
-              discovered <b className="text-accent">{progress.discovered}</b> / {progress.total}
-              {" · "}owned <b className="text-accent">{ownedInstances}</b> instances{" · "}
-              進化/覚醒＝<span className="text-accent">活動由来</span>
+              discovered{" "}
+              <b className="text-accent">{ownedDegraded ? "—" : progress.discovered}</b>
+              {" / "}
+              {progress.total}
+              {" · "}進化/覚醒＝<span className="text-accent">活動由来</span>
             </p>
             {/* 召喚でしか埋まらない枠は別に数える（働けば埋まる枠と行動が違う） */}
             {progress.summonOnlyTotal > 0 && (
               <p className="mt-0.5 text-[11px] text-text-faint">
                 うち召喚専用{" "}
                 <b className="tabular-nums text-rune">
-                  {progress.summonOnlyDiscovered}
+                  {ownedDegraded ? "—" : progress.summonOnlyDiscovered}
                 </b>
                 {" / "}
                 {progress.summonOnlyTotal}
               </p>
             )}
-            {/* 図鑑進捗バー: 数の羅列より「あとどれくらいか」を一目で読めるように */}
-            {progress.total > 0 && (
+            {/* 図鑑進捗バー: 数の羅列より「あとどれくらいか」を一目で読めるように。
+                所持が読めていないときは 0% のバーが「1体も持っていない」と
+                読めてしまうので、バーごと出さない */}
+            {progress.total > 0 && !ownedDegraded && (
               <div className="mt-2.5 max-w-[340px]">
                 <div className="h-1.5 overflow-hidden rounded-[2px] bg-bg-elev-2">
                   <div
@@ -371,7 +386,8 @@ export default function MonstersPage() {
                   aria-pressed={active}
                   onClick={() => setFilter(f)}
                   className={[
-                    "rounded-[4px] border px-3 py-1.5 text-[11px] transition-colors",
+                    // 指で狙う前提の最小高さ（従来は約28pxで、隣のボタンと誤爆しやすかった）
+                    "inline-flex min-h-9 items-center rounded-[4px] border px-3 text-[11px] transition-colors",
                     active
                       ? "border-accent/40 bg-accent/[0.08] text-accent"
                       : "border-line-strong text-text-dim hover:text-text",
@@ -388,12 +404,18 @@ export default function MonstersPage() {
         {inventoryItems.length > 0 && (
           <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-[4px] border border-line bg-bg-elev px-3.5 py-2 text-[11px]">
             <span className="text-[9px] uppercase tracking-[0.12em] text-text-faint">MATERIALS</span>
-            {inventoryItems.slice(0, 6).map((item) => (
+            {inventoryItems.slice(0, MATERIALS_PREVIEW_COUNT).map((item) => (
               <span className="text-text-dim" key={item.itemId}>
                 {item.name}
                 <span className="ml-1 tabular-nums text-text">×{item.quantity}</span>
               </span>
             ))}
+            {/* 7件目以降を黙って落とさない（活動ログの「直近N件 / 取得済みN件」と同じ方針） */}
+            {inventoryItems.length > MATERIALS_PREVIEW_COUNT && (
+              <span className="text-text-faint">
+                他{inventoryItems.length - MATERIALS_PREVIEW_COUNT}件
+              </span>
+            )}
             <Link
               className="ml-auto text-[10px] text-text-faint underline underline-offset-4 hover:text-accent"
               href="/items"
@@ -509,10 +531,26 @@ export default function MonstersPage() {
               </section>
             );
           })}
+          {/* 絞り込みで空になったときに行き止まりにしない。どの条件で空なのかを
+              言い、そこから戻る手段（絞り込み解除）を同じ場所に置く。
+              ConsoleEmptyState は href 前提なので、様式だけ合わせたボタンにする */}
           {!loading && visibleGroups.length === 0 && (
-            <p className="mt-8 border border-dashed border-line-strong bg-bg-elev px-5 py-12 text-center text-[12px] text-text-faint">
-              該当するモンスターがいません。
-            </p>
+            <div className="mt-8 border border-dashed border-line-strong bg-bg-elev px-5 py-12 text-center">
+              <p className="text-[12px] text-text-dim">
+                {filter === "all"
+                  ? "表示できるモンスターがいません。"
+                  : `レアリティ ${filter} に該当するモンスターがいません。`}
+              </p>
+              {filter !== "all" && (
+                <button
+                  className="mt-3 inline-flex min-h-9 items-center rounded-[4px] border border-accent/40 bg-accent/[0.08] px-4 text-[12px] font-semibold text-accent transition-[filter] hover:brightness-110"
+                  onClick={() => setFilter("all")}
+                  type="button"
+                >
+                  絞り込みを解除 →
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -739,6 +777,21 @@ function MonsterCard({
       {/* management actions (real functionality, kept subtle) */}
       {m.isOwned && (
         <div className="mt-2 space-y-1" onClick={(e) => e.stopPropagation()}>
+          {/*
+            パートナー設定はカード全体の onClick にしか無く、キーボード・
+            スクリーンリーダーからは到達できなかった（div の onClick）。
+            10px のキャプションで説明するより、実体のあるボタンを置く。
+            マウスのカードクリックはそのまま残す。
+          */}
+          {!isPartner && (
+            <button
+              className="w-full rounded border border-line-strong px-2 py-1 text-[10px] text-text-dim transition-colors hover:text-text"
+              onClick={onSetPartner}
+              type="button"
+            >
+              ★ 連れる
+            </button>
+          )}
           {canLevelUp && (
             <button
               type="button"

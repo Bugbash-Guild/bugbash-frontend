@@ -5,10 +5,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
+import { InlineActionResult } from "@/components/InlineActionResult";
 import { SkinMasteryCostTable } from "@/components/forge/SkinMasteryCostTable";
 import { BalanceShortfall } from "@/components/BalanceShortfall";
 import { SkinMasteryPanel } from "@/components/forge/SkinMasteryPanel";
 import { SkinTargetList } from "@/components/forge/SkinTargetList";
+import { TermLoading } from "@/components/TermLoading";
 import { useAuth } from "@/hooks/useAuth";
 import { useForge } from "@/hooks/useForge";
 import { useHero } from "@/hooks/useHero";
@@ -111,9 +113,12 @@ export default function ForgePage() {
           </div>
         </header>
 
+        {/* 強化の成否は「起きたことの確定表示」なので、他画面と同じ
+            InlineActionResult に寄せる（role="status" / aria-live が付き、
+            読み上げにも乗る。以前はただの div で無音だった） */}
         {notice && (
-          <div className="mt-5 border border-accent/30 bg-accent/10 px-3 py-3 text-[11px] text-accent">
-            {notice}
+          <div className="mt-5">
+            <InlineActionResult title={notice} tone="success" />
           </div>
         )}
         {error && (
@@ -134,7 +139,8 @@ export default function ForgePage() {
         )}
 
         {loading && ownedSkins.length === 0 ? (
-          <p className="mt-8 text-[12px] text-text-faint">forge definitions loading…</p>
+          // 待ちの表現をアプリ全体（TermLoading）に揃える
+          <TermLoading className="mt-8" lines={["query forge.levels", "query skins --owned"]} />
         ) : (
           <div className="mt-6 grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)]">
             <SkinTargetList
@@ -172,8 +178,19 @@ export default function ForgePage() {
                     )}
                 </>
               ) : (
-                <div className="border border-dashed border-line-strong bg-bg-elev px-5 py-12 text-center text-[12px] text-text-dim">
-                  スキンを入手すると、ここで見た目を強化できます。
+                // スキンが1つも無いと、この画面は何も操作できない行き止まりになる。
+                // 入手先（カタログ）への出口を同じ場所に置く。CTA は緑（名声圏）を
+                // 使わず、コスメ＝琥珀のトーンのままにしておく
+                <div className="border border-dashed border-line-strong bg-bg-elev px-5 py-12 text-center">
+                  <p className="text-[12px] text-text-dim">
+                    スキンを入手すると、ここで見た目を強化できます。
+                  </p>
+                  <Link
+                    className="mt-3 inline-flex min-h-9 items-center rounded-[4px] border border-rune-border bg-rune-bg px-4 text-[12px] font-semibold text-rune transition-[filter] hover:brightness-125"
+                    href="/shop/skins"
+                  >
+                    スキン一覧を見る →
+                  </Link>
                 </div>
               )}
             </div>

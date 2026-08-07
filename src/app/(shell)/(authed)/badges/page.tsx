@@ -41,7 +41,7 @@ function createBrowserIdempotencyKey(): string {
 
 export default function BadgesPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const {
     catalog,
     catalogError,
@@ -91,6 +91,13 @@ export default function BadgesPage() {
     : null;
   const prerequisiteError =
     catalogError ?? progressError ?? levelDefsError ?? walletError;
+  /*
+   * この画面の設定（表示ON/OFF・装備スロット）が実際に反映される先は
+   * 公開プロフィール。そこへの導線がどこにも無く、変更しても結果を
+   * 確かめられなかった。githubId が取れない間はリンクを組めないので
+   * 出さない（SideBar / mints と同じ判定）。
+   */
+  const selfProfileHref = user?.githubId ? `/heroes/${user.githubId}` : null;
   const workshopReady =
     !loading &&
     !walletLoading &&
@@ -207,6 +214,16 @@ export default function BadgesPage() {
       }
 
       await refetchProgress();
+      if (kind === "equip") {
+        // 下書きを残すと、保存後に入力欄がサーバの値ではなく手入力を
+        // 映し続ける（BE が正規化・拒否した場合に食い違う）。確定したら捨てる。
+        setSlotDrafts((current) => {
+          if (!(badge.code in current)) return current;
+          const next = { ...current };
+          delete next[badge.code];
+          return next;
+        });
+      }
       setNotice({
         tone: "success",
         message:
@@ -295,12 +312,23 @@ export default function BadgesPage() {
                 獲得済みバッジの装飾、公開設定、プロフィールの装備位置を管理します。
               </p>
             </div>
-            <Link
-              className="text-[11px] text-text-dim underline-offset-4 hover:text-accent hover:underline"
-              href="/shop/runes"
-            >
-              ルーン残高を確認
-            </Link>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              {/* 設定の反映先を確かめる出口（従来はこの画面から到達できなかった） */}
+              {selfProfileHref && (
+                <Link
+                  className="text-[11px] text-text-dim underline-offset-4 hover:text-accent hover:underline"
+                  href={selfProfileHref}
+                >
+                  プロフィールで確認
+                </Link>
+              )}
+              <Link
+                className="text-[11px] text-text-dim underline-offset-4 hover:text-accent hover:underline"
+                href="/shop/runes"
+              >
+                ルーン残高を確認
+              </Link>
+            </div>
           </div>
 
           {showVisibilityTip && (
@@ -365,7 +393,12 @@ export default function BadgesPage() {
                   levelDefs,
                   badge.forgeRank,
                 );
+                // 保存は 1 件ずつ（updateBadgeSetting が settingsInFlight で
+                // 排他する）。以前は保存中のバッジだけ disabled にしていたため、
+                // 他のバッジのチェックボックスは押せるのに何も起きなかった
+                // （無反応 = 壊れて見える）。ロック中は全カードを押せなくする。
                 const settingBusy = settingsInFlight === badge.code;
+                const settingsLocked = settingsInFlight != null;
                 return (
                   <article
                     key={badge.code}
@@ -433,7 +466,7 @@ export default function BadgesPage() {
                             aria-label={`${badge.displayName}をプロフィールに表示する`}
                             checked={badge.isVisible}
                             className="size-4 accent-[var(--accent-2)]"
-                            disabled={settingBusy}
+                            disabled={settingsLocked}
                             onChange={(event) =>
                               void updateBadgeSetting(badge, "display", {
                                 equippedSlot: badge.equippedSlot,
@@ -455,7 +488,7 @@ export default function BadgesPage() {
                           <div className="mt-1 flex gap-2">
                             <input
                               className="min-w-0 flex-1 border border-line bg-bg px-2 py-2 text-[11px] text-text outline-none focus:border-accent-2"
-                              disabled={settingBusy}
+                              disabled={settingsLocked}
                               id={`slot-${badge.code}`}
                               inputMode="numeric"
                               min={1}
@@ -477,7 +510,7 @@ export default function BadgesPage() {
                             <button
                               aria-label={`${badge.displayName}の装備スロットを保存`}
                               className="flex size-9 shrink-0 items-center justify-center border border-line text-text-dim hover:border-accent-2 hover:text-accent-2 disabled:opacity-50"
-                              disabled={settingBusy}
+                              disabled={settingsLocked}
                               onClick={() => saveEquippedSlot(badge)}
                               title="装備スロットを保存"
                               type="button"

@@ -12,8 +12,14 @@ import { useInventory } from "@/hooks/useInventory";
 import { useUseItem } from "@/hooks/useUseItem";
 import type { InventoryItem, UseItemResponse } from "@/types/inventory";
 
-const COLS = 9;
-const MIN_STORAGE_SLOTS = 27;
+/*
+ * 棚のマス数。BE に持ち物の上限は無い（在庫は種類ごとの行で、容量の概念が無い）ため、
+ * これは「棚の見た目」であって容量ではない。容量として読ませないよう、
+ * 見出しでも "N slots" とは言わない（存在しない上限を示唆しない）。
+ * 狭幅6列 / sm以上9列 のどちらでも端数が出ないよう 18 の倍数で刻む。
+ */
+const SLOT_GRID_STEP = 18;
+const MIN_STORAGE_SLOTS = 36;
 
 const CATEGORY_LABEL: Record<InventoryItem["category"], string> = {
   EVOLUTION: "evolution",
@@ -33,6 +39,9 @@ export default function ItemsPage() {
   const [useResult, setUseResult] = useState<UseItemResponse | null>(null);
   const [refetching, setRefetching] = useState(false);
   const activeItemIdRef = useRef<string | null>(null);
+  // 狭幅では SELECTED パネルがグリッドの下に回り込む。スロットを押しても
+  // 画面内は選択枠が動くだけで、名前も説明も USE ボタンも画面外にある。
+  const detailPanelRef = useRef<HTMLDivElement | null>(null);
 
 
   async function handleUseItem(itemId: string) {
@@ -56,11 +65,13 @@ export default function ItemsPage() {
     setUseResult(null);
     resetUseError();
     activeItemIdRef.current = null;
+    // 既に見えているときは "nearest" が何もしないので、PC の横並びでは無害。
+    detailPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   const storageCount = Math.max(
     MIN_STORAGE_SLOTS,
-    Math.ceil(items.length / COLS) * COLS,
+    Math.ceil(items.length / SLOT_GRID_STEP) * SLOT_GRID_STEP,
   );
   const occupied = items.length;
   const selectedItem = items[selectedIdx] ?? null;
@@ -110,17 +121,27 @@ export default function ItemsPage() {
         {/* page header */}
         <div className="mb-4">
           <h1 className="text-[28px] font-semibold tracking-[-0.015em]">Inventory</h1>
-          <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[12.5px] text-text-dim">
-            <span>{storageCount} slots</span>
-            <span className="text-text-faint">·</span>
-            <span>
-              <b className="text-accent">{occupied}</b> occupied
-            </span>
+          {/* 旧: "27 slots · 3 occupied"。上限が無いのに容量があるように読めた
+              （所持が増えると slots 側も勝手に増えていた）。実数だけ言う */}
+          <p className="mt-1.5 text-[12.5px] text-text-dim">
+            <b className="text-accent">{occupied}</b> 種類を所持
           </p>
         </div>
 
         {loading && <TermLoading className="mb-4" lines={["query inventory --grid"]} />}
-        {error && <p className="mb-4 text-[13px] text-pink">error: {error}</p>}
+        {/* 他画面（図鑑・ランキング・工房）と同じく、失敗をその場でやり直せるようにする */}
+        {error && (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded border border-pink/30 bg-pink/10 px-3 py-2 text-[12px] text-pink">
+            <span>持ち物を読み込めませんでした。</span>
+            <button
+              className="text-text underline underline-offset-4 hover:text-accent"
+              onClick={() => void refetch()}
+              type="button"
+            >
+              再読み込み
+            </button>
+          </div>
+        )}
 
         {/* 空スロットの壁を無言で見せない。何を入れる場所かと入手先を案内する。 */}
         {!loading && !error && occupied === 0 && (
@@ -136,12 +157,19 @@ export default function ItemsPage() {
         <div className="grid grid-cols-1 items-start gap-[18px] xl:grid-cols-[minmax(0,1fr)_260px]">
           {/* LEFT: storage（ホットバーは1行目の複製で実機能なしのため置かない） */}
           <div className="min-w-0 rounded-[6px] border border-line bg-bg-elev">
-            <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+            <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-2.5">
               <span className="text-[10px] uppercase tracking-[0.12em] text-text-faint">STORAGE</span>
-              <span className="text-[10px] text-text-faint">{occupied}/{storageCount}</span>
+              <span className="text-[10px] text-text-faint">
+                {/* ホットキーは USE ボタンの [E] にしか出ておらず、1–9 は誰にも見えていなかった。
+                    物理キーボードが前提の幅でだけ案内する */}
+                <span className="hidden sm:inline">[1]–[9] 選択 · [E] 使用 · </span>
+                {occupied} 種類
+              </span>
             </div>
             <div className="p-3.5">
-              <div className="grid gap-[5px]" style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}>
+              {/* 9列固定だと 360px 幅で1マス約29px（指で狙うには小さい）。
+                  狭幅は6列に落として、どちらの列数でも端数の出ないマス数にしている */}
+              <div className="grid grid-cols-6 gap-[5px] sm:grid-cols-9">
                 {Array.from({ length: storageCount }).map((_, idx) => (
                   <Slot
                     key={idx}
@@ -155,7 +183,7 @@ export default function ItemsPage() {
           </div>
 
           {/* RIGHT: selected item detail panel */}
-          <div className="rounded-[6px] border border-line bg-bg-elev">
+          <div className="rounded-[6px] border border-line bg-bg-elev" ref={detailPanelRef}>
             <div className="border-b border-line px-4 py-2.5">
               <span className="text-[10px] uppercase tracking-[0.12em] text-text-faint">SELECTED</span>
             </div>
@@ -213,12 +241,20 @@ export default function ItemsPage() {
                           className="space-y-1 rounded-[4px] border border-accent/20 bg-accent/[0.06] p-2.5 text-[11px]"
                         >
                           <div className="font-bold text-accent">使用しました</div>
+                          {/* 桁区切りは他画面のXP・残高と揃える */}
                           <div className="text-text-faint">
                             <span className="capitalize">{useResult.attribute}</span> 属性に{" "}
-                            <span className="text-accent">+{useResult.soulsAdded}</span> ソウル付与
+                            <span className="text-accent">
+                              +{useResult.soulsAdded.toLocaleString("ja-JP")}
+                            </span>{" "}
+                            ソウル付与
                           </div>
                           <div className="text-text-faint">
-                            合計: <span className="text-text">{useResult.soulsAfter}</span> ソウル
+                            合計:{" "}
+                            <span className="text-text">
+                              {useResult.soulsAfter.toLocaleString("ja-JP")}
+                            </span>{" "}
+                            ソウル
                           </div>
                           {/* 魂を使った直後を行き止まりにしない。次の一歩へ。 */}
                           <Link
