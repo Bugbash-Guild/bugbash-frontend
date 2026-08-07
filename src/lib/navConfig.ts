@@ -11,10 +11,13 @@
  * 出ている場所が自分のページへの扉、というオーナー判断（2026-08-07）。
  * 以前ナビ2番目に注入していた ~/@username はこのゾーンへ移った。
  *
- * 起点にならない画面（items・badges・forge・mints・pass・summon/limited・billing）は
+ * badges は当初「文脈から入る画面」に分類していたが、「導線がわかりづらい」
+ * というオーナーフィードバックを受けてナビ本体へ昇格（2026-08-07）。
+ * プロフィールが HERO_STATUS ゾーンへ移って空いた枠に収まり、6項目上限は維持。
+ *
+ * 起点にならない画面（items・forge・mints・pass・summon/limited・billing）は
  * 廃止せず、それが必要になる文脈から入る:
  *   - items   → monsters の素材ストリップから
- *   - badges  → HERO_STATUS メニュー / home の実績行 / プロフィールのバッジ壁から
  *   - forge   → monsters の ⚒ バッジ / スキン詳細の「マスタリーで深化」から
  *   - mints   → プロフィールの記念プレート棚から
  *   - pass    → shop のタブから
@@ -45,6 +48,8 @@ export const NAV_SECTIONS: NavSection[] = [
       { glyph: "⌂", label: "~/home", jaLabel: "ホーム", href: "/" },
       { glyph: "◆", label: "~/monsters", jaLabel: "図鑑・育成", href: "/monsters" },
       { glyph: "≡", label: "~/summon", jaLabel: "召喚", href: "/summon" },
+      // 自分の実績（個人）→ ランキング（社会）の順で名声系を隣接させる
+      { glyph: "⚔", label: "~/badges", jaLabel: "実績バッジ", href: "/badges" },
       { glyph: "▲", label: "~/leaderboard", jaLabel: "ランキング", href: "/leaderboard" },
     ],
   },
@@ -58,19 +63,18 @@ export const NAV_SECTIONS: NavSection[] = [
 
 /**
  * HERO_STATUS フッターメニューの項目（「自分」ゾーン）。
- * 実績バッジをここに常設する — 入口が home の実績行とプロフィール内リンク
- * だけでは「どこから行くのか」が分からないというフィードバックへの回答。
+ * バッジはナビ本体に昇格したためここには置かない（重複入口を作らない）。
  */
 export const ACCOUNT_MENU_ITEMS: NavItem[] = [
-  { glyph: "⚔", label: "実績バッジ", href: "/badges" },
   { glyph: "⛭", label: "課金・アカウント設定", href: "/mypage/billing" },
 ];
 
 /**
  * フッターに active 縁取りを出す「自分」ゾーンのパス。
  * 自分の公開プロフィール（/heroes/{自分のid}）は動的なので SideBar 側で判定。
+ * /badges はナビ項目になったので isNavActive 側が現在地を示す。
  */
-export const ACCOUNT_PATHS = ["/mypage/billing", "/badges", "/mints"];
+export const ACCOUNT_PATHS = ["/mypage/billing", "/mints"];
 
 /**
  * より具体的な href を優先する active 判定。
