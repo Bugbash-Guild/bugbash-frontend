@@ -6,6 +6,7 @@ import { ItemVisual } from "@/components/ItemVisual";
 import { cn } from "@/lib/cn";
 import {
   countSummonItemsSrOrAbove,
+  formatDuplicateSoulText,
   getSummonItemDisplay,
 } from "@/lib/summonDisplay";
 import type { ItemRarity } from "@/types/summon";
@@ -15,6 +16,10 @@ export type SummonResultGridItem = {
   isNew?: boolean;
   itemId: string;
   rarity: ItemRarity;
+  /** ダブりを魂に変換した量（BEの実数。0・未定義なら表示しない）。 */
+  duplicateSoul?: number;
+  /** 変換先の属性（fire / water / ...）。 */
+  duplicateSoulAttribute?: string | null;
 };
 
 /**
@@ -114,6 +119,15 @@ export function SummonResultGrid({ items }: SummonResultGridProps) {
               {item.isNew && (
                 <div className="mt-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-accent">
                   NEW
+                </div>
+              )}
+              {/*
+                ダブりは空振りではなく魂に変換される（BE: DuplicateSoulPolicy）。
+                何がいくつ入ったかをその場で言う — 値はBEの実数のみ。
+              */}
+              {(item.duplicateSoul ?? 0) > 0 && (
+                <div className="mt-1 text-[10px] text-text-dim">
+                  ダブり → {formatDuplicateSoulText(item.duplicateSoul ?? 0, item.duplicateSoulAttribute)}
                 </div>
               )}
             </div>

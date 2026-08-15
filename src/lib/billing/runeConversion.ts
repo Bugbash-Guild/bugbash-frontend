@@ -10,6 +10,8 @@ import type { RuneProduct } from "@/types/billing";
 export type RuneProductsPayload = {
   /** 限定召喚1回のルーンコスト。未対応・値が不正なら null（換算は非表示）。 */
   limitedSingleCostRune: number | null;
+  /** 限定召喚の天井回数（パス未加入の基準値）。未対応・未開催なら null。 */
+  limitedHardPityPull: number | null;
   products: RuneProduct[];
 };
 
@@ -27,29 +29,36 @@ export function parseRuneProductsResponse(data: unknown): RuneProductsPayload {
     無く null になるだけ。
   */
   if (Array.isArray(data)) {
-    const embedded =
+    const embedded = (key: string): number | null =>
       data
         .map((item) =>
           typeof item === "object" && item != null
-            ? asPositiveNumber(
-                (item as { limitedSingleCostRune?: unknown }).limitedSingleCostRune,
-              )
+            ? asPositiveNumber((item as Record<string, unknown>)[key])
             : null,
         )
         .find((value) => value != null) ?? null;
-    return { limitedSingleCostRune: embedded, products: data as RuneProduct[] };
+    return {
+      limitedSingleCostRune: embedded("limitedSingleCostRune"),
+      limitedHardPityPull: embedded("limitedHardPityPull"),
+      products: data as RuneProduct[],
+    };
   }
 
   if (typeof data === "object" && data != null) {
-    const record = data as { limitedSingleCostRune?: unknown; products?: unknown };
+    const record = data as {
+      limitedHardPityPull?: unknown;
+      limitedSingleCostRune?: unknown;
+      products?: unknown;
+    };
     return {
       limitedSingleCostRune: asPositiveNumber(record.limitedSingleCostRune),
+      limitedHardPityPull: asPositiveNumber(record.limitedHardPityPull),
       products: Array.isArray(record.products) ? (record.products as RuneProduct[]) : [],
     };
   }
 
   // 契約外の応答。ここで受け止めないと呼び出し側の .map が throw して白画面になる。
-  return { limitedSingleCostRune: null, products: [] };
+  return { limitedSingleCostRune: null, limitedHardPityPull: null, products: [] };
 }
 
 /**
@@ -71,8 +80,11 @@ export function calcLimitedSummonEquivalent(
 }
 
 /**
- * 換算の表示文。端数を切り捨てているため「約」を必ず付ける。
- * 事実の言い換えのみ — 「お得」などの評価語は使わない。
+ * 換算の表示文。事実の言い換えのみ — 「お得」などの評価語は使わない。
+ *
+ * 割り切れるとき（円固定後のSKUは全て30の倍数）は「約」を付けない。
+ * 端数が出るときだけ切り捨てて「約」を付ける — 実際に引ける回数より
+ * 多くも少なくも見せない。
  */
 export function buildLimitedSummonEquivalentText(
   runeAmount: number,
@@ -80,7 +92,40 @@ export function buildLimitedSummonEquivalentText(
 ): string | null {
   const count = calcLimitedSummonEquivalent(runeAmount, limitedSingleCostRune);
   if (count == null) return null;
-  return `限定召喚 約${count.toLocaleString("ja-JP")}回ぶん`;
+  const cost = asPositiveNumber(limitedSingleCostRune);
+  const exact = cost != null && runeAmount % cost === 0;
+  return `限定召喚 ${exact ? "" : "約"}${count.toLocaleString("ja-JP")}回ぶん`;
+}
+
+/**
+ * 全商品が同一の整数単価（円/ルーン）で売られているとき、その単価を返す。
+ *
+ * 「1ルーン=¥3」の表示は**この関数が商品データから検証できたときだけ**出す。
+ * 定数のハードコードだとBE側の価格変更と食い違ったまま表示され続けるため、
+ * 表示の根拠を常にAPIの実データに置く（コードが裏付けない数字を表示しない）。
+ */
+export function uniformUnitPriceJpy(products: RuneProduct[]): number | null {
+  if (products.length === 0) return null;
+  const units = products.map(unitPriceOf);
+  const first = units[0];
+  if (first == null || !Number.isInteger(first)) return null;
+  return units.every((unit) => unit === first) ? first : null;
+}
+
+/**
+ * 「天井1回分ちょうど」の商品か。
+ * totalRune が（1回コスト × 天井回数）に一致する事実のみで判定する。
+ * どちらかが取得できなければ判定しない（でっち上げない）。
+ */
+export function isExactPityPack(
+  product: RuneProduct,
+  limitedSingleCostRune: number | null | undefined,
+  limitedHardPityPull: number | null | undefined,
+): boolean {
+  const cost = asPositiveNumber(limitedSingleCostRune);
+  const pity = asPositiveNumber(limitedHardPityPull);
+  if (cost == null || pity == null) return false;
+  return product.totalRune === cost * pity;
 }
 
 /** 円/ルーン。価格か付与量が不正なら null（比較から外す）。 */
@@ -105,5 +150,8 @@ export function findCheapestRuneProductIds(products: RuneProduct[]): Set<string>
   if (priced.length < 2) return new Set();
 
   const min = Math.min(...priced.map((entry) => entry.unit));
+  const max = Math.max(...priced.map((entry) => entry.unit));
+  // 全商品が同一単価（円固定後の正常状態）なら「最安」という比較は成立しない
+  if (min === max) return new Set();
   return new Set(priced.filter((entry) => entry.unit === min).map((entry) => entry.id));
 }

@@ -86,9 +86,14 @@ function LoginContent() {
 
             {/* subtitle */}
             <div className="text-[14px] text-text-dim leading-[1.6] mb-6">
+              {/*
+                因果は「仕事が先、報酬は祝福」の向きで書く（設計v3 §6）。
+                「マージしよう。手に入る」は活動の理由を報酬にすり替える
+                統制的な語り（内発的動機を削る側の条件）になる。
+              */}
               GitHubの開発活動が、そのまま勇者の冒険になる。
               <br />
-              PR をマージしよう。XP とモンスターが手に入る。
+              あなたがマージしたPRが、XPとモンスターになる。
             </div>
 
             {/* auth button */}

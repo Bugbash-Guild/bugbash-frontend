@@ -31,6 +31,8 @@ export function useRuneProducts(enabled: boolean) {
 
   return {
     error: error && !isUnauthorizedApiError(error) ? String(error.message ?? error) : null,
+    /** 限定召喚の天井回数。BE 未対応・未開催なら null（天井表示は非表示）。 */
+    limitedHardPityPull: data?.limitedHardPityPull ?? null,
     /** 限定召喚1回のルーンコスト。BE 未対応・不正値なら null（換算は非表示）。 */
     limitedSingleCostRune: data?.limitedSingleCostRune ?? null,
     loading: isLoading,

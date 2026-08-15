@@ -431,8 +431,9 @@ export default function Home() {
                 )}
                 {!activitiesLoading && activities.length === 0 && (
                   <div className="px-3.5 py-4 text-[12px] text-text-faint">
+                    {/* 因果は「仕事が先、報酬は祝福」の向き（設計v3 §6） */}
                     {hero?.hasGithubAppInstalled
-                      ? "まだアクティビティがありません — PRをマージしよう"
+                      ? "まだアクティビティがありません — マージしたPRが、ここに実績として並びます"
                       : "追跡が始まっていません — GitHub App を導入すると、PRマージがここに流れます"}
                   </div>
                 )}

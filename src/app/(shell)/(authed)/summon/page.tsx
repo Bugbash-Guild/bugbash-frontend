@@ -137,8 +137,9 @@ export default function SummonPage() {
   const resultItems: SummonResultGridItem[] = useMemo(() => {
     if (result == null) return [];
     if (result.type === "once") {
-      const { assetUrl, isNew, itemId, rarity } = result.data;
-      return [{ assetUrl, isNew, itemId, rarity }];
+      const { assetUrl, duplicateSoul, duplicateSoulAttribute, isNew, itemId, rarity } =
+        result.data;
+      return [{ assetUrl, duplicateSoul, duplicateSoulAttribute, isNew, itemId, rarity }];
     }
     return result.data.results;
   }, [result]);

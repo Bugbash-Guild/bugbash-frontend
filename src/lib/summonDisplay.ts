@@ -79,3 +79,31 @@ export function getSummonItemDisplay(itemId: string, assetUrl?: string | null): 
     if (!assetUrl) return display;
     return { ...display, assetUrl };
 }
+
+/**
+ * 属性スラッグ → 表示名。BE の MonsterAttribute.displayName と対
+ * （fire=炎 / water=水 / thunder=雷 / nature=自然 / light=光 / dark=闇）。
+ * 未知の値はそのまま出す — 翻訳をでっち上げない。
+ */
+const ATTRIBUTE_DISPLAY_NAME: Record<string, string> = {
+    dark: '闇',
+    fire: '炎',
+    light: '光',
+    nature: '自然',
+    thunder: '雷',
+    water: '水',
+};
+
+/**
+ * ダブり→魂変換の表示文（例: 「+150 炎の魂」）。
+ * 量はBEが返した実数のみ。属性が取れないときは属性名を省いて量だけ言う。
+ */
+export function formatDuplicateSoulText(
+    amount: number,
+    attribute?: string | null,
+): string {
+    const prefix = `+${amount.toLocaleString('ja-JP')}`;
+    if (attribute == null || attribute === '') return `${prefix} 魂`;
+    const label = ATTRIBUTE_DISPLAY_NAME[attribute] ?? attribute;
+    return `${prefix} ${label}の魂`;
+}
