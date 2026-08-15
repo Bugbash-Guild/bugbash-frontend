@@ -7,6 +7,7 @@ import { FiEdit3, FiRefreshCw, FiTrash2, FiX } from "react-icons/fi";
 
 import { AgeVerificationModal } from "@/components/billing/AgeVerificationModal";
 import { CancelPassModal } from "@/components/billing/CancelPassModal";
+import { SpendingLimitCard } from "@/components/billing/SpendingLimitCard";
 import { SubscriptionStatusSummary } from "@/components/billing/SubscriptionStatusSummary";
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
@@ -357,6 +358,8 @@ export default function BillingManagementPage() {
             <h2 className="text-[16px] font-semibold text-text">アカウント・法定情報</h2>
 
             <div className="mt-4 grid grid-cols-1 gap-px border border-line bg-line md:grid-cols-2">
+              {/* 月次課金上限の自己設定（設計v3 §5-F）。成人の既定¥5万は本人が変更・撤廃できる */}
+              <SpendingLimitCard />
               <div className="bg-bg p-4">
                 <h3 className="text-[13px] font-semibold text-text">年齢区分</h3>
                 <p className="mt-2 text-[11px] leading-5 text-text-dim">
