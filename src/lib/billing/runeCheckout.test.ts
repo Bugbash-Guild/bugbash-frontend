@@ -69,12 +69,13 @@ describe("rune checkout helpers", () => {
         unitPrice: "¥2.8/ルーン",
       },
       {
-        bonusText: "60 + ボーナス0",
+        // ボーナス0の商品に「+ ボーナス0」という無意味な内訳は出さない
+        bonusText: null,
         firstPurchaseOnly: false,
         id: "rune_60",
         price: "¥240（税込）",
         runeText: "60ルーン",
-        unitPrice: "¥4.0/ルーン",
+        unitPrice: "¥4/ルーン",
       },
     ]);
   });

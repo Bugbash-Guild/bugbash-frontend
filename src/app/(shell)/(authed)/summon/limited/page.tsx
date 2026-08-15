@@ -273,6 +273,18 @@ export default function LimitedSummonPage() {
               pity={pity}
             />
 
+            {/*
+              仕組みの保証を明文で置く（マネタイズ設計v3 約束3）。
+              どちらもBE実装＋テストで固定済みの事実:
+              - 持ち越し: カウンターは固定キー(heroId, "LIMITED")で、バナー
+                （プール中身）が入れ替わってもリセットされない
+              - ダブり変換: SummonRewardGranter が DuplicateSoulPolicy で魂に変換
+            */}
+            <div className="border border-line bg-bg-elev px-3 py-2.5 text-[11px] leading-5 text-text-faint">
+              天井カウントはバナーが変わっても持ち越されます（SSRが出たときだけ0に戻ります）。
+              すでに持っているモンスターが出たときは、その属性の魂に変換されます。
+            </div>
+
             {prerequisiteError && (
               <div className="border border-pink/30 bg-pink/10 px-3 py-3 text-[12px] leading-5 text-pink">
                 召喚情報を取得できないため、現在は召喚できません。再読み込みしてお試しください。

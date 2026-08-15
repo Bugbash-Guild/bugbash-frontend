@@ -5,7 +5,9 @@ import {
   buildLimitedSummonEquivalentText,
   calcLimitedSummonEquivalent,
   findCheapestRuneProductIds,
+  isExactPityPack,
   parseRuneProductsResponse,
+  uniformUnitPriceJpy,
 } from "./runeConversion";
 import type { RuneProduct } from "@/types/billing";
 
@@ -25,6 +27,7 @@ describe("parseRuneProductsResponse", () => {
   it("accepts the legacy top-level array shape (BE not yet deployed)", () => {
     const products = [product({ id: "p1" })];
     assert.deepEqual(parseRuneProductsResponse(products), {
+      limitedHardPityPull: null,
       limitedSingleCostRune: null,
       products,
     });
@@ -33,6 +36,7 @@ describe("parseRuneProductsResponse", () => {
   it("accepts the new object shape with limitedSingleCostRune", () => {
     const products = [product({ id: "p1" })];
     assert.deepEqual(parseRuneProductsResponse({ limitedSingleCostRune: 30, products }), {
+      limitedHardPityPull: null,
       limitedSingleCostRune: 30,
       products,
     });
@@ -68,6 +72,7 @@ describe("parseRuneProductsResponse", () => {
     const products = [product({ id: "p1" })];
     for (const bad of [null, undefined, 0, -30, Number.NaN, "30"]) {
       assert.deepEqual(parseRuneProductsResponse({ limitedSingleCostRune: bad, products }), {
+        limitedHardPityPull: null,
         limitedSingleCostRune: null,
         products,
       });
@@ -77,6 +82,7 @@ describe("parseRuneProductsResponse", () => {
   it("collapses out-of-contract responses into an empty payload, not a crash", () => {
     for (const bad of [null, undefined, 42, "oops", { products: "not-an-array" }]) {
       assert.deepEqual(parseRuneProductsResponse(bad), {
+        limitedHardPityPull: null,
         limitedSingleCostRune: null,
         products: [],
       });
@@ -109,10 +115,10 @@ describe("calcLimitedSummonEquivalent", () => {
 });
 
 describe("buildLimitedSummonEquivalentText", () => {
-  it("always says 約 because the remainder is dropped", () => {
+  it("says 約 only when the remainder was actually dropped", () => {
     assert.equal(buildLimitedSummonEquivalentText(1000, 30), "限定召喚 約33回ぶん");
-    // 割り切れても「約」を外さない（表記を状況で揺らさない）
-    assert.equal(buildLimitedSummonEquivalentText(90, 30), "限定召喚 約3回ぶん");
+    // 円固定後のSKUは30の倍数なので正確に言い切れる（約を付けると過小に見せる）
+    assert.equal(buildLimitedSummonEquivalentText(90, 30), "限定召喚 3回ぶん");
   });
 
   it("says nothing when the conversion is not possible", () => {
@@ -160,5 +166,61 @@ describe("findCheapestRuneProductIds", () => {
       product({ id: "zero-price", priceJpyTaxIncluded: 0, totalRune: 9999 }),
     ]);
     assert.deepEqual([...ids], ["b"]);
+  });
+
+  it("stays silent when every product shares the same unit price (fixed-rate catalog)", () => {
+    // 円固定後の正常状態。全SKU同一単価なら「最安」という比較は成立しない
+    const ids = findCheapestRuneProductIds([
+      product({ id: "a", priceJpyTaxIncluded: 270, totalRune: 90 }),
+      product({ id: "b", priceJpyTaxIncluded: 900, totalRune: 300 }),
+    ]);
+    assert.equal(ids.size, 0);
+  });
+});
+
+describe("uniformUnitPriceJpy", () => {
+  it("returns the rate only when every product sells at the same integer unit price", () => {
+    assert.equal(
+      uniformUnitPriceJpy([
+        product({ id: "a", priceJpyTaxIncluded: 270, totalRune: 90 }),
+        product({ id: "b", priceJpyTaxIncluded: 5400, totalRune: 1800 }),
+      ]),
+      3,
+    );
+  });
+
+  /*
+    「1ルーン=¥3」の表示はこの関数の戻り値だけを根拠にする。
+    単価が混在・非整数・データ無しのときに null を返さないと、
+    事実と食い違う単価宣言が画面に残る。
+  */
+  it("returns null when rates differ, are fractional, or there is no data", () => {
+    assert.equal(
+      uniformUnitPriceJpy([
+        product({ id: "a", priceJpyTaxIncluded: 270, totalRune: 90 }),
+        product({ id: "b", priceJpyTaxIncluded: 240, totalRune: 60 }), // ¥4
+      ]),
+      null,
+    );
+    assert.equal(
+      uniformUnitPriceJpy([product({ id: "a", priceJpyTaxIncluded: 480, totalRune: 170 })]),
+      null, // ¥2.82…
+    );
+    assert.equal(uniformUnitPriceJpy([]), null);
+  });
+});
+
+describe("isExactPityPack", () => {
+  it("tags only the product whose runes equal cost × hard pity", () => {
+    const pityPack = product({ id: "rune_1800", priceJpyTaxIncluded: 5400, totalRune: 1800 });
+    const half = product({ id: "rune_900", priceJpyTaxIncluded: 2700, totalRune: 900 });
+    assert.equal(isExactPityPack(pityPack, 30, 60), true);
+    assert.equal(isExactPityPack(half, 30, 60), false);
+  });
+
+  it("never guesses when cost or pity is unknown", () => {
+    const pityPack = product({ id: "rune_1800", priceJpyTaxIncluded: 5400, totalRune: 1800 });
+    assert.equal(isExactPityPack(pityPack, null, 60), false);
+    assert.equal(isExactPityPack(pityPack, 30, null), false);
   });
 });

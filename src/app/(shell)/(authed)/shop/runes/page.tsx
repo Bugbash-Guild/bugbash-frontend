@@ -18,6 +18,8 @@ import { writePendingOrder } from "@/lib/billing/pendingGrant";
 import {
   buildLimitedSummonEquivalentText,
   findCheapestRuneProductIds,
+  isExactPityPack,
+  uniformUnitPriceJpy,
 } from "@/lib/billing/runeConversion";
 import {
   buildCheckoutRequest,
@@ -39,6 +41,7 @@ export default function RuneShopPage() {
   const { isAuthenticated } = useAuth();
   const {
     error: productsError,
+    limitedHardPityPull,
     limitedSingleCostRune,
     loading: productsLoading,
     products,
@@ -78,6 +81,22 @@ export default function RuneShopPage() {
   const cheapestProductIds = useMemo(
     () => findCheapestRuneProductIds(products),
     [products],
+  );
+  /*
+   * 全パックが同一の整数単価のときだけ「1ルーン = ¥N」を宣言する。
+   * 定数のハードコードではなく実際の商品データから検証する — BEが単価を
+   * 変えたら、この行は嘘をつく前に消える（コードが裏付けない数字を表示しない）。
+   */
+  const uniformRateJpy = useMemo(() => uniformUnitPriceJpy(products), [products]);
+  // 「天井1回分ちょうど」の事実タグ（1回コスト×天井回数に一致する商品のみ）
+  const pityExactIds = useMemo(
+    () =>
+      new Set(
+        products
+          .filter((p) => isExactPityPack(p, limitedSingleCostRune, limitedHardPityPull))
+          .map((p) => p.id),
+      ),
+    [products, limitedSingleCostRune, limitedHardPityPull],
   );
   const selectedCard = selectedProduct
     ? buildRuneProductCards([selectedProduct])[0]
@@ -178,6 +197,19 @@ export default function RuneShopPage() {
           <ShopTabs current="runes" />
         </div>
 
+        {/* 単価宣言。実データで全SKU同一の整数単価と確認できたときだけ出る */}
+        {uniformRateJpy != null && (
+          <div className="mb-4 border border-line bg-bg-elev px-3 py-2 text-[12px] text-text-dim">
+            1ルーン = ¥{uniformRateJpy.toLocaleString("ja-JP")}（全パック同一単価・ボーナスなし）
+            {limitedSingleCostRune != null && (
+              <span className="ml-2 text-text-faint">
+                限定召喚1回 = ¥
+                {(limitedSingleCostRune * uniformRateJpy).toLocaleString("ja-JP")}
+              </span>
+            )}
+          </div>
+        )}
+
         {monthlyLimitJpy !== null && (
           <div className="mb-4 border border-accent/30 bg-accent/10 px-3 py-2 text-[12px] text-accent">
             {/* 上限の期間は暦月（毎月1日 JST リセット）。ローリング30日ではない。 */}
@@ -224,10 +256,16 @@ export default function RuneShopPage() {
                       RUNE PACK
                     </span>
                     <span className="flex flex-wrap items-center justify-end gap-1.5">
-                      {/* 円/ルーン最小という計算事実のバッジ。煽り語は使わない */}
+                      {/* 円/ルーン最小という計算事実のバッジ。全SKU同一単価なら出ない */}
                       {cheapestProductIds.has(card.id) && (
                         <span className="border border-line-strong px-2 py-0.5 text-[10px] text-text-dim">
                           最安単価
+                        </span>
+                      )}
+                      {/* 1回コスト×天井回数に一致する事実のタグ（値はAPI由来） */}
+                      {pityExactIds.has(card.id) && (
+                        <span className="border border-accent/40 px-2 py-0.5 text-[10px] text-accent">
+                          限定召喚の天井1回分ちょうど
                         </span>
                       )}
                       {card.firstPurchaseOnly && (
@@ -238,8 +276,11 @@ export default function RuneShopPage() {
                     </span>
                   </div>
                   <div className="text-[24px] font-semibold text-text">{card.runeText}</div>
-                  <div className="mt-2 text-[12px] text-text-dim">{card.bonusText}</div>
-                  {/* 換算はコストが取得できた時だけ（floor なので「約」を外さない） */}
+                  {/* ボーナス内訳はボーナスのある商品だけ（円固定後は出ない） */}
+                  {card.bonusText != null && (
+                    <div className="mt-2 text-[12px] text-text-dim">{card.bonusText}</div>
+                  )}
+                  {/* 換算はコストが取得できた時だけ（割り切れないときは「約」つき） */}
                   {summonEquivalentById.has(card.id) && (
                     <div className="mt-1 text-[11px] text-text-faint">
                       {summonEquivalentById.get(card.id)}
@@ -288,10 +329,12 @@ export default function RuneShopPage() {
             </div>
 
             <div className="space-y-2 border border-line bg-bg px-3 py-3 text-[12px]">
-              <div className="flex justify-between gap-3">
-                <span className="text-text-faint">内訳</span>
-                <span className="text-text">{selectedCard.bonusText}</span>
-              </div>
+              {selectedCard.bonusText != null && (
+                <div className="flex justify-between gap-3">
+                  <span className="text-text-faint">内訳</span>
+                  <span className="text-text">{selectedCard.bonusText}</span>
+                </div>
+              )}
               <div className="flex justify-between gap-3">
                 <span className="text-text-faint">単価</span>
                 <span className="text-text">{selectedCard.unitPrice}</span>

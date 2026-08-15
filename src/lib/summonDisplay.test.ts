@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import {
     buildTenPullHonestyCopy,
     countSummonItemsSrOrAbove,
+    formatDuplicateSoulText,
     getSummonItemDisplay,
     SUMMON_CURRENCY_SYMBOL,
 } from './summonDisplay.ts';
@@ -99,5 +100,20 @@ describe('buildTenPullHonestyCopy', () => {
     it('says nothing when the 10-pull is not exactly ten singles (the copy would be false)', () => {
         assert.equal(buildTenPullHonestyCopy({ singlePullCost: 30, tenPullCost: 270 }), null);
         assert.equal(buildTenPullHonestyCopy({ singlePullCost: 30, tenPullCost: 330 }), null);
+    });
+});
+
+describe('formatDuplicateSoulText', () => {
+    it('names the attribute in Japanese with the exact amount from the server', () => {
+        assert.equal(formatDuplicateSoulText(150, 'fire'), '+150 炎の魂');
+        assert.equal(formatDuplicateSoulText(50, 'water'), '+50 水の魂');
+        assert.equal(formatDuplicateSoulText(1000, 'dark'), '+1,000 闇の魂');
+    });
+
+    it('falls back honestly when the attribute is missing or unknown', () => {
+        // 翻訳をでっち上げない: 未知スラッグはそのまま、属性なしは量だけ
+        assert.equal(formatDuplicateSoulText(70, 'plasma'), '+70 plasmaの魂');
+        assert.equal(formatDuplicateSoulText(70, null), '+70 魂');
+        assert.equal(formatDuplicateSoulText(70), '+70 魂');
     });
 });

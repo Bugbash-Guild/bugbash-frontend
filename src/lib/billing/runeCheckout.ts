@@ -5,7 +5,8 @@ export const CHECKOUT_IDEMPOTENCY_KEY_PREFIX = "bb.checkout.";
 type CheckoutStorage = Pick<Storage, "getItem" | "removeItem" | "setItem">;
 
 export type RuneProductCard = {
-  bonusText: string;
+  /** ボーナスがある商品だけ内訳を出す。円固定後の通常商品では null。 */
+  bonusText: string | null;
   firstPurchaseOnly: boolean;
   id: string;
   price: string;
@@ -26,16 +27,23 @@ export function formatJpy(amount: number): string {
 
 export function formatRuneUnitPrice(product: RuneProduct): string {
   const unitPrice = product.priceJpyTaxIncluded / product.totalRune;
-  return `¥${unitPrice.toFixed(1)}/ルーン`;
+  // 円固定後は整数（¥3/ルーン）。小数が出るのは変動単価の旧商品だけ
+  const text = Number.isInteger(unitPrice) ? unitPrice.toString() : unitPrice.toFixed(1);
+  return `¥${text}/ルーン`;
 }
 
 export function buildRuneProductCards(products: RuneProduct[]): RuneProductCard[] {
   return [...products]
     .sort((a, b) => Number(b.firstPurchaseOnly) - Number(a.firstPurchaseOnly))
     .map((product) => ({
-      bonusText: `${product.runeAmount.toLocaleString("ja-JP")} + ボーナス${product.bonusRune.toLocaleString(
-        "ja-JP",
-      )}`,
+      // 円固定でボーナスは廃止された。0のときに「+ ボーナス0」と書くのは
+      // 無意味な行なので出さない（ボーナス付きの旧商品を表示する場合のみ内訳を出す）
+      bonusText:
+        product.bonusRune > 0
+          ? `${product.runeAmount.toLocaleString("ja-JP")} + ボーナス${product.bonusRune.toLocaleString(
+              "ja-JP",
+            )}`
+          : null,
       firstPurchaseOnly: product.firstPurchaseOnly,
       id: product.id,
       price: formatJpy(product.priceJpyTaxIncluded),

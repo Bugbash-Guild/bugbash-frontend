@@ -5,6 +5,10 @@ export type SummonItem = {
     rarity: ItemRarity;
     assetUrl?: string | null;
     isNew: boolean;
+    /** ダブりを魂に変換した量（初入手・アイテムなら0）。旧BEでは未定義。 */
+    duplicateSoul?: number;
+    /** 変換先の属性（fire / water / ...）。ダブり時のみ。 */
+    duplicateSoulAttribute?: string | null;
 };
 
 export type SummonOnceResponse = {
@@ -12,6 +16,8 @@ export type SummonOnceResponse = {
     rarity: ItemRarity;
     assetUrl?: string | null;
     isNew: boolean;
+    duplicateSoul?: number;
+    duplicateSoulAttribute?: string | null;
     newPullCount: number;
     coinsRemaining: number;
 };
