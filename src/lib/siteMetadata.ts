@@ -14,7 +14,7 @@
  * （/shop・/summon）では、素の文字列ではなく
  *   title: { default: "ショップ", template: TITLE_TEMPLATE }
  * と書いて template を明示的に引き継ぐこと。ここを直書き文字列にすると
- * 接尾辞を変えたときに子ルート（/shop/runes 等）だけ古い表記が残る。
+ * 接尾辞を変えたときに子ルート（/shop/skins 等）だけ古い表記が残る。
  */
 export const SITE_NAME = "BugBash";
 

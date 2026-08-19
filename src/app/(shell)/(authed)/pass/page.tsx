@@ -12,7 +12,6 @@ import {
 import { SubscriptionStatusSummary } from "@/components/billing/SubscriptionStatusSummary";
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
-import { ShopTabs } from "@/components/ShopTabs";
 import { useAuth } from "@/hooks/useAuth";
 import { trackFunnelEvent, useTrackScreenView } from "@/hooks/useFunnelTracking";
 import { useModalDismiss } from "@/hooks/useModalDismiss";
@@ -84,7 +83,7 @@ export default function PassPage() {
   const [openConfirmAfterAge, setOpenConfirmAfterAge] = useState(false);
   const [verifiedAgeGroup, setVerifiedAgeGroup] = useState<AgeGroup | null>(null);
 
-  // /shop/runes と同じく、申告済みなら再申告を求めない（訪問のたびに
+  // ショップのチャージ売り場と同じく、申告済みなら再申告を求めない（訪問のたびに
   // モーダルが出る画面間の不一致を解消）。強制はサーバ側ゲートが行う。
   useEffect(() => {
     setVerifiedAgeGroup(readVerifiedAgeGroup(window.localStorage));
@@ -239,7 +238,12 @@ export default function PassPage() {
               継続特典の内容、加入状態、解約予定をこの画面で確認できます。
             </p>
           </div>
-          <ShopTabs current="pass" />
+          <Link
+            className="text-[11px] text-text-dim underline-offset-4 hover:underline"
+            href="/shop"
+          >
+            ← ショップへ
+          </Link>
         </div>
 
         {subscriptionError && (

@@ -324,7 +324,7 @@ export default function BadgesPage() {
               )}
               <Link
                 className="text-[11px] text-text-dim underline-offset-4 hover:text-accent hover:underline"
-                href="/shop/runes"
+                href="/shop"
               >
                 ルーン残高を確認
               </Link>

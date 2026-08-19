@@ -86,7 +86,7 @@ export function ConsoleTopbar({ path, command, showWallet = false }: ConsoleTopb
             {wallet ? wallet.runeBalance.toLocaleString("ja-JP") : "—"}
           </Link>
           <Link
-            href="/shop/runes"
+            href="/shop"
             title="ルーンを購入"
             aria-label="ルーンを購入"
             className="flex size-[30px] items-center justify-center rounded-[4px] border border-[#d99e1c] bg-gradient-to-b from-[#ffc74d] via-rune to-[#d99e1c] text-[15px] font-bold leading-none text-[#1a1206] transition-[filter] hover:brightness-105"

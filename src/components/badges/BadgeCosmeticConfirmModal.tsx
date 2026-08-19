@@ -116,7 +116,7 @@ export function BadgeCosmeticConfirmModal({
               {showTopUp && (
                 <Link
                   className="mt-2 inline-block text-text underline underline-offset-4"
-                  href="/shop/runes"
+                  href="/shop"
                 >
                   ルーンを購入する
                 </Link>

@@ -228,7 +228,7 @@ export default function BillingManagementPage() {
             {/* ルーンは購入でしか増えない。残高を見た地点に補充経路を置く。 */}
             <Link
               className="mt-3 inline-block text-[11px] text-rune underline underline-offset-2 hover:opacity-80"
-              href="/shop/runes"
+              href="/shop"
             >
               ルーンを購入する →
             </Link>

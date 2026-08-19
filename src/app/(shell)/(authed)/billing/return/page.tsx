@@ -176,7 +176,7 @@ export default function BillingReturnPage() {
               */}
               <Link
                 className="border border-line px-3 py-1.5 text-[12px] text-text-dim hover:bg-bg-elev-2"
-                href={pendingOrder?.type === "subscription" ? "/pass" : "/shop/runes"}
+                href={pendingOrder?.type === "subscription" ? "/pass" : "/shop"}
               >
                 もう一度購入する
               </Link>
@@ -187,7 +187,7 @@ export default function BillingReturnPage() {
             <div className="mt-4">
               <Link
                 className="border border-line px-3 py-1.5 text-[12px] text-text-dim hover:bg-bg-elev-2"
-                href="/shop/runes"
+                href="/shop"
               >
                 ルーン購入へ
               </Link>
