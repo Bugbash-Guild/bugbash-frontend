@@ -201,7 +201,7 @@ export default function ForgePage() {
           <SkinMasteryCostTable rows={costRows} />
         </div>
         <p className="mt-4 text-[10px] text-text-faint">
-          ルーンが不足している場合は <Link className="text-accent underline underline-offset-4" href="/shop/runes">ルーンショップ</Link> を確認してください。
+          ルーンが不足している場合は <Link className="text-accent underline underline-offset-4" href="/shop">ショップ</Link> でチャージできます。
         </p>
       </div>
     </>

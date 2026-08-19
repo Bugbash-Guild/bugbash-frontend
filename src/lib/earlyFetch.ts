@@ -72,8 +72,14 @@ export const ROUTE_URLS: Readonly<Record<string, ReadonlyArray<string>>> = {
         '/api/forge/level-defs?track=BADGE',
         '/api/commemorative-mints',
     ],
-    '/shop': ['/api/shop/items', '/api/inventory'],
-    '/shop/runes': ['/api/billing/rune-products'],
+    // ショップは1枚（チャージ〜パスまで同居）なので、課金系のホットURLもここに束ねる
+    '/shop': [
+        '/api/shop/items',
+        '/api/inventory',
+        '/api/billing/rune-products',
+        '/api/billing/subscription/plan',
+        '/api/billing/spending-limit',
+    ],
     '/shop/skins': ['/api/monsters/all', '/api/monsters/owned', '/api/skins', '/api/skins/owned'],
     '/items': ['/api/inventory'],
     '/forge': ['/api/skins/owned', '/api/forge/level-defs?track=MONSTER'],

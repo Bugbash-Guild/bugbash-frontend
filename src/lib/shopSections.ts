@@ -52,7 +52,7 @@ const SECTION_META: Record<string, { note: string | null; order: number; title: 
 };
 
 const VARIANT_GROUP_TITLE: Record<string, string> = {
-  "attribute-soul-pack": "属性を指定して付与",
+  "attribute-soul-pack": "属性を指定して魂を付与",
 };
 
 function variantKey(attribute: string, size: string): string {

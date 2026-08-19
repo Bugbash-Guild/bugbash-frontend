@@ -297,7 +297,7 @@ export default function LimitedSummonPage() {
                 {pullError?.showRuneTopUpLink && (
                   <Link
                     className="ml-3 text-text underline-offset-4 hover:underline"
-                    href="/shop/runes"
+                    href="/shop"
                   >
                     ルーンを購入する
                   </Link>
@@ -351,7 +351,7 @@ export default function LimitedSummonPage() {
                     : "10連分のルーンが足りません。"}
                   <Link
                     className="ml-2 text-text underline-offset-4 hover:underline"
-                    href="/shop/runes"
+                    href="/shop"
                   >
                     ルーンを購入する
                   </Link>

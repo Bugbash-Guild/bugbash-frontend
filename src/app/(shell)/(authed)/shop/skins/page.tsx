@@ -11,7 +11,6 @@ import { InlineActionResult } from "@/components/InlineActionResult";
 import { LegalFooter } from "@/components/LegalFooter";
 import { ConsoleTopbar } from "@/components/ConsoleTopbar";
 import { TermLoading } from "@/components/TermLoading";
-import { ShopTabs } from "@/components/ShopTabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { useMonsters } from "@/hooks/useMonsters";
@@ -228,7 +227,12 @@ function SkinCatalogContent() {
               所有モンスターに使える外装から先に表示します。強さや報酬は変わりません。
             </p>
           </div>
-          <ShopTabs current="skins" />
+          <Link
+            className="text-[11px] text-text-dim underline-offset-4 hover:underline"
+            href="/shop"
+          >
+            ← ショップへ
+          </Link>
         </header>
 
         {error && (
@@ -503,7 +507,7 @@ function SkinCatalogContent() {
                 {wallet != null && wallet.runeBalance < selected.priceRune && (
                   <p className="mt-3 text-right text-[10px] text-pink">
                     ルーンが不足しています。{" "}
-                    <Link className="text-text underline underline-offset-4" href="/shop/runes">
+                    <Link className="text-text underline underline-offset-4" href="/shop">
                       ルーンショップへ
                     </Link>
                   </p>
