@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 import { safeReturnTo } from "@/components/AuthGate";
+import { BackendDownNotice } from "@/components/BackendDownScreen";
 import { useAuth } from "@/hooks/useAuth";
 import { legalFooterLinks } from "@/lib/legalPages";
 
@@ -13,7 +14,7 @@ const RETURN_TO_STORAGE_KEY = "bb.returnTo";
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, isAuthResolved, loading, login } = useAuth();
+  const { backendDown, isAuthenticated, isAuthResolved, loading, login } = useAuth();
   const returnTo = safeReturnTo(searchParams.get("returnTo"));
   /*
    * login() は window.location での全画面遷移。押してから GitHub の画面に
@@ -96,10 +97,14 @@ function LoginContent() {
               あなたがマージしたPRが、XPとモンスターになる。
             </div>
 
+            {/* バックエンドに届かない間はボタンを止める。押しても OAuth の
+                rewrite 先（バックエンド）の生エラーページへ落ちるだけ。 */}
+            {backendDown && <BackendDownNotice />}
+
             {/* auth button */}
             <button
               onClick={handleLogin}
-              disabled={loading || redirecting}
+              disabled={loading || redirecting || backendDown}
               className="w-full py-[14px] px-4 bg-text text-bg border-none rounded-[4px] text-[14px] font-semibold flex items-center justify-center gap-[10px] cursor-pointer tracking-[0.02em] hover:opacity-90 transition-opacity disabled:opacity-50"
               type="button"
             >

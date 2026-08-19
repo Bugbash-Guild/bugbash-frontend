@@ -6,17 +6,34 @@ import useSWR from 'swr';
 import { fetchWithEarly } from '@/lib/earlyFetch';
 
 import { clearSessionHint, hasSessionHint, setSessionHint } from './useAuthSession';
-import { normalizeAuthStatus, type AuthStatus } from './useAuthStatus';
+import {
+    classifyAuthProbeResponse,
+    normalizeAuthStatus,
+    type AuthProbeResult,
+} from './useAuthStatus';
 
 export const AUTH_STATUS_KEY = '/api/auth/status';
 
-const fetcher = async (url: string): Promise<AuthStatus | null> => {
-    const res = await fetchWithEarly(url, {
-        headers: { Accept: 'application/json' },
-        cache: 'no-store',
-    });
-    if (!res.ok) return null;
-    return res.json() as Promise<AuthStatus>;
+/** バックエンド停止時の自動再接続間隔。 */
+const BACKEND_DOWN_RETRY_MS = 30_000;
+
+/*
+ * 「未ログイン」と「バックエンドに届かない」を区別して返す。
+ * 以前は非 2xx を一律 null（＝未ログイン）に丸めていたため、本番停止が
+ * ログアウトに見え、/login → OAuth → 生の Cloud Run エラーページへ
+ * 誘導していた（2026-08-15 の停止で実際に起きた導線）。
+ */
+const fetcher = async (url: string): Promise<AuthProbeResult> => {
+    try {
+        const res = await fetchWithEarly(url, {
+            headers: { Accept: 'application/json' },
+            cache: 'no-store',
+        });
+        return await classifyAuthProbeResponse(res);
+    } catch {
+        // fetch 自体の失敗（DNS・接続拒否・ネットワーク断）
+        return { kind: 'unreachable' };
+    }
 };
 
 export function useAuth() {
@@ -31,14 +48,20 @@ export function useAuth() {
     }, []);
 
     // フォーカス再検証の間隔は SWRProvider の既定（30 秒）に従う。
-    const { data } = useSWR<AuthStatus | null>(AUTH_STATUS_KEY, fetcher, {
+    const { data } = useSWR<AuthProbeResult>(AUTH_STATUS_KEY, fetcher, {
         dedupingInterval: 2000,
         revalidateOnFocus: true,
+        // 停止中だけ自動で再接続を試みる（復旧したら画面が自力で戻る）
+        refreshInterval: (latest) =>
+            latest?.kind === 'unreachable' ? BACKEND_DOWN_RETRY_MS : 0,
     });
 
-    // 実レスポンスが届くまで data は undefined。
-    const isResolved = data !== undefined;
-    const resolved = normalizeAuthStatus(data ?? null);
+    // バックエンドに届かない。未ログインではないので、目印も楽観描画も触らない
+    // （セッションは生きているかもしれない — 復旧すればそのまま続きから使える）。
+    const backendDown = data?.kind === 'unreachable';
+    // 実レスポンスが届くまで data は undefined。unreachable は「確定」に数えない。
+    const isResolved = data !== undefined && data.kind === 'status';
+    const resolved = normalizeAuthStatus(isResolved ? data.status : null);
 
     // 観測した結果を目印に反映する。未認証なら消すので、ログアウトや
     // セッション失効のあとに楽観描画が残り続けることはない。
@@ -91,6 +114,12 @@ export function useAuth() {
          * 往復が生まれるため、確定を待つのにこれを使う。
          */
         isAuthResolved: isResolved,
+        /**
+         * バックエンドに届かない（停止・過負荷・誤設定）。未ログインとは別物。
+         * true の間、AuthGate は /login へ送らず接続エラー画面を出し、
+         * /login はログインボタンを止める（押しても中間層の生エラーに落ちるだけ）。
+         */
+        backendDown,
         login,
         logout,
     };
