@@ -508,7 +508,7 @@ function SkinCatalogContent() {
                   <p className="mt-3 text-right text-[10px] text-pink">
                     ルーンが不足しています。{" "}
                     <Link className="text-text underline underline-offset-4" href="/shop">
-                      ルーンショップへ
+                      ショップでチャージ
                     </Link>
                   </p>
                 )}
