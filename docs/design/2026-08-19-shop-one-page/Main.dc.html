@@ -1,0 +1,171 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap">
+  <style>
+    body { margin: 0; background: #0b0f0d; font-family: 'JetBrains Mono', 'Courier New', monospace; font-variant-numeric: tabular-nums; }
+    a { color: #7ee787; text-decoration: none; }
+    a:hover { color: #a5f0ab; }
+  </style>
+</helmet>
+
+<div style="width: 1120px; background: #0b0f0d; color: #dcefe5; display: flex; flex-direction: column;">
+
+  <!-- console topbar -->
+  <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1f2a26; background: #101614; padding: 10px 20px;">
+    <span style="font-size: 11px; color: #4a6157;">$</span>
+    <span style="font-size: 11px; color: #7a9c8c;">./shop</span>
+    <span style="font-size: 11px; color: #4a6157;">~/shop</span>
+    <div style="flex: 1;"></div>
+    <span style="font-size: 11px; color: #7a9c8c;">◈ 12,450 <span style="color: #4a6157;">コイン</span></span>
+    <span style="font-size: 11px; color: #d2a8ff;">✦ 210 <span style="color: #4a6157;">ルーン</span></span>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 28px; padding: 24px 36px 32px 36px;">
+
+    <!-- header: タブなし。1行で全部言う -->
+    <div style="display: flex; align-items: baseline; gap: 16px;">
+      <div style="font-size: 20px; font-weight: 600; color: #dcefe5;">ショップ</div>
+      <div style="font-size: 12px; color: #7a9c8c;">1ルーン = ¥3（全パック同一単価・税込）</div>
+    </div>
+
+    <!-- SECTION: charge -->
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;">
+        <span style="font-size: 10px; letter-spacing: 0.14em; color: #4a6157;">CHARGE</span>
+        <span style="font-size: 13px; font-weight: 600; color: #dcefe5;">ルーンをチャージ</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px;">
+        <div style="display: flex; flex-direction: column; gap: 6px; border: 1px solid #1f2a26; background: #101614; padding: 14px;">
+          <div style="font-size: 16px; font-weight: 700; color: #d2a8ff;">90 <span style="font-size: 10px; color: #4a6157;">ルーン</span></div>
+          <div style="font-size: 13px; color: #dcefe5;">¥270</div>
+          <div style="font-size: 10px; color: #4a6157;">限定召喚 3回分</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; border: 1px solid #1f2a26; background: #101614; padding: 14px;">
+          <div style="font-size: 16px; font-weight: 700; color: #d2a8ff;">300 <span style="font-size: 10px; color: #4a6157;">ルーン</span></div>
+          <div style="font-size: 13px; color: #dcefe5;">¥900</div>
+          <div style="font-size: 10px; color: #4a6157;">10連 1回分</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; border: 1px solid #1f2a26; background: #101614; padding: 14px;">
+          <div style="font-size: 16px; font-weight: 700; color: #d2a8ff;">600 <span style="font-size: 10px; color: #4a6157;">ルーン</span></div>
+          <div style="font-size: 13px; color: #dcefe5;">¥1,800</div>
+          <div style="font-size: 10px; color: #4a6157;">限定召喚 20回分</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; border: 1px solid #e3b341; background: #161e1b; padding: 14px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 16px; font-weight: 700; color: #d2a8ff;">1,800 <span style="font-size: 10px; color: #4a6157;">ルーン</span></span>
+          </div>
+          <div style="font-size: 13px; color: #dcefe5;">¥5,400</div>
+          <div style="font-size: 10px; color: #e3b341;">天井ちょうど1回分 — 目玉を確定で迎えられる量</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; border: 1px solid #1f2a26; background: #101614; padding: 14px;">
+          <div style="font-size: 16px; font-weight: 700; color: #d2a8ff;">3,600 <span style="font-size: 10px; color: #4a6157;">ルーン</span></div>
+          <div style="font-size: 13px; color: #dcefe5;">¥10,800</div>
+          <div style="font-size: 10px; color: #4a6157;">天井 2回分</div>
+        </div>
+      </div>
+      <div style="font-size: 11px; color: #4a6157;">今月の購入上限: ¥50,000（設定で変更可・毎月1日リセット）</div>
+    </div>
+
+    <!-- SECTION: spend runes -->
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;">
+        <span style="font-size: 10px; letter-spacing: 0.14em; color: #4a6157;">SPEND</span>
+        <span style="font-size: 13px; font-weight: 600; color: #dcefe5;">ルーンでできること</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;">
+
+        <!-- attribute soul pack: 2軸ピッカーを1カードに圧縮 -->
+        <div style="display: flex; flex-direction: column; gap: 10px; border: 1px solid #1f2a26; background: #101614; padding: 16px;">
+          <div style="font-size: 13px; font-weight: 600; color: #dcefe5;">属性を指定して魂を付与</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <span style="border: 1px solid #7ee787; color: #7ee787; padding: 3px 8px; font-size: 11px;">炎</span>
+            <span style="border: 1px solid #2d3d37; color: #7a9c8c; padding: 3px 8px; font-size: 11px;">水</span>
+            <span style="border: 1px solid #2d3d37; color: #7a9c8c; padding: 3px 8px; font-size: 11px;">雷</span>
+            <span style="border: 1px solid #2d3d37; color: #7a9c8c; padding: 3px 8px; font-size: 11px;">森</span>
+            <span style="border: 1px solid #2d3d37; color: #7a9c8c; padding: 3px 8px; font-size: 11px;">光</span>
+            <span style="border: 1px solid #2d3d37; color: #7a9c8c; padding: 3px 8px; font-size: 11px;">闇</span>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <span style="flex: 1; text-align: center; border: 1px solid #2d3d37; color: #7a9c8c; padding: 6px 0; font-size: 11px;">50魂 ✦30</span>
+            <span style="flex: 1; text-align: center; border: 1px solid #7ee787; color: #7ee787; padding: 6px 0; font-size: 11px;">150魂 ✦80</span>
+            <span style="flex: 1; text-align: center; border: 1px solid #2d3d37; color: #7a9c8c; padding: 6px 0; font-size: 11px;">450魂 ✦210</span>
+          </div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between;">
+            <span style="font-size: 11px; color: #7a9c8c;">80ルーン（¥240）</span>
+            <span style="border: 1px solid #7ee787; color: #7ee787; padding: 5px 14px; font-size: 11px;">購入する</span>
+          </div>
+        </div>
+
+        <!-- mint -->
+        <div style="display: flex; flex-direction: column; gap: 8px; border: 1px solid #1f2a26; background: #101614; padding: 16px;">
+          <div style="font-size: 13px; font-weight: 600; color: #dcefe5;">記念鋳造</div>
+          <div style="font-size: 11px; line-height: 1.7; color: #7a9c8c;">実績の瞬間を記念プレートに。実績そのものは無料、購入権に期限はありません。</div>
+          <div style="flex: 1;"></div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between;">
+            <span style="font-size: 11px; color: #7a9c8c;">200ルーン（¥600）</span>
+            <a href="#" style="font-size: 11px;">解禁済みを見る →</a>
+          </div>
+        </div>
+
+        <!-- limited summon -->
+        <div style="display: flex; flex-direction: column; gap: 8px; border: 1px solid #1f2a26; background: #101614; padding: 16px;">
+          <div style="font-size: 13px; font-weight: 600; color: #dcefe5;">限定召喚</div>
+          <div style="font-size: 11px; line-height: 1.7; color: #7a9c8c;">限定モンスターの召喚。確率開示・天井60回（持ち越し）・復刻あり。</div>
+          <div style="flex: 1;"></div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between;">
+            <span style="font-size: 11px; color: #7a9c8c;">30ルーン/回（¥90）</span>
+            <a href="#" style="font-size: 11px;">召喚へ →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION: coins -->
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;">
+        <span style="font-size: 10px; letter-spacing: 0.14em; color: #4a6157;">COINS</span>
+        <span style="font-size: 13px; font-weight: 600; color: #dcefe5;">コインのつかいみち</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px; border: 1px solid #1f2a26; background: #101614; padding: 14px 16px;">
+        <div style="font-size: 12px; color: #dcefe5;">いちばん効率がいいのは通常召喚です<span style="color: #7a9c8c;">（300コインで期待 約8.6魂＋素材）</span></div>
+        <div style="flex: 1;"></div>
+        <span style="border: 1px solid #7ee787; color: #7ee787; padding: 6px 16px; font-size: 11px;">通常召喚へ →</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; border: 1px solid #1f2a26; padding: 10px 16px;">
+        <span style="font-size: 11px; color: #4a6157;">▸ その他のアイテム（進化の輝石・証・ランダム魂パック）</span>
+      </div>
+    </div>
+
+    <!-- SECTION: pass (課金圏は琥珀) -->
+    <div style="display: flex; align-items: center; gap: 16px; border: 1px solid #3d3423; background: #161e1b; padding: 16px 18px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-size: 13px; font-weight: 600; color: #e3b341;">冒険者パス <span style="font-size: 11px; color: #7a9c8c;">¥780/月</span></div>
+        <div style="font-size: 11px; color: #7a9c8c;">相棒魂×2 ・ 毎月150ルーン ・ 天井短縮。確率は変えず、保証線だけ短くします。</div>
+      </div>
+      <div style="flex: 1;"></div>
+      <a href="#" style="border: 1px solid #e3b341; color: #e3b341; padding: 6px 16px; font-size: 11px;">くわしく →</a>
+    </div>
+
+    <!-- footer -->
+    <div style="display: flex; gap: 16px; border-top: 1px solid #1f2a26; padding-top: 14px;">
+      <span style="font-size: 10px; color: #4a6157;">特定商取引法に基づく表示</span>
+      <span style="font-size: 10px; color: #4a6157;">資金決済法に基づく表示</span>
+      <span style="font-size: 10px; color: #4a6157;">利用規約</span>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

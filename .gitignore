@@ -52,3 +52,6 @@ next-env.d.ts
 
 # 画面確認スクリプトの出力（別 OUT_DIR 指定時）
 .visual-*/
+
+# デザインカンバスの作業ディレクトリ（成果物は docs/design/ に残す）
+design-work/
