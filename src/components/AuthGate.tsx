@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 
+import { BackendDownScreen } from "@/components/BackendDownScreen";
 import { useAuth } from "@/hooks/useAuth";
 
 /** open-redirect を防ぐ returnTo 検証。相対パス（先頭 "/"、"//" 以外）のみ許可。 */
@@ -24,15 +25,22 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { isAuthenticated, loading } = useAuth();
+  const { backendDown, isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
-    if (loading || isAuthenticated) return;
+    // backendDown は「未ログイン」ではない。/login へ送るとログイン
+    // ボタン → 中間層の生エラーページ、という 2026-08-15 の導線を再現する。
+    if (loading || isAuthenticated || backendDown) return;
     const query = searchParams.toString();
     const here = query ? `${pathname}?${query}` : pathname;
     const target = safeReturnTo(here) ?? "/";
     router.replace(`/login?returnTo=${encodeURIComponent(target)}`);
-  }, [loading, isAuthenticated, pathname, searchParams, router]);
+  }, [loading, isAuthenticated, backendDown, pathname, searchParams, router]);
+
+  // 接続不能はログイン状態の判定より先に扱う（判定自体ができていない）
+  if (backendDown) {
+    return <BackendDownScreen />;
+  }
 
   if (loading || !isAuthenticated) {
     return (
