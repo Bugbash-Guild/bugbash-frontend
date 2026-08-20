@@ -61,7 +61,7 @@ function SectionHeading({
       <span aria-hidden className="text-[10px] tracking-[0.14em] text-text-faint">
         {eyebrow}
       </span>
-      <h2 className="text-[13px] font-semibold text-text" id={id}>
+      <h2 className="text-[14px] font-semibold text-text" id={id}>
         {title}
       </h2>
     </div>
@@ -72,7 +72,7 @@ function PriceTag({ balances, item }: { balances: ShopBalances; item: ShopItem }
   const presentation = buildShopPurchasePresentation(item, balances);
   return (
     <span
-      className={`text-[13px] font-semibold tabular-nums ${
+      className={`text-[14px] font-semibold tabular-nums ${
         presentation.affordability === "insufficient" ? "text-pink" : "text-text"
       }`}
     >
@@ -103,9 +103,9 @@ function ItemRow({
         sizes="32px"
       />
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[13px] font-semibold text-text">{item.name}</span>
+        <span className="block truncate text-[14px] font-semibold text-text">{item.name}</span>
         {item.description && (
-          <span className="block truncate text-[11px] text-text-faint">{item.description}</span>
+          <span className="block truncate text-[12px] text-text-faint">{item.description}</span>
         )}
       </span>
       <PriceTag balances={balances} item={item} />
@@ -133,7 +133,7 @@ function AttributePackCard({
 
   return (
     <div className="flex flex-col gap-3 border border-line bg-bg-elev p-4">
-      <h3 className="text-[13px] font-semibold text-text">{group.title}</h3>
+      <h3 className="text-[14px] font-semibold text-text">{group.title}</h3>
 
       <div aria-label="属性を選ぶ" className="flex flex-wrap gap-1.5" role="group">
         {group.attributes.map((a) => {
@@ -141,7 +141,7 @@ function AttributePackCard({
           return (
             <button
               aria-pressed={active}
-              className={`border px-2.5 py-1 text-[12px] transition-colors ${
+              className={`border px-2.5 py-1 text-[13px] transition-colors ${
                 active
                   ? "border-rune-border bg-rune-bg text-rune"
                   : "border-line text-text-dim hover:border-line-strong hover:text-text"
@@ -158,7 +158,7 @@ function AttributePackCard({
 
       <div className="-mx-4 -mb-4 mt-auto border-t border-line">
         {rows.length === 0 ? (
-          <p className="px-4 py-3 text-[12px] text-text-faint">
+          <p className="px-4 py-3 text-[13px] text-text-faint">
             {selectedLabel}の在庫がありません。
           </p>
         ) : (
@@ -169,10 +169,10 @@ function AttributePackCard({
               onClick={() => onSelect(item)}
               type="button"
             >
-              <span className="w-10 shrink-0 text-[13px] font-semibold text-text">
+              <span className="w-10 shrink-0 text-[14px] font-semibold text-text">
                 {size.label}
               </span>
-              <span className="min-w-0 flex-1 truncate text-[11px] text-text-faint">
+              <span className="min-w-0 flex-1 truncate text-[12px] text-text-faint">
                 {item.description || item.name}
               </span>
               <PriceTag balances={balances} item={item} />
@@ -289,7 +289,7 @@ export default function ShopPage() {
           <h1 className="text-[20px] font-semibold text-text">ショップ</h1>
           {/* 単価宣言。実データで全SKU同一の整数単価と確認できたときだけ出る */}
           {uniformRateJpy != null && (
-            <p className="text-[12px] text-text-dim">
+            <p className="text-[13px] text-text-dim">
               1ルーン = ¥{uniformRateJpy.toLocaleString("ja-JP")}（全パック同一単価・税込）
             </p>
           )}
@@ -334,13 +334,13 @@ export default function ShopPage() {
 
                   {/* 記念鋳造。価格は解禁ごとの画面が実値で述べるので、ここでは言わない */}
                   <div className="flex flex-col gap-2 border border-line bg-bg-elev p-4">
-                    <h3 className="text-[13px] font-semibold text-text">記念鋳造</h3>
-                    <p className="text-[11px] leading-6 text-text-dim">
+                    <h3 className="text-[14px] font-semibold text-text">記念鋳造</h3>
+                    <p className="text-[12px] leading-6 text-text-dim">
                       実績の瞬間を記念プレートにします。実績そのものは無料で、購入権に期限はありません。
                     </p>
                     <div className="mt-auto flex justify-end">
                       <Link
-                        className="text-[11px] text-accent underline-offset-4 hover:underline"
+                        className="text-[12px] text-accent underline-offset-4 hover:underline"
                         href="/mints"
                       >
                         解禁済みを見る →
@@ -351,21 +351,21 @@ export default function ShopPage() {
                   {/* 限定召喚。開催の根拠（開示APIの正のコスト）が取れた時だけ出す */}
                   {limitedSingleCostRune != null && (
                     <div className="flex flex-col gap-2 border border-line bg-bg-elev p-4">
-                      <h3 className="text-[13px] font-semibold text-text">限定召喚</h3>
-                      <p className="text-[11px] leading-6 text-text-dim">
+                      <h3 className="text-[14px] font-semibold text-text">限定召喚</h3>
+                      <p className="text-[12px] leading-6 text-text-dim">
                         限定モンスターの召喚。確率は全て開示
                         {limitedHardPityPull != null &&
                           `、天井${limitedHardPityPull.toLocaleString("ja-JP")}回（持ち越しあり）`}
                         、復刻あり。
                       </p>
                       <div className="mt-auto flex items-baseline justify-between gap-3">
-                        <span className="text-[11px] text-text-dim">
+                        <span className="text-[12px] text-text-dim">
                           {limitedSingleCostRune.toLocaleString("ja-JP")}ルーン/回
                           {uniformRateJpy != null &&
                             `（¥${(limitedSingleCostRune * uniformRateJpy).toLocaleString("ja-JP")}）`}
                         </span>
                         <Link
-                          className="text-[11px] text-accent underline-offset-4 hover:underline"
+                          className="text-[12px] text-accent underline-offset-4 hover:underline"
                           href="/summon/limited"
                         >
                           召喚へ →
@@ -400,12 +400,12 @@ export default function ShopPage() {
               その事実を隠して並べるより、先に召喚を薦めて単品は畳んでおく。
             */}
             <div className="flex flex-wrap items-center gap-3 border border-line bg-bg-elev px-4 py-3.5">
-              <p className="text-[12px] text-text">
+              <p className="text-[13px] text-text">
                 コインのいちばん効率のいい使い道は通常召喚です。
               </p>
               <div className="ml-auto">
                 <Link
-                  className="inline-block border border-accent px-4 py-1.5 text-[11px] text-accent transition-colors hover:bg-accent hover:text-bg"
+                  className="inline-block border border-accent px-4 py-1.5 text-[12px] text-accent transition-colors hover:bg-accent hover:text-bg"
                   href="/summon"
                 >
                   通常召喚へ →
@@ -415,7 +415,7 @@ export default function ShopPage() {
 
             {loading ? null : coinItems.length > 0 ? (
               <details className="group border border-line">
-                <summary className="cursor-pointer list-none px-4 py-2.5 text-[11px] text-text-faint transition-colors hover:text-text-dim [&::-webkit-details-marker]:hidden">
+                <summary className="cursor-pointer list-none px-4 py-2.5 text-[12px] text-text-faint transition-colors hover:text-text-dim [&::-webkit-details-marker]:hidden">
                   <span aria-hidden className="group-open:hidden">▸</span>
                   <span aria-hidden className="hidden group-open:inline">▾</span>
                   <span className="ml-2">その他のアイテム（{coinSummaryNames}）</span>
@@ -432,7 +432,7 @@ export default function ShopPage() {
                 </div>
               </details>
             ) : (
-              <p className="text-[11px] text-text-faint">
+              <p className="text-[12px] text-text-faint">
                 現在コインで買える単品アイテムはありません。
               </p>
             )}
@@ -444,15 +444,15 @@ export default function ShopPage() {
             className="flex flex-wrap items-center gap-4 border border-gold/40 bg-bg-elev-2 px-4 py-4"
           >
             <div className="min-w-0">
-              <h2 className="text-[13px] font-semibold text-gold" id="pass-heading">
+              <h2 className="text-[14px] font-semibold text-gold" id="pass-heading">
                 冒険者パス
                 {plan != null && (
-                  <span className="ml-2 text-[11px] font-normal text-text-dim">
+                  <span className="ml-2 text-[12px] font-normal text-text-dim">
                     ¥{plan.priceJpyTaxIncluded.toLocaleString("ja-JP")}/月（税込）
                   </span>
                 )}
               </h2>
-              <p className="mt-1 text-[11px] leading-5 text-text-dim">
+              <p className="mt-1 text-[12px] leading-5 text-text-dim">
                 {plan != null
                   ? `毎月${plan.monthlyRuneGrant.toLocaleString("ja-JP")}ルーン ・ PRマージ時の相棒魂×${plan.partnerSoulMultiplier} ・ 天井短縮。`
                   : "継続特典つきの月額プランです。"}
@@ -461,7 +461,7 @@ export default function ShopPage() {
             </div>
             <div className="ml-auto">
               <Link
-                className="inline-block border border-gold px-4 py-1.5 text-[11px] text-gold transition-colors hover:bg-gold hover:text-bg"
+                className="inline-block border border-gold px-4 py-1.5 text-[12px] text-gold transition-colors hover:bg-gold hover:text-bg"
                 href="/pass"
               >
                 くわしく →
@@ -500,15 +500,15 @@ export default function ShopPage() {
                 <div id="shop-purchase-title" className="text-[14px] text-text font-semibold">
                   {selected.name} を購入しますか?
                 </div>
-                <div className="text-[11px] text-text-faint">
+                <div className="text-[12px] text-text-faint">
                   {formatShopCurrencyAmount(selected.currency, selected.price)} を消費します
                 </div>
               </div>
             </div>
-            <div className="text-[12px] text-text-dim mb-3">{selected.description}</div>
+            <div className="text-[13px] text-text-dim mb-3">{selected.description}</div>
 
             {/* 押す前に「引いた後いくら残るか」まで開示する */}
-            <div className="mb-3 border-y border-line py-2.5 text-[12px] text-text-dim">
+            <div className="mb-3 border-y border-line py-2.5 text-[13px] text-text-dim">
               <div className="flex justify-between gap-3">
                 <span>現在の残高</span>
                 <span className="text-text">
@@ -528,13 +528,13 @@ export default function ShopPage() {
             </div>
 
             {selectedPresentation.cosmeticNotice && (
-              <div className="mb-3 border border-accent/30 bg-accent/10 px-3 py-2 text-[12px] leading-5 text-accent">
+              <div className="mb-3 border border-accent/30 bg-accent/10 px-3 py-2 text-[13px] leading-5 text-accent">
                 {selectedPresentation.cosmeticNotice}
               </div>
             )}
 
             {selectedPresentation.insufficientMessage && (
-              <div className="mb-3 border border-pink/30 bg-pink/10 px-3 py-2 text-[12px] leading-5 text-pink">
+              <div className="mb-3 border border-pink/30 bg-pink/10 px-3 py-2 text-[13px] leading-5 text-pink">
                 {selectedPresentation.insufficientMessage}
                 {selectedPresentation.showRuneTopUpLink && (
                   /* チャージ売り場は同じページの先頭に居る。遷移せず連れて行く */
@@ -550,7 +550,7 @@ export default function ShopPage() {
             )}
 
             {purchaseError && (
-              <div className="mb-3 px-3 py-2 bg-pink/10 border border-pink/30 rounded text-[12px] text-pink">
+              <div className="mb-3 px-3 py-2 bg-pink/10 border border-pink/30 rounded text-[13px] text-pink">
                 {mapShopPurchaseErrorMessage(selected, balances, purchaseError.status)}
               </div>
             )}
@@ -561,14 +561,14 @@ export default function ShopPage() {
                 data-autofocus
                 onClick={closeModal}
                 disabled={purchasing}
-                className="px-3 py-1.5 text-[12px] text-text-dim border border-line rounded hover:bg-bg-elev-2"
+                className="px-3 py-1.5 text-[13px] text-text-dim border border-line rounded hover:bg-bg-elev-2"
               >
                 キャンセル
               </button>
               <button
                 onClick={handleConfirm}
                 disabled={purchasing || isShopPurchaseBlocked(selectedPresentation)}
-                className="px-3 py-1.5 text-[12px] text-bg bg-accent rounded hover:bg-accent/90 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-[13px] text-bg bg-accent rounded hover:bg-accent/90 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {purchasing ? "購入中…" : "購入する"}
               </button>

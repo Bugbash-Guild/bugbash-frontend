@@ -208,16 +208,16 @@ export function RuneChargeSection({ isAuthenticated }: { isAuthenticated: boolea
         <span aria-hidden className="text-[10px] tracking-[0.14em] text-text-faint">
           CHARGE
         </span>
-        <h2 className="text-[13px] font-semibold text-text" id="charge-heading">
+        <h2 className="text-[14px] font-semibold text-text" id="charge-heading">
           ルーンをチャージ
         </h2>
-        <span className="text-[11px] text-text-dim">
+        <span className="text-[12px] text-text-dim">
           価格は税込総額です。反映には少し時間がかかる場合があります。
         </span>
       </div>
 
       {productsError && (
-        <div className="border border-pink/30 bg-pink/10 px-3 py-3 text-[12px] text-pink">
+        <div className="border border-pink/30 bg-pink/10 px-3 py-3 text-[13px] text-pink">
           商品一覧を読み込めませんでした。
           <button
             className="ml-3 underline underline-offset-4"
@@ -252,33 +252,33 @@ export function RuneChargeSection({ isAuthenticated }: { isAuthenticated: boolea
                 onClick={() => beginPurchase(product)}
                 type="button"
               >
-                <div className="text-[18px] font-semibold text-text">{card.runeText}</div>
+                <div className="text-[20px] font-semibold text-text">{card.runeText}</div>
                 {/* ボーナス内訳はボーナスのある商品だけ（円固定後は出ない） */}
                 {card.bonusText != null && (
-                  <div className="mt-1 text-[11px] text-text-dim">{card.bonusText}</div>
+                  <div className="mt-1 text-[12px] text-text-dim">{card.bonusText}</div>
                 )}
-                <div className="mt-2 text-[14px] font-semibold text-accent">{card.price}</div>
+                <div className="mt-2 text-[16px] font-semibold text-accent">{card.price}</div>
                 {/* 換算はコストが取得できた時だけ（割り切れないときは「約」つき） */}
                 {summonEquivalentById.has(card.id) && (
-                  <div className="mt-1 text-[10px] text-text-faint">
+                  <div className="mt-1 text-[11px] text-text-faint">
                     {summonEquivalentById.get(card.id)}
                   </div>
                 )}
                 <div className="mt-2 flex flex-wrap gap-1.5 empty:hidden">
                   {/* 円/ルーン最小という計算事実のバッジ。全SKU同一単価なら出ない */}
                   {cheapestProductIds.has(card.id) && (
-                    <span className="border border-line-strong px-1.5 py-0.5 text-[10px] text-text-dim">
+                    <span className="border border-line-strong px-1.5 py-0.5 text-[11px] text-text-dim">
                       最安単価
                     </span>
                   )}
                   {/* 1回コスト×天井回数に一致する事実のタグ（値はAPI由来） */}
                   {pityExact && (
-                    <span className="border border-gold/40 px-1.5 py-0.5 text-[10px] text-gold">
+                    <span className="border border-gold/40 px-1.5 py-0.5 text-[11px] text-gold">
                       天井ちょうど1回分
                     </span>
                   )}
                   {card.firstPurchaseOnly && (
-                    <span className="border border-gold/40 px-1.5 py-0.5 text-[10px] text-gold">
+                    <span className="border border-gold/40 px-1.5 py-0.5 text-[11px] text-gold">
                       初回限定・おひとり様1回
                     </span>
                   )}
@@ -291,7 +291,7 @@ export function RuneChargeSection({ isAuthenticated }: { isAuthenticated: boolea
 
       {/* 上限の期間は暦月（毎月1日 JST リセット）。ローリング30日ではない。 */}
       {spendingLimit != null && (
-        <p className="text-[11px] text-text-faint">
+        <p className="text-[12px] text-text-faint">
           今月の購入上限: {formatCapJpy(spendingLimit.effectiveCapJpy)}
           <Link
             className="ml-2 text-text-dim underline-offset-4 hover:underline"
@@ -327,12 +327,12 @@ export function RuneChargeSection({ isAuthenticated }: { isAuthenticated: boolea
               <h2 id="rune-checkout-title" className="text-[17px] font-semibold text-text">
                 {selectedCard.runeText} を購入しますか?
               </h2>
-              <p className="mt-2 text-[12px] leading-6 text-text-dim">
+              <p className="mt-2 text-[13px] leading-6 text-text-dim">
                 {selectedCard.price}。KOMOJU の決済画面へ移動します。
               </p>
             </div>
 
-            <div className="space-y-2 border border-line bg-bg px-3 py-3 text-[12px]">
+            <div className="space-y-2 border border-line bg-bg px-3 py-3 text-[13px]">
               {selectedCard.bonusText != null && (
                 <div className="flex justify-between gap-3">
                   <span className="text-text-faint">内訳</span>
@@ -358,11 +358,11 @@ export function RuneChargeSection({ isAuthenticated }: { isAuthenticated: boolea
               </div>
             </div>
 
-            <div className="mt-3 text-[11px] leading-5 text-text-faint">
+            <div className="mt-3 text-[12px] leading-5 text-text-faint">
               決済確認後、Webhook 反映を待って残高へ反映されます。反映前にこの画面では増えた扱いにしません。
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
+            <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[12px]">
               <Link className="text-accent underline-offset-4 hover:underline" href="/legal/tokushoho">
                 特定商取引法に基づく表示
               </Link>
@@ -372,7 +372,7 @@ export function RuneChargeSection({ isAuthenticated }: { isAuthenticated: boolea
             </div>
 
             {checkoutError && (
-              <div className="mt-4 border border-pink/30 bg-pink/10 px-3 py-2 text-[12px] text-pink">
+              <div className="mt-4 border border-pink/30 bg-pink/10 px-3 py-2 text-[13px] text-pink">
                 {checkoutError}
               </div>
             )}
@@ -381,7 +381,7 @@ export function RuneChargeSection({ isAuthenticated }: { isAuthenticated: boolea
               {/* 初期フォーカスはキャンセル側に。実際に課金が始まる決済遷移を
                   Enter 連打で走らせない */}
               <button
-                className="border border-line px-3 py-1.5 text-[12px] text-text-dim hover:bg-bg-elev-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="border border-line px-3 py-1.5 text-[13px] text-text-dim hover:bg-bg-elev-2 disabled:cursor-not-allowed disabled:opacity-50"
                 data-autofocus
                 disabled={checkoutInFlight}
                 onClick={() => setSelectedProduct(null)}
@@ -390,7 +390,7 @@ export function RuneChargeSection({ isAuthenticated }: { isAuthenticated: boolea
                 キャンセル
               </button>
               <button
-                className="bg-accent px-3 py-1.5 text-[12px] font-semibold text-bg hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-40"
+                className="bg-accent px-3 py-1.5 text-[13px] font-semibold text-bg hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-40"
                 disabled={checkoutInFlight || walletLoading || !wallet}
                 onClick={() => void submitCheckout(selectedProduct)}
                 type="button"
